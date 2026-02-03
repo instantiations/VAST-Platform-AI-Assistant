@@ -1,2 +1,66 @@
-# VAST-Platform-AI-Assistant
-The VAST Platform AI Assistant Tooling
+# VAST Platform AI Assistant
+
+This repository contains applications and extensions that support AI Assisted development in the [VAST platform](https://www.instantiations.com/vast-platform/) development environment. Currently, there is a single application: Gemini AI Assistant.
+
+## Gemini AI Assistant
+
+Gemini AI Assistant adds Google's Gemini AI to the VAST Platform: use natural language to ask questions about the entire VAST code base and let Gemini assist you in the development of VAST applications.
+
+![Gemini AI Assistant](/docs/images/GeminiAIAssistant-Window.png)
+
+### Quick Start
+
+#### Prerequisites
+
+- [VAST Platform](https://www.instantiations.com/vast-platform/) version 14.1 or later.
+- A Google Gemini API key, obtainable via [Google AI studio](https://aistudio.google.com/api-keys).
+
+#### Get started
+
+- Clone this repository.
+- In VAST, **install the Tonel tools feature**. From the Transcript window, you can use the `Tools>>Load/Unload Features` menu item to load the `ST: Tonel Support` feature. We need [Tonel](https://github.com/instantiations/tonel-vast) to import the source code from this github repository into your local Envy library.
+- From the Configuration Maps Browser, use the `Names>>Import>>Load Configuration Maps from Tonel Repository` menu item and point to the location where you cloned the repository in the first step.
+- Load the latest edition of the `Gemini AI Assistant` configuration map.
+- Open `Gemini AI Assist` from the Transcript window's `Tools` menu and fill-in your Gemini API key via the `Options>>Set API Key...` menu.
+- You are ready to start asking questions to Gemini!
+
+
+### Features Overview
+
+The Gemini AI Assistant allows you to interact with Google Gemini AI models directly from your VAST platform IDE. The AI model is connected to your development image and has access to all source code through [Gemini functions](https://ai.google.dev/gemini-api/docs/function-calling). In addition, you can supply additional information to the model by adding files to the conversation. This can be useful to, for example, share stack dumps with Gemini when trying to analyze the origin of walkbacks.
+
+#### Chat
+
+Interact with Gemini AI by typing in the bottom pane of the Gemini AI Assistant window and hit the 'send' button. Gemini will write it's response in the top pane of the window and markdown will be rendered into user-friendly readable text.
+
+When you use a model with thinking support, it is possible to display the thoughts by expanding the line that mentions 'Thoughts'.
+
+![Thoughts](/docs/images/thoughts.png)
+
+#### Code
+
+When Gemini's response includes Smalltalk source code, it is displayed with a vertical grey bar on the left. Click the grey bar to open the code in a Workspace. If the code contains a method definition of an existing method, a differences browser is opened to highlight the changes Gemini proposes to the current source code.
+
+![Gemini Code Integrations](/docs/images/Code-windows.png)
+
+Further integration with development tools to improve coding assistance by Gemini is underway.
+
+#### Tools
+
+Gemini AI Assistant has access to a set of tools designed to help navigate, understand, and write code within the VAST Platform Smalltalk environment. If you want to know which ones these are, just ask Gemini "Can you list your tools?".
+
+![Gemini Tools](/docs/images/Gemini-Tools.png)
+
+#### Options
+
+The Options menu allows to choose the version of the Gemini model that Gemini Chat uses.
+
+### Contributing
+
+We encourage contributions!
+Please check the guidelines in the CONTRIBUTING file.
+
+### License
+
+The source code is distributed under the Apache 2.0 license.
+See the LICENSE file for details.
