@@ -51,6 +51,12 @@ Gemini AI Assistant has access to a set of tools designed to help navigate, unde
 
 ![Gemini Tools](/docs/images/Gemini-Tools.png)
 
+#### Files
+
+Add files to the conversation via the toolbar menu and reference these in your conversation with Gemini.
+
+![Files](/docs/images/Files.png)
+
 #### Options
 
 The Options menu allows to choose the version of the Gemini model that Gemini Chat uses.
