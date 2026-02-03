@@ -1,10 +1,10 @@
 # VAST Platform AI Assistant
 
-This repository contains applications and extensions that support AI Assisted development in the [VAST platform](https://www.instantiations.com/vast-platform/) development environment. Currently, there is a single application: Gemini AI Assistant.
+This repository contains tools that support AI Assisted development in the [VAST platform](https://www.instantiations.com/vast-platform/) development environment. Currently, there is support for Gemini AI.
 
 ## Gemini AI Assistant
 
-Gemini AI Assistant adds Google's Gemini AI to the VAST Platform: use natural language to ask questions about the entire VAST code base and let Gemini assist you in the development of VAST applications.
+Gemini AI Assistant adds Google's Gemini AI to the VAST Platform: use natural language to ask questions about the entire VAST code base and let Gemini assist you in the development of VAST systems.
 
 ![Gemini AI Assistant](/docs/images/GeminiAIAssistant-Window.png)
 
@@ -18,7 +18,7 @@ Gemini AI Assistant adds Google's Gemini AI to the VAST Platform: use natural la
 #### Get started
 
 - Clone this repository.
-- In VAST, **install the Tonel tools feature**. From the Transcript window, you can use the `Tools>>Load/Unload Features` menu item to load the `ST: Tonel Support` feature. We need [Tonel](https://github.com/instantiations/tonel-vast) to import the source code from this github repository into your local Envy library.
+- In VAST, **install the Tonel tools feature**. From the Transcript window, you can use the `Tools>>Load/Unload Features` menu item to load the `ST: Tonel Support` feature. We need [Tonel](https://www.instantiations.com/vast-support/documentation/1410/#page/sg/tonel/tnl01-index.519.01.html) to import the source code from this github repository into your local Envy library.
 - From the Configuration Maps Browser, use the `Names>>Import>>Load Configuration Maps from Tonel Repository` menu item and point to the location where you cloned the repository in the first step.
 - Load the latest edition of the `Gemini AI Assistant` configuration map.
 - Open `Gemini AI Assist` from the Transcript window's `Tools` menu and fill-in your Gemini API key via the `Options>>Set API Key...` menu.
