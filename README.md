@@ -36,7 +36,7 @@ Interact with Gemini AI by typing in the bottom pane of the Gemini AI Assistant 
 
 When you use a model with thinking support, it is possible to display the thoughts by expanding the line that mentions 'Thoughts'.
 
-![Thoughts](/docs/images/thoughts.png)
+<img src="./docs/images/thoughts.png" width="250" height="250" alt="Thoughts">
 
 #### Code
 
