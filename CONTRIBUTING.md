@@ -1,4 +1,4 @@
-# Contributing to CONTRIBUTING.md
+# Contributing to VAST Platform AI Assistant
 
 First off, thanks for taking the time to contribute! ❤️
 
@@ -6,7 +6,7 @@ All types of contributions are encouraged and valued. See the [Table of Contents
 
 ## Table of Contents
 
-- [Contributing to CONTRIBUTING.md](#contributing-to-contributingmd)
+- [Contributing to VAST Platform AI Assistant](#contributing-to-vast-platform-ai-assistant)
   - [Table of Contents](#table-of-contents)
   - [Code of Conduct](#code-of-conduct)
   - [I Have a Question](#i-have-a-question)
