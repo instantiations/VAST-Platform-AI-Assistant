@@ -13,15 +13,16 @@ Gemini AI Assistant adds Google's Gemini AI to the VAST Platform: use natural la
 #### Prerequisites
 
 - [VAST Platform](https://www.instantiations.com/vast-platform/) version 14.1 or later.
+- OpenSSL libraries installed and [configured in VAST](https://www.instantiations.com/vast-support/documentation/FAQ/index.html#page/FAQ/va09002.html).
 - A Google Gemini API key, obtainable via [Google AI studio](https://aistudio.google.com/api-keys).
 
 #### Get started
 
 - Clone this repository.
 - In VAST, **install the Tonel tools feature**. From the Transcript window, you can use the `Tools>>Load/Unload Features` menu item to load the `ST: Tonel Support` feature. We need [Tonel](https://www.instantiations.com/vast-support/documentation/1410/#page/sg/tonel/tnl01-index.519.01.html) to import the source code from this github repository into your local Envy library.
-- From the Configuration Maps Browser, use the `Names>>Import>>Load Configuration Maps from Tonel Repository` menu item and point to the location where you cloned the repository in the first step.
-- Load the latest edition of the `Gemini AI Assistant` configuration map.
-- Open `Gemini AI Assist` from the Transcript window's `Tools` menu and fill-in your Gemini API key via the `Options>>Set API Key...` menu.
+- From the Configuration Maps Browser, use the `Names>>Import>>Load Configuration Maps from Tonel Repository` menu item and point to the root directory of the local clone of the VAST Platform AI Assistant repository (which you cloned in the first step).
+- In the window that opens, add the config map `Gemini AI Assistant` to the list of config maps to import and load.
+- Once loaded, open `Gemini AI Assistant` from the Transcript window's `Tools` menu and fill-in your Gemini API key via the `Options>>Set API Key...` menu of the Gemini AI Assistant window.
 - You are ready to start asking questions to Gemini!
 
 
