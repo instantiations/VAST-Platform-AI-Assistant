@@ -4,7 +4,7 @@ This repository contains tools that support AI Assisted development in the [VAST
 
 ## Gemini AI Assistant
 
-Gemini AI Assistant adds Google's Gemini AI to the VAST Platform: use natural language to ask questions about the entire VAST code base and let Gemini assist you in the development of VAST systems.
+Gemini AI Assistant adds [Google's Gemini AI](https://ai.google.dev/) to the VAST Platform: use natural language to ask questions about the entire VAST code base and let Gemini assist you in the development of VAST systems.
 
 ![Gemini AI Assistant](/docs/images/GeminiAIAssistant-Window.png)
 
@@ -24,7 +24,6 @@ Gemini AI Assistant adds Google's Gemini AI to the VAST Platform: use natural la
 - In the window that opens, add the config map `Gemini AI Assistant` to the list of config maps to import and load.
 - Once loaded, open `Gemini AI Assistant` from the Transcript window's `Tools` menu and fill-in your Gemini API key via the `Options>>Set API Key...` menu of the Gemini AI Assistant window.
 - You are ready to start asking questions to Gemini!
-
 
 ### Features Overview
 
@@ -65,9 +64,9 @@ The Options menu allows to choose the version of the Gemini model that Gemini Ch
 ### Contributing
 
 We encourage contributions!
-Please check the guidelines in the CONTRIBUTING file.
+Please check the guidelines in the [CONTRIBUTING](CONTRIBUTING.md) file.
 
 ### License
 
 The source code is distributed under the Apache 2.0 license.
-See the LICENSE file for details.
+See the [LICENSE](LICENSE) file for details.
