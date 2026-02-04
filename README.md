@@ -56,7 +56,7 @@ Gemini AI Assistant has access to a set of tools designed to help navigate, unde
 
 Add files to the conversation via the toolbar menu and reference these in your conversation with Gemini.
 
-![Files](/docs/images/Files.png)
+<img src="/docs/images/Files.png" width="250" height="250" alt="Files">
 
 #### Options
 
