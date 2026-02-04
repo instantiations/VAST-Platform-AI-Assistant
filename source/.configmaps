@@ -1,0 +1,48 @@
+[
+	{
+		#conditions : [
+			{
+				#condition : 'System imageVersionDottedId = \'14.1\'',
+				#requiredMaps : [
+					{
+						#name : 'z.ST: Grease',
+						#versionName : 'V 14.1.0  [580]',
+						#ts : 3930819163
+					},
+					{
+						#name : 'z.ST: JSON Support',
+						#versionName : 'V 14.1.0  [580]',
+						#ts : 3930819163
+					},
+					{
+						#name : 'z.ST: Regex',
+						#versionName : 'V 14.1.0  [580]',
+						#ts : 3930819165
+					},
+					{
+						#name : 'z.ST: ENVY/QA',
+						#versionName : 'V 14.1.0  [580]',
+						#ts : 3930819162
+					},
+					{
+						#name : 'z.ST: Server Smalltalk (SST) - HTTP',
+						#versionName : 'V 14.1.0  [580]',
+						#ts : 3930819166
+					}
+				]
+			}
+		],
+		#ts : 3947652878,
+		#comment : '',
+		#formatVersion : '1.1',
+		#applications : OrderedCollection [
+			{
+				#name : 'GeminiChatApp',
+				#versionName : '1.117',
+				#ts : 3947652886
+			}
+		],
+		#name : 'Gemini AI Assistant',
+		#versionName : '1.117'
+	}
+]
