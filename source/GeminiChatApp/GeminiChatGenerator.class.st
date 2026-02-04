@@ -36,7 +36,7 @@ GeminiChatGenerator >> handleError [
 
 	((responseOrError errorCode = SstErrorConstants::SstReceiveError) and: [ responseOrError errorObject sstIsMessage ]) ifTrue: [
 		| responseErrorObject retryInfo |
-		responseErrorObject := responseOrError errorObject userMessages asUnicodeString
+		responseErrorObject := responseOrError errorObject contents asUnicodeString
 			ifNotEmpty: [ :contentsString | (NeoJSONReader fromString: contentsString) first at: 'error' ]
 			ifEmpty: [ nil ].
 		GeminiLog current addEntry: (GeminiLogEntryAPIError timestamp: requestTimestamp model: generationModel requestObject: requestJSONObject

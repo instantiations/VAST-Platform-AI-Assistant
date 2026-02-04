@@ -32,17 +32,17 @@
 				]
 			}
 		],
-		#ts : 3947652878,
+		#ts : 3947660341,
 		#comment : '',
 		#formatVersion : '1.1',
 		#applications : OrderedCollection [
 			{
 				#name : 'GeminiChatApp',
-				#versionName : '1.117',
-				#ts : 3947652886
+				#versionName : '1.118',
+				#ts : 3947660348
 			}
 		],
 		#name : 'Gemini AI Assistant',
-		#versionName : '1.117'
+		#versionName : '1.118'
 	}
 ]
