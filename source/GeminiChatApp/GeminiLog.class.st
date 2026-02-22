@@ -12,31 +12,37 @@ Class {
 	#category : 'GeminiChatApp'
 }
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
+GeminiLog class >> clearCurrent [
+
+	self current: nil
+]
+
+{ #category : 'Accessing' }
 GeminiLog class >> current [
 
 	^ current
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 GeminiLog class >> current: newLog [
 
 	current := newLog
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Instance Creation' }
 GeminiLog class >> limit: limit [
 
 	^ self basicNew initializeWithLimit: limit
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Instance Creation' }
 GeminiLog class >> new [
 
 	^ GeminiLog limit: 1000
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 GeminiLog class >> resetCurrent [
 
 	self current: GeminiLog new

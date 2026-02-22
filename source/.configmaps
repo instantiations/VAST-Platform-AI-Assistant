@@ -2,13 +2,33 @@
 	{
 		#conditions : [
 			{
-				#condition : 'System imageVersionDottedId = \'14.1\'',
+				#condition : 'System imageVersionDottedId = \'15.0\'',
 				#requiredMaps : [
 					{
-						#name : 'z.ST: Grease',
-						#versionName : 'V 14.1.0  [580]',
-						#ts : 3930819163
+						#name : 'z.ST: JSON Support',
+						#versionName : 'V 15.0.0  [593]',
+						#ts : 3947181470
 					},
+					{
+						#name : 'z.ST: Regex',
+						#versionName : 'V 15.0.0  [593]',
+						#ts : 3947181473
+					},
+					{
+						#name : 'z.ST: ENVY/QA',
+						#versionName : 'V 15.0.0  [593]',
+						#ts : 3947181469
+					},
+					{
+						#name : 'z.ST: Server Smalltalk (SST) - HTTP',
+						#versionName : 'V 15.0.0  [593]',
+						#ts : 3947181474
+					}
+				]
+			},
+			{
+				#condition : 'System imageVersionDottedId = \'14.1\'',
+				#requiredMaps : [
 					{
 						#name : 'z.ST: JSON Support',
 						#versionName : 'V 14.1.0  [580]',
@@ -32,17 +52,17 @@
 				]
 			}
 		],
-		#ts : 3947660341,
+		#ts : 3949249350,
 		#comment : '',
 		#formatVersion : '1.1',
 		#applications : OrderedCollection [
 			{
 				#name : 'GeminiChatApp',
-				#versionName : '1.118',
-				#ts : 3947660348
+				#versionName : '1.137',
+				#ts : 3949249363
 			}
 		],
 		#name : 'Gemini AI Assistant',
-		#versionName : '1.118'
+		#versionName : '1.137'
 	}
 ]

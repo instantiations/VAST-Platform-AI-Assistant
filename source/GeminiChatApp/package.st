@@ -1,4 +1,4 @@
 Package {
 	#name : 'GeminiChatApp',
-	#vaPrerequisites : ['CcFramework','GreaseCoreApp','NeoJSONCoreApp','RegexCoreApp','SstHttpCommunications','StsPowerTools']
+	#vaPrerequisites : ['CcFramework','NeoJSONCoreApp','RegexCoreApp','SstHttpCommunications','StsPowerTools']
 }

@@ -53,3 +53,9 @@ GeminiAbstractFunctionParameter >> typeSchemaJSON [
 
 	^ type schemaJSONWithDescription: description
 ]
+
+{ #category : 'Not categorized' }
+GeminiAbstractFunctionParameter >> validateArgument: argument [
+
+	^ type validateArgument: argument
+]

@@ -14,12 +14,14 @@ Class {
 		'textColor',
 		'textBolded',
 		'textItalicized',
+		'textMonospaced',
 		'yOffset',
 		'y',
 		'pendingListBullets',
 		'pendingListOrdinals',
 		'pendingListMarkers',
 		'textSegment',
+		'textElementLink',
 		'backgroundColor',
 		'padding',
 		'fontSet',
@@ -256,6 +258,16 @@ GeminiChatWidgetDrawingContext >> textColor: anObject [
 ]
 
 { #category : 'Not categorized' }
+GeminiChatWidgetDrawingContext >> textElementLink [
+	^textElementLink
+]
+
+{ #category : 'Not categorized' }
+GeminiChatWidgetDrawingContext >> textElementLink: anObject [
+	textElementLink := anObject
+]
+
+{ #category : 'Not categorized' }
 GeminiChatWidgetDrawingContext >> textItalicized [
 	^textItalicized
 ]
@@ -263,6 +275,16 @@ GeminiChatWidgetDrawingContext >> textItalicized [
 { #category : 'Not categorized' }
 GeminiChatWidgetDrawingContext >> textItalicized: anObject [
 	textItalicized := anObject
+]
+
+{ #category : 'Not categorized' }
+GeminiChatWidgetDrawingContext >> textMonospaced [
+	^textMonospaced
+]
+
+{ #category : 'Not categorized' }
+GeminiChatWidgetDrawingContext >> textMonospaced: anObject [
+	textMonospaced := anObject
 ]
 
 { #category : 'Not categorized' }
@@ -318,6 +340,18 @@ GeminiChatWidgetDrawingContext >> withTextColor: newValue do: block [
 ]
 
 { #category : 'Not categorized' }
+GeminiChatWidgetDrawingContext >> withTextElementLink: newValue do: block [
+
+	| oldValue blockValue |
+
+	oldValue := textElementLink.
+	textElementLink := newValue.
+	blockValue := block value.
+	textElementLink := oldValue.
+	^ blockValue
+]
+
+{ #category : 'Not categorized' }
 GeminiChatWidgetDrawingContext >> withTextItalicized: newValue do: block [
 
 	| oldValue blockValue |
@@ -326,6 +360,18 @@ GeminiChatWidgetDrawingContext >> withTextItalicized: newValue do: block [
 	textItalicized := newValue.
 	blockValue := block value.
 	textItalicized := oldValue.
+	^ blockValue
+]
+
+{ #category : 'Not categorized' }
+GeminiChatWidgetDrawingContext >> withTextMonospaced: newValue do: block [
+
+	| oldValue blockValue |
+
+	oldValue := textMonospaced.
+	textMonospaced := newValue.
+	blockValue := block value.
+	textMonospaced := oldValue.
 	^ blockValue
 ]
 

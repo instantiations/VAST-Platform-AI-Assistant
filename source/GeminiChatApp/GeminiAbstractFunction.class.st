@@ -25,9 +25,12 @@ GeminiAbstractFunction >> applyTo: arguments in: functionCallContext [
 	| parameters |
 
 	parameters := self parameters.
-	arguments keysDo: [ :key |
-		(parameters anySatisfy: [ :parameter | key = parameter name ]) ifFalse: [
-			^ EsOrderedDictionary with: 'error' -> ('The function does not have a parameter "%1"' bindWith: key) ] ].
+	arguments keysAndValuesDo: [ :parameterName :argument |
+		| parameter |
+		parameter := parameters detect: [ :someParameter | someParameter name = parameterName ] ifNone: [
+			^ EsOrderedDictionary with: 'error' -> ('The function does not have a parameter "%1"' bindWith: parameterName) ].
+		(parameter validateArgument: argument) ifFalse: [
+			^ EsOrderedDictionary with: 'error' -> ('Invalid argument given for parameter "%1"' bindWith: parameterName) ] ].
 	parameters do: [ :parameter |
 		(parameter isRequired not or: [ arguments includesKey: parameter name ]) ifFalse: [
 			^ EsOrderedDictionary with: 'error' -> ('No argument given for required parameter "%1"' bindWith: parameter name) ] ].
@@ -35,15 +38,15 @@ GeminiAbstractFunction >> applyTo: arguments in: functionCallContext [
 ]
 
 { #category : 'Not categorized' }
-GeminiAbstractFunction >> classesInApplicationNamed: applicationName [
+GeminiAbstractFunction >> classNamed: className [
 
-	^ (self applicationNamed: applicationName) ifNotNil: [ :application | application defined ]
+	^ className asEsString ifNotNil: [ :esString | Smalltalk classAt: esString ]
 ]
 
 { #category : 'Not categorized' }
-GeminiAbstractFunction >> classNamed: className [
+GeminiAbstractFunction >> classesInApplicationNamed: applicationName [
 
-	^ Smalltalk classAt: className
+	^ (self applicationNamed: applicationName) ifNotNil: [ :application | application defined ]
 ]
 
 { #category : 'Not categorized' }

@@ -15,9 +15,15 @@ GeminiTextElementEmphasis class >> isStrong: isStrong element: element [
 ]
 
 { #category : 'Not categorized' }
+GeminiTextElementEmphasis >> = object [
+
+	^ self class = object class and: [ self isStrong = object isStrong and: [ self element = object element ] ]
+]
+
+{ #category : 'Not categorized' }
 GeminiTextElementEmphasis >> drawOnChatWidget: chatWidget dc: dc [
 
-	chatWidget drawTextElementEmphasis: self dc: dc
+	^ chatWidget drawTextElementEmphasis: self dc: dc
 ]
 
 { #category : 'Not categorized' }

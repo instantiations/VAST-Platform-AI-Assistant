@@ -9,3 +9,9 @@ GeminiFunctionParameterTypeBoolean >> name [
 
 	^ 'boolean'
 ]
+
+{ #category : 'Not categorized' }
+GeminiFunctionParameterTypeBoolean >> validateArgument: argument [
+
+	^ argument isBoolean
+]

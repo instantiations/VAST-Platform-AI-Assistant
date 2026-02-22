@@ -2,7 +2,7 @@ Class {
 	#name : 'GeminiChatWidgetInteractableArea',
 	#superclass : 'Object',
 	#instVars : [
-		'rectangle',
+		'rectangles',
 		'handler'
 	],
 	#category : 'GeminiChatApp'
@@ -11,7 +11,13 @@ Class {
 { #category : 'Not categorized' }
 GeminiChatWidgetInteractableArea class >> rectangle: rectangle handler: handler [
 
-	^ self basicNew initializeWithRectangle: rectangle handler: handler
+	^ self rectangles: { rectangle } handler: handler
+]
+
+{ #category : 'Not categorized' }
+GeminiChatWidgetInteractableArea class >> rectangles: rectangles handler: handler [
+
+	^ self basicNew initializeWithRectangles: rectangles handler: handler
 ]
 
 { #category : 'Not categorized' }
@@ -23,14 +29,14 @@ GeminiChatWidgetInteractableArea >> buttonPressedIn: chatWidget [
 { #category : 'Not categorized' }
 GeminiChatWidgetInteractableArea >> containsPoint: point [
 
-	^ rectangle containsPoint: point
+	^ rectangles anySatisfy: [ :rectangle | rectangle containsPoint: point ]
 ]
 
 { #category : 'Not categorized' }
-GeminiChatWidgetInteractableArea >> initializeWithRectangle: initialRectangle handler: initialHandler [
+GeminiChatWidgetInteractableArea >> initializeWithRectangles: initialRectangles handler: initialHandler [
 
 	self initialize.
-	rectangle := initialRectangle.
+	rectangles := initialRectangles.
 	handler := initialHandler.
 ]
 

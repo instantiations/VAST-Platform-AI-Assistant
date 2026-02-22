@@ -23,3 +23,9 @@ GeminiAbstractFunctionParameterType >> schemaJSONWithDescription: description [
 		at: 'description' put: description;
 		yourself
 ]
+
+{ #category : 'Not categorized' }
+GeminiAbstractFunctionParameterType >> validateArgument: argument [
+
+	self subclassResponsibility
+]

@@ -2,70 +2,48 @@ Class {
 	#name : 'GeminiFontSet',
 	#superclass : 'Object',
 	#instVars : [
-		'normal',
-		'bold',
-		'italic',
-		'boldItalic'
+		'proportional',
+		'monospaced'
 	],
 	#category : 'GeminiChatApp'
 }
 
 { #category : 'Not categorized' }
-GeminiFontSet class >> normal: normal bold: bold italic: italic boldItalic: boldItalic [
+GeminiFontSet class >> proportional: proportional monospaced: monospaced [
 
-	^ self basicNew initializeWithNormal: normal bold: bold italic: italic boldItalic: boldItalic
+	^ self basicNew initializeWithProportional: proportional monospaced: monospaced
 ]
 
 { #category : 'Not categorized' }
 GeminiFontSet class >> size: fontSize [
 
-	| fontNameTemplate fontStructs |
-
-	fontNameTemplate := '-microsoft-segoe ui-%1-%2-normal-sans serif-*-%3-*-*-p-*-iso8859-1'.
-	fontStructs := #('medium' 'bold') collect: [ :fontWeight | #('r' 'i') collect: [ :fontSlant |
-		CgDisplay default loadQueryFont: (fontNameTemplate bindWith: fontWeight with: fontSlant with: fontSize) ] ].
-	^ self normal: fontStructs first first bold: fontStructs second first italic: fontStructs first second boldItalic: fontStructs second second
-]
-
-{ #category : 'Not categorized' }
-GeminiFontSet >> bold [
-
-	^ bold
-]
-
-{ #category : 'Not categorized' }
-GeminiFontSet >> boldItalic [
-
-	^ boldItalic
+	^ self proportional: (GeminiFontStyles size: fontSize monospaced: false)
+		monospaced: (GeminiFontStyles size: fontSize monospaced: true)
 ]
 
 { #category : 'Not categorized' }
 GeminiFontSet >> freeFonts [
 
-	normal freeFont.
-	bold freeFont.
-	italic freeFont.
-	boldItalic freeFont.
+	proportional freeFonts.
+	monospaced freeFonts.
 ]
 
 { #category : 'Not categorized' }
-GeminiFontSet >> initializeWithNormal: initialNormal bold: initialBold italic: initialItalic boldItalic: initialBoldItalic [
+GeminiFontSet >> initializeWithProportional: initialProportional monospaced: initialMonospaced [
 
 	self initialize.
-	normal := initialNormal.
-	bold := initialBold.
-	italic := initialItalic.
-	boldItalic := initialBoldItalic.
+	proportional := initialProportional.
+	monospaced := initialMonospaced.
 ]
 
 { #category : 'Not categorized' }
-GeminiFontSet >> italic [
+GeminiFontSet >> monospaced [
 
-	^ italic
+	^ monospaced
 ]
 
 { #category : 'Not categorized' }
-GeminiFontSet >> normal [
+GeminiFontSet >> proportional [
 
-	^ normal
+	^ proportional
 ]

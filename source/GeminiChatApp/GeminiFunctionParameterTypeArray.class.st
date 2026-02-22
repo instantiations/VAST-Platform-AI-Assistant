@@ -33,3 +33,9 @@ GeminiFunctionParameterTypeArray >> schemaJSON [
 		at: 'items' put: itemsType schemaJSON;
 		yourself
 ]
+
+{ #category : 'Not categorized' }
+GeminiFunctionParameterTypeArray >> validateArgument: argument [
+
+	^ argument isArray and: [ argument allSatisfy: [ :argumentItem | itemsType validateArgument: argumentItem ] ]
+]

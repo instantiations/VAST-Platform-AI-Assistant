@@ -44,10 +44,17 @@ GeminiModel class >> name: modelName label: label contextWindowSize: tokens [
 	^ self basicNew initializeWithName: modelName label: label contextWindowSize: tokens
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 GeminiModel class >> named: modelName [
 
 	^ self all detect: [ :model | model name = modelName ]
+]
+
+{ #category : 'Accessing' }
+GeminiModel class >> reset [
+
+	allModels := nil.
+	defaultModel := nil.
 ]
 
 { #category : 'Comparing' }

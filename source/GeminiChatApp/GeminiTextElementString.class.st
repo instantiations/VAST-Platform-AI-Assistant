@@ -20,9 +20,15 @@ GeminiTextElementString class >> string: string [
 ]
 
 { #category : 'Not categorized' }
+GeminiTextElementString >> = object [
+
+	^ self class = object class and: [ self string = object string ]
+]
+
+{ #category : 'Not categorized' }
 GeminiTextElementString >> drawOnChatWidget: chatWidget dc: dc [
 
-	chatWidget drawTextElementString: self dc: dc
+	^ chatWidget drawTextElementString: self dc: dc
 ]
 
 { #category : 'Not categorized' }

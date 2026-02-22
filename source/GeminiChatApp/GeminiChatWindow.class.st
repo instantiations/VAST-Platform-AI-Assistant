@@ -59,7 +59,8 @@ GeminiChatWindow >> closeWindow [
 	^ super closeWindow
 ]
 
-{ #category : 'User Interface' }
+{ #category : 'User Interface',
+  #vaVisibility : 'private' }
 GeminiChatWindow >> createMenusBeforeWorkRegion [
 
 	self menuBar
@@ -86,6 +87,12 @@ GeminiChatWindow >> createWorkRegion [
 				w
 					editMode: XmMULTILINEEDIT;
 					wordWrap: true]) manageChild.
+	inputWidget
+		addEventHandler: KeyPressMask
+		receiver: self
+		selector: #keyPressedInInputWidget:clientData:callData:
+		clientData: nil.
+
 	buttonWidget :=
 		(self defaultWidgetParent
 			createPushButton: 'button'
@@ -138,7 +145,16 @@ GeminiChatWindow >> createWorkRegion [
 			leftWidget: buttonWidget;
 			leftOffset: 5;
 			rightAttachment: XmATTACHFORM;
-			bottomAttachment: XmATTACHFORM]
+			bottomAttachment: XmATTACHFORM].
+			
+	self updateStatusLine
+]
+
+{ #category : 'User Interface' }
+GeminiChatWindow >> initializeAfterRealize [
+
+	super initializeAfterRealize.
+	inputWidget setInputFocus.
 ]
 
 { #category : 'Initialization',
@@ -149,6 +165,14 @@ GeminiChatWindow >> initializeWithFilePathString: initialFilePathString chat: in
 	filePathString := initialFilePathString.
 	chat := initialChat.
 	chat addDependent: self
+]
+
+{ #category : 'Operations',
+  #vaVisibility : 'private' }
+GeminiChatWindow >> keyPressedInInputWidget: widget clientData: clientData callData: callData [
+
+	(callData keysym = XKReturn and: [ (callData state noMask: ShiftMask) and: [ buttonWidget sensitive ] ]) ifTrue: [
+		self sendUserMessage ]
 ]
 
 { #category : 'User Interface',
@@ -207,7 +231,9 @@ GeminiChatWindow >> menuActionChatSaveAs [
   #vaVisibility : 'private' }
 GeminiChatWindow >> menuActionEditCopy [
 
-	chatWidget selectedString ifNotEmpty: [:selectedString | selectedString copyToClipboard]
+	chatWidget selectedString ifNotEmpty: [ :selectedString |
+		selectedString asEsString ifNotNil: [ :esString |
+			esString copyToClipboard ] ]
 ]
 
 { #category : 'Operations',
@@ -244,7 +270,9 @@ GeminiChatWindow >> menuActionSetApiKey [
 		prompt.
 
 	newKey ifNotNil: [
-		GeminiChat apiKey: newKey ].
+		GeminiChat apiKey: newKey.
+		self updateStatusLine.
+		self updateInput: chat isActivelyGenerating not ]
 ]
 
 { #category : 'User Interface',
@@ -305,37 +333,23 @@ GeminiChatWindow >> menuHelp [
 	^ helpMenu
 ]
 
-{ #category : 'User Interface' }
+{ #category : 'User Interface',
+  #vaVisibility : 'private' }
 GeminiChatWindow >> menuModelOptions [
 
 	| modelOptionsMenu |
 
-	modelOptionsMenu :=
-		self newMenu
-			title: 'Model';
-			subMenuSelector: #menuModelOptions;
-			owner: self;
-			yourself.
+	(modelOptionsMenu := self newMenu)
+		title: 'Model';
+		subMenuSelector: #menuModelOptions;
+		owner: self.
 
-	GeminiModel all do: [:aModel |
-		modelOptionsMenu add: (DirectedMessage selector: #menuActionSelectModel: arguments: { aModel } receiver: self)  label: aModel label toggle: [ chat model = aModel ].
-	].
-	"TODO: it should be possible to get it back to this:"
-	"	modelMenu := optionsMenu
-		createSimplePulldownMenu: 'model'
-		argBlock: [ :w |
-			w
-				buttons: (GeminiModel all collect: [ :model | model label ]);
-				buttonType: (Array new: GeminiModel all size withAll: XmCHECKBUTTON);
-				buttonSet: ((GeminiModel all indexOf: chat model) - 1);
-				radioBehavior: true;
-				postFromButton: 0 ].
-	modelMenu addCallback: XmNsimpleCallback
-		receiver: self
-		selector: #modelMenu:clientData:callData:
-		clientData: nil."
+	GeminiModel all do: [ :model |
+		modelOptionsMenu add: (DirectedMessage selector: #menuActionSelectModel: arguments: { model } receiver: self)
+			label: model label
+			toggle: [ model = chat model ] ].
 
-	^modelOptionsMenu
+	^ modelOptionsMenu
 ]
 
 { #category : 'User Interface',
@@ -366,10 +380,7 @@ GeminiChatWindow >> openAboutDialog [
 { #category : 'Operations' }
 GeminiChatWindow >> pushedSendButton: button clientData: clientData callData: callData [
 
-	inputWidget value ifNotEmpty:[
-		self updateInput: false.
-		chat sendUserMessage: inputWidget value ].
-	inputWidget value: ''.
+	self sendUserMessage
 ]
 
 { #category : 'Operations' }
@@ -384,11 +395,25 @@ GeminiChatWindow >> saveToFile: pathString [
 	] ensure: [ fileStream close ]
 ]
 
+{ #category : 'Operations',
+  #vaVisibility : 'private' }
+GeminiChatWindow >> sendUserMessage [
+
+	inputWidget value ifNotEmpty: [
+		self updateInput: false.
+		chatWidget scrollToNextUserMessage.
+		chat sendUserMessage: inputWidget value ].
+	inputWidget value: ''.
+]
+
 { #category : 'User Interface',
   #vaVisibility : 'private' }
 GeminiChatWindow >> statusLineText [
 
 	| usage total max |
+	(GeminiChat apiKey isNil or: [ GeminiChat apiKey isEmpty ]) ifTrue: [
+		^ 'Please enter a valid API key in Options > Set API Key...' ].
+
 	usage := chat usageMetadata.
 	usage ifNil: [ ^ 'Tokens: - / -' ].
 	total := usage at: 'totalTokenCount' ifAbsent: [ 0 ].
@@ -396,7 +421,8 @@ GeminiChatWindow >> statusLineText [
 	^ 'Tokens: ', total printString, ' / ', (max ifNil: ['?'] ifNotNil: [max printString])
 ]
 
-{ #category : 'User Interface' }
+{ #category : 'User Interface',
+  #vaVisibility : 'private' }
 GeminiChatWindow >> update: aParameter [
 
 	aParameter = #textSegments ifTrue: [
@@ -410,8 +436,11 @@ GeminiChatWindow >> update: aParameter [
   #vaVisibility : 'private' }
 GeminiChatWindow >> updateInput: beActive [
 
-	beActive ifTrue:[ inputWidget foregroundColor: Color black] ifFalse: [ inputWidget foregroundColor: Color darkGray].
-	buttonWidget sensitive: beActive
+	| beSensitive |
+
+	beSensitive := beActive and: [ GeminiChat apiKey notNil and: [ GeminiChat apiKey notEmpty ] ].
+	inputWidget foregroundColor: (beSensitive ifTrue: [ Color black ] ifFalse: [ Color darkGray ]).
+	buttonWidget sensitive: beSensitive.
 ]
 
 { #category : 'User Interface',

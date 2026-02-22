@@ -9,3 +9,9 @@ GeminiFunctionParameterTypeInteger >> name [
 
 	^ 'integer'
 ]
+
+{ #category : 'Not categorized' }
+GeminiFunctionParameterTypeInteger >> validateArgument: argument [
+
+	^ argument isInteger
+]

@@ -67,9 +67,9 @@ GeminiChatApp class >> removeFromSystemMenu [
 
 { #category : 'Loading/Removing' }
 GeminiChatApp class >> removing [
-	"Send #unload to every class defined in this subapplication."
 
-	self defined do: [ :aClass | aClass unload ]
+	GeminiModel reset.
+	GeminiLog clearCurrent.
 ]
 
 { #category : 'Loading/Removing' }

@@ -62,7 +62,7 @@ GeminiChatGenerator >> handleResponse [
 	chat userMessages last addNewGeneratedContent.
 	chat updateLastModelTextSegment.
 	responseObjects := OrderedCollection new.
-	stream := GeminiJSONObjectArrayStream on: (GeminiPeekableStream on: ((GRCodec forEncoding: 'UTF-8') decoderFor: (GeminiStreamedByteMessageReadStream on: responseOrError))).
+	stream := GeminiJSONObjectArrayStream on: (GeminiPeekableStream on: (GeminiCharacterGraphemeStream on: (GeminiUTF8DecodingStream on: (GeminiStreamedByteMessageReadStream on: responseOrError)))).
 	[ stream atEnd ] whileFalse: [
 		| responseObject firstCandidateContent contentParts |
 		responseObject := responseObjects add: stream next.
@@ -126,7 +126,7 @@ GeminiChatGenerator >> sendRequest [
 		1 to: 10 do: [ :number |
 			httpClient := SstHttpClient forTransportScheme: generationModel url localEndpointUrl transport.
 			requestTimestamp := DateAndTime now.
-			responseOrError := httpClient post: (NeoJSONWriter toString: requestJSONObject) typed: 'application/json;charset=utf-8' at: generationModel url streaming: true.
+			responseOrError := httpClient post: (NeoJSONWriter toString: requestJSONObject) asUtf8Bytes typed: 'application/json;charset=utf-8' at: generationModel url streaming: true.
 			responseOrError isSstError ifTrue: [
 				self handleError
 			] ifFalse: [

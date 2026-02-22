@@ -9,3 +9,9 @@ GeminiFunctionParameterTypeString >> name [
 
 	^ 'string'
 ]
+
+{ #category : 'Not categorized' }
+GeminiFunctionParameterTypeString >> validateArgument: argument [
+
+	^ argument isString
+]

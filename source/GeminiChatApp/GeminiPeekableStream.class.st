@@ -24,7 +24,7 @@ GeminiPeekableStream >> atEnd [
 { #category : 'Not categorized' }
 GeminiPeekableStream >> collectionSpecies [
 
-	^ String
+	^ stream collectionSpecies
 ]
 
 { #category : 'Not categorized' }
