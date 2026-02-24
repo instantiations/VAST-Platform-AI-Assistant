@@ -2,32 +2,7 @@
 	{
 		#conditions : [
 			{
-				#condition : 'System imageVersionDottedId = \'15.0\'',
-				#requiredMaps : [
-					{
-						#name : 'z.ST: JSON Support',
-						#versionName : 'V 15.0.0  [593]',
-						#ts : 3947181470
-					},
-					{
-						#name : 'z.ST: Regex',
-						#versionName : 'V 15.0.0  [593]',
-						#ts : 3947181473
-					},
-					{
-						#name : 'z.ST: ENVY/QA',
-						#versionName : 'V 15.0.0  [593]',
-						#ts : 3947181469
-					},
-					{
-						#name : 'z.ST: Server Smalltalk (SST) - HTTP',
-						#versionName : 'V 15.0.0  [593]',
-						#ts : 3947181474
-					}
-				]
-			},
-			{
-				#condition : 'System imageVersionDottedId = \'14.1\'',
+				#condition : 'true',
 				#requiredMaps : [
 					{
 						#name : 'z.ST: JSON Support',
@@ -52,7 +27,7 @@
 				]
 			}
 		],
-		#ts : 3949249350,
+		#ts : 3949419310,
 		#comment : '',
 		#formatVersion : '1.1',
 		#applications : OrderedCollection [
@@ -62,7 +37,48 @@
 				#ts : 3949249363
 			}
 		],
-		#name : 'Gemini AI Assistant',
+		#name : 'Gemini AI Assistant (VAST 14.1)',
+		#versionName : '1.137'
+	},
+	{
+		#conditions : [
+			{
+				#condition : 'true',
+				#requiredMaps : [
+					{
+						#name : 'z.ST: JSON Support',
+						#versionName : 'V 15.0.0  [593]',
+						#ts : 3947181470
+					},
+					{
+						#name : 'z.ST: Regex',
+						#versionName : 'V 15.0.0  [593]',
+						#ts : 3947181473
+					},
+					{
+						#name : 'z.ST: ENVY/QA',
+						#versionName : 'V 15.0.0  [593]',
+						#ts : 3947181469
+					},
+					{
+						#name : 'z.ST: Server Smalltalk (SST) - HTTP',
+						#versionName : 'V 15.0.0  [593]',
+						#ts : 3947181474
+					}
+				]
+			}
+		],
+		#ts : 3949419320,
+		#comment : '',
+		#formatVersion : '1.1',
+		#applications : OrderedCollection [
+			{
+				#name : 'GeminiChatApp',
+				#versionName : '1.137',
+				#ts : 3949249363
+			}
+		],
+		#name : 'Gemini AI Assistant (VAST 15.0)',
 		#versionName : '1.137'
 	}
 ]
