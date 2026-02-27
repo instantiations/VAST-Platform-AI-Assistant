@@ -18,8 +18,9 @@ GeminiModel class >> all [
 
 	allModels ifNil: [
 		allModels := {
-			self name: 'gemini-3-pro-preview' label: 'Pro 3' contextWindowSize: 2097152.
-			self name: 'gemini-2.5-pro' label: 'Pro 2.5' contextWindowSize: 2097152.
+			self name: 'gemini-3.1-pro-preview' label: 'Pro 3.1' contextWindowSize: 1048576.
+			self name: 'gemini-3-pro-preview' label: 'Pro 3 (Deprecated)' contextWindowSize: 1048576.
+			self name: 'gemini-2.5-pro' label: 'Pro 2.5' contextWindowSize: 1048576.
 			self name: 'gemini-2.5-flash' label: 'Flash 2.5' contextWindowSize: 1048576.
 			self name: 'gemini-2.5-flash-lite' label: 'Flash-Lite 2.5' contextWindowSize: 1048576 } ].
 	^ allModels
