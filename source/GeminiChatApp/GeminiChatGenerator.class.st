@@ -15,9 +15,27 @@ Class {
 }
 
 { #category : 'Not categorized' }
+GeminiChatGenerator class >> defaultModel [
+
+	^ GeminiModel default
+]
+
+{ #category : 'Not categorized' }
+GeminiChatGenerator class >> defaultModel: model [
+
+	GeminiModel default: model
+]
+
+{ #category : 'Not categorized' }
 GeminiChatGenerator class >> forChat: chat [
 
 	^ self basicNew initializeWithChat: chat
+]
+
+{ #category : 'Not categorized' }
+GeminiChatGenerator class >> models [
+
+	^ GeminiModel all
 ]
 
 { #category : 'Not categorized' }
@@ -25,7 +43,7 @@ GeminiChatGenerator >> generate [
 
 	1 to: 100 do: [ :number |
 		self sendRequest.
-		(chat userMessages last applyFunctionsInLastGeneratedContentUsing: functionsSet inContext: (GeminiFunctionCallContext filePaths: chat filePaths))
+		(chat userMessages last applyFunctionsInLastGeneratedContentUsing: functionsSet inContext: (GeminiFunctionCallContext model: generationModel filePaths: chat filePaths))
 			ifTrue: [ chat updateLastModelTextSegment ]
 			ifFalse: [ ^ self ] ].
 	Error signal: 'Maximum number of generations reached'
@@ -34,24 +52,37 @@ GeminiChatGenerator >> generate [
 { #category : 'Not categorized' }
 GeminiChatGenerator >> handleError [
 
-	((responseOrError errorCode = SstErrorConstants::SstReceiveError) and: [ responseOrError errorObject sstIsMessage ]) ifTrue: [
-		| responseErrorObject retryInfo |
-		responseErrorObject := responseOrError errorObject contents asUnicodeString
-			ifNotEmpty: [ :contentsString | (NeoJSONReader fromString: contentsString) first at: 'error' ]
-			ifEmpty: [ nil ].
-		GeminiLog current addEntry: (GeminiLogEntryAPIError timestamp: requestTimestamp model: generationModel requestObject: requestJSONObject
-			responseHeader: responseOrError errorObject header responseErrorObject: responseErrorObject).
-		(responseOrError errorObject header statusCode = 429 and: [
-			responseErrorObject notNil and: [
-			(retryInfo := (responseErrorObject at: 'details') detect: [ :detail | (detail at: '@type') = 'type.googleapis.com/google.rpc.RetryInfo' ] ifNone: [ nil ]) notNil ] ]) ifTrue: [
-				retryDelaySeconds := ScaledDecimal fromString: (retryInfo at: 'retryDelay') allButLast.
-				self handleRetryDelay
-			] ifFalse: [
-				responseOrError raise ]
-	] ifFalse: [
-		GeminiLog current addEntry: (GeminiLogEntrySstError timestamp: requestTimestamp model: generationModel requestObject: requestJSONObject
-			errorCode: responseOrError errorCode errorObject: responseOrError errorObject).
-		responseOrError raise ]
+	((responseOrError errorCode = SstErrorConstants::SstReceiveError) and: [
+		responseOrError errorObject sstIsMessage])
+			ifTrue: [| responseErrorObject |
+				responseErrorObject :=
+					responseOrError errorObject contents asUnicodeString
+						ifNotEmpty: [:contentsString | (NeoJSONReader fromString: contentsString) first at: 'error']
+						ifEmpty: [nil].
+				GeminiLog current addEntry: (
+					GeminiLogEntryAPIError
+						timestamp: requestTimestamp
+						model: generationModel
+						requestObject: requestJSONObject
+						responseHeader: responseOrError errorObject header
+						responseErrorObject: responseErrorObject).
+				((responseOrError errorObject header statusCode = 429 and: [
+					responseErrorObject notNil]) 
+						ifTrue:[
+							((responseErrorObject at: 'details' ifAbsent: [ #() ] ) detect: [:detail | (detail at: '@type') = 'type.googleapis.com/google.rpc.RetryInfo'] ifNone: [nil])])
+								ifNil:[ responseOrError raise ]
+								ifNotNil: [:retryInfo |
+									retryDelaySeconds := ScaledDecimal fromString: (retryInfo at: 'retryDelay') allButLast.
+									self handleRetryDelay]]
+			ifFalse: [
+				GeminiLog current addEntry: (
+					GeminiLogEntrySstError
+						timestamp: requestTimestamp
+						model: generationModel
+						requestObject: requestJSONObject
+						errorCode: responseOrError errorCode
+						errorObject: responseOrError errorObject).
+				responseOrError raise]
 ]
 
 { #category : 'Not categorized' }
@@ -64,11 +95,13 @@ GeminiChatGenerator >> handleResponse [
 	responseObjects := OrderedCollection new.
 	stream := GeminiJSONObjectArrayStream on: (GeminiPeekableStream on: (GeminiCharacterGraphemeStream on: (GeminiUTF8DecodingStream on: (GeminiStreamedByteMessageReadStream on: responseOrError)))).
 	[ stream atEnd ] whileFalse: [
-		| responseObject firstCandidateContent contentParts |
+		| responseObject firstCandidate firstCandidateContent contentParts |
 		responseObject := responseObjects add: stream next.
 		(responseObject includesKey: 'usageMetadata') ifTrue: [
 			chat usageMetadata: (responseObject at: 'usageMetadata') ].
-		firstCandidateContent := ((responseObject at: 'candidates' ifAbsent: [ ^ self ]) first at: 'content').
+		firstCandidate := (responseObject at: 'candidates' ifAbsent: [ ^ self ]) first.
+		firstCandidateContent := firstCandidate at: 'content' ifAbsent: [ nil ].
+		firstCandidateContent ifNil:[  Error signal: 'Model stopped, reason: ',(firstCandidate at: 'finishReason') ].
 		(firstCandidateContent at: 'role') = 'model' ifFalse: [ Error signal: 'Expected generated content to have the role "model"' ].
 		contentParts := (firstCandidateContent at: 'parts' ifAbsent: [ #() ]) collect: [ :partJSON | GeminiAbstractContentPart fromJSON: partJSON ].
 		chat userMessages last addModelContentPartsToLastGeneratedContent: contentParts.
@@ -144,11 +177,13 @@ GeminiChatGenerator >> startGenerating [
 
 	[
 		[
-			self generate
-		] when: ExError do: [ :error |
-			chat generationError: error.
-			error exitWith: nil ].
+			chat generationError: nil.
+			self generate]
+				when: ExError
+				do: [:error |
+					chat generationError: (GeminiChatGenerationErrorInfo forError: error withGenerator: self).
+					error exitWith: nil].
 		chat changedTextSegments.
-		chat generationFinished.
-	] fork
+		chat generationFinished]
+			fork
 ]

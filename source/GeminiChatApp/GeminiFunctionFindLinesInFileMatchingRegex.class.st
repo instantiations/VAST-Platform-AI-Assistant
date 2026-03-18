@@ -41,7 +41,7 @@ GeminiFunctionFindLinesInFileMatchingRegex >> applyFunctionTo: arguments in: con
 { #category : 'Not categorized' }
 GeminiFunctionFindLinesInFileMatchingRegex >> description [
 
-	^ 'Finds lines in a file matching a given regular expression'
+	^ 'Finds lines in a file (that was provided by the user using list_files) matching a given regular expression. Do NOT use this tool for searching Smalltalk code that resides in the image, use find_senders or find_implementors instead.'
 ]
 
 { #category : 'Not categorized' }

@@ -15,7 +15,7 @@ GeminiFunctionGetClassDefinitions >> applyFunctionTo: arguments in: context [
 { #category : 'Not categorized' }
 GeminiFunctionGetClassDefinitions >> description [
 
-	^ 'Gets the definitions of each class: its superclass, its instance variables, its class variables and the application it is defined by.'
+	^ 'Gets the shape of classes: their superclass, instance variables, class variables, and the application it is defined by.'
 ]
 
 { #category : 'Not categorized' }

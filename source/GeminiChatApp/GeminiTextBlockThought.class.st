@@ -29,6 +29,13 @@ GeminiTextBlockThought >> buttonPressedIn: chatWidget [
 ]
 
 { #category : 'Not categorized' }
+GeminiTextBlockThought >> copyStateFrom: anotherThoughtBlock [
+	"Copy any state from another block into self"
+	isExpanded := anotherThoughtBlock isExpanded.
+	isPointedTo := anotherThoughtBlock isPointedTo.
+]
+
+{ #category : 'Not categorized' }
 GeminiTextBlockThought >> drawOnChatWidget: chatWidget dc: dc [
 
 	chatWidget drawTextBlockThought: self dc: dc

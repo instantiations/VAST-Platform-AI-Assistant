@@ -56,6 +56,12 @@ GeminiUserMessage >> initializeWithMessage: initialMessage generatedContents: in
 ]
 
 { #category : 'Not categorized' }
+GeminiUserMessage >> message [
+
+	^ message
+]
+
+{ #category : 'Not categorized' }
 GeminiUserMessage >> modelText [
 
 	| rootBlock rootOrThoughtBlock pendingTextPartStrings functionCallsBlock |

@@ -5,6 +5,11 @@ Class {
 }
 
 { #category : 'Not categorized' }
+GeminiAbstractTextBlock >> copyStateFrom: anotherTextBlock [
+	"Copy any state from another block into self"
+]
+
+{ #category : 'Not categorized' }
 GeminiAbstractTextBlock >> drawOnChatWidget: chatWidget dc: dc [
 
 	self subclassResponsibility
