@@ -131,7 +131,6 @@ GeminiChatWidget >> drawLeafTextBlock: textBlock dc: dc [
 		dc withTextBolded: textBlock isHeadingBlock do: [
 			dc withTextItalicized: false do: [
 				| startY |
-				self drawPendingListMarkers: dc.
 				self updateSelectionStartEndX: dc.
 				startY := dc y.
 				dc withLeftInsetIncreasedBy: (textBlock isCodeBlock ifTrue: [ dc leftInsetCodeBlockIncrement ] ifFalse: [ 0 ]) do: [
@@ -298,7 +297,7 @@ GeminiChatWidget >> drawTextBlockFunctionCalls: textBlock dc: dc [
 		sequenceBlock := GeminiTextBlockSequence new.
 		textBlock functionCalls do: [ :functionCall |
 			sequenceBlock addBlock: ((GeminiTextBlockListItem marker: '*' indentationLevel: 2)
-				addBlock: (GeminiTextBlockText text: (GeminiTextElementString string: functionCall name));
+				addBlock: (GeminiTextBlockText text: (GeminiTextElementString string: functionCall displayString));
 				yourself) ].
 		dc withTextColor: Color darkGray do: [
 			self drawTextBlock: sequenceBlock dc: dc ] ].
@@ -354,7 +353,7 @@ GeminiChatWidget >> drawTextBlockSequence: textBlock dc: dc [
 { #category : 'Not categorized' }
 GeminiChatWidget >> drawTextBlockText: textBlock dc: dc [
 
-	self drawLeafTextBlock: textBlock dc: dc
+	^ self drawLeafTextBlock: textBlock dc: dc
 ]
 
 { #category : 'Not categorized' }
@@ -390,18 +389,31 @@ GeminiChatWidget >> drawTextElement: textElement dc: dc [
 ]
 
 { #category : 'Not categorized' }
+GeminiChatWidget >> drawTextElementAction: textElement dc: dc [
+
+	| textColor |
+
+	textColor := textElement isPointedTo ifTrue: [ self pointedToLinkColor ] ifFalse: [ self linkColor ].
+	^ dc withTextColor: textColor do: [
+			| drawnAreas |
+			drawnAreas :=self drawTextElement: textElement element dc: dc.
+			dc interactableAreas add: (GeminiChatWidgetInteractableArea rectangles: drawnAreas handler: textElement).
+			drawnAreas ]
+]
+
+{ #category : 'Not categorized' }
 GeminiChatWidget >> drawTextElementCode: textElement dc: dc [
 
 	^ dc withTextMonospaced: true do: [
-		| referencesClass textColor |
-		referencesClass := dc textElementLink isNil and: [ textElement referencesClass ].
-		textColor := referencesClass
+		| hasBrowsableReference textColor |
+		hasBrowsableReference := dc textElementLink isNil and: [ textElement referencesClass or: [ textElement referencesMethod ] ].
+		textColor := hasBrowsableReference
 			ifTrue: [ textElement isPointedTo ifTrue: [ self pointedToCodeElementReferencingClassNameColor ] ifFalse: [ self codeElementReferencingClassNameColor ] ]
 			ifFalse: [ dc textColor ].
 		dc withTextColor: textColor do: [
 			| drawnAreas |
 			drawnAreas := self drawString: textElement code dc: dc.
-			referencesClass ifTrue: [
+			hasBrowsableReference ifTrue: [
 				dc interactableAreas add: (GeminiChatWidgetInteractableArea rectangles: drawnAreas handler: textElement) ].
 			drawnAreas ] ]
 ]
@@ -440,6 +452,7 @@ GeminiChatWidget >> drawTextElementOfTextBlock: textBlock dc: dc [
 
 	textElement := textBlock textElement.
 	self drawMiddleBackground: dc.
+	self drawPendingListMarkers: dc.
 	self drawTextElement: textElement dc: dc.
 	selectionEndPoint ifNotNil: [
 		(dc x >= dc selectionStartX and: [ dc x < dc selectionEndX ]) ifTrue: [

@@ -39,6 +39,12 @@ GeminiFunctionsSet >> functionDeclarationsJSON [
 ]
 
 { #category : 'Not categorized' }
+GeminiFunctionsSet >> functions [
+
+	^ functions
+]
+
+{ #category : 'Not categorized' }
 GeminiFunctionsSet >> initialize [
 
 	super initialize.

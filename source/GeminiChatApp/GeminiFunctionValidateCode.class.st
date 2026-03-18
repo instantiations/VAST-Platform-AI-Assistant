@@ -49,19 +49,25 @@ GeminiFunctionValidateCode >> parameters [
 { #category : 'Not categorized' }
 GeminiFunctionValidateCode >> validate: code from: startIndex forEvaluation: forEvaluation [
 
-	| methodParseNode previousPropertyValue mainResult |
+	| selectors methodParseNode previousPropertyValue mainResult |
 
-	methodParseNode := GeminiParser parse: (code copyFrom: startIndex to: code size) messagePattern: forEvaluation not scanComments: true onError: [ :errorString :sourcePosition |
-		^ EsOrderedDictionary with: 'error' -> ('Syntax error in given code at position %1: %2' bindWith: (sourcePosition + startIndex - 1) asString with: errorString) ].
-	previousPropertyValue := CcUnimplementedMethods propertyValueAt: #scanEntireImage.
-	[
-		CcUnimplementedMethods propertyValueAt: #scanEntireImage put: true.
-		mainResult := (CtMethodEngine on: { GeminiMeasurableMethodParseNode methodParseNode: methodParseNode } with: { CcUnimplementedMethods }) computeAndReportProgressTo: nil.
-	] ensure: [ 
-		CcUnimplementedMethods propertyValueAt: #scanEntireImage put: previousPropertyValue ].
-	mainResult allMeasurements ifNotEmpty: [ :measurements |
-		| selectors |
-		selectors :=measurements first results first details collect: [ :detail | detail first ].	
-		^ EsOrderedDictionary with: 'error' -> ('Sends selectors that have no implementors: ' , ((selectors sorted collect: [ :selector | selector printString ]) joinUsing: ', ')) ].
-	^ EsOrderedDictionary with: 'valid' -> true
+	methodParseNode :=
+		GeminiParser
+			parse: (code copyFrom: startIndex to: code size)
+			messagePattern: forEvaluation not
+			scanComments: true
+			onError: [:errorString :sourcePosition |
+				^EsOrderedDictionary with:
+					'error' -> (
+						'Syntax error in given code at position %1: %2'
+							bindWith: (sourcePosition + startIndex - 1) asString
+							with: errorString)].
+	selectors := methodParseNode messagesSent reject: [:selector |
+		StsPowerTools methodSelectorExistsInSystem: selector].
+	selectors ifNotEmpty:[
+		^EsOrderedDictionary with:
+			'error' -> (
+				'Sends selectors that have no implementors: ' ,
+					((selectors sorted collect: [:selector | selector printString]) joinUsing: ', '))].
+	^EsOrderedDictionary with: 'valid' -> true
 ]

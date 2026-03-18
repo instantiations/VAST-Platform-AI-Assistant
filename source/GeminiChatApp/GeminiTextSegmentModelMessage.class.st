@@ -11,6 +11,15 @@ GeminiTextSegmentModelMessage class >> textBlocks: textBlocks [
 ]
 
 { #category : 'Not categorized' }
+GeminiTextSegmentModelMessage >> copyStateFrom: anOldMessage [
+	"Transfer any state in old message that is not regenerated when creating new message with #modelText"
+	self textBlocks doWithIndex: [:block :index |
+			 anOldMessage textBlocks size >= index
+				ifTrue: [
+				block copyStateFrom: (anOldMessage textBlocks at: index)]	]
+]
+
+{ #category : 'Not categorized' }
 GeminiTextSegmentModelMessage >> drawOnChatWidget: chatWidget dc: dc [
 
 	chatWidget drawTextSegmentModelMessage: self dc: dc

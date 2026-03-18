@@ -29,6 +29,13 @@ GeminiTextBlockFunctionCalls >> buttonPressedIn: chatWidget [
 ]
 
 { #category : 'Not categorized' }
+GeminiTextBlockFunctionCalls >> copyStateFrom: anotherFunctionBlock [
+	"Copy any state from another block into self"
+	isExpanded := anotherFunctionBlock isExpanded.
+	isPointedTo := anotherFunctionBlock isPointedTo.
+]
+
+{ #category : 'Not categorized' }
 GeminiTextBlockFunctionCalls >> drawOnChatWidget: chatWidget dc: dc [
 
 	chatWidget drawTextBlockFunctionCalls: self dc: dc

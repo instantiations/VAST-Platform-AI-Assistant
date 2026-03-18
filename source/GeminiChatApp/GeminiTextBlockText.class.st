@@ -28,7 +28,7 @@ GeminiTextBlockText class >> text: text [
 { #category : 'Not categorized' }
 GeminiTextBlockText >> drawOnChatWidget: chatWidget dc: dc [
 
-	chatWidget drawTextBlockText: self dc: dc
+	^ chatWidget drawTextBlockText: self dc: dc
 ]
 
 { #category : 'Not categorized' }

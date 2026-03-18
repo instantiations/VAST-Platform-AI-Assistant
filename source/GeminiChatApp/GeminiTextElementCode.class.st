@@ -23,8 +23,29 @@ GeminiTextElementCode >> = object [
 { #category : 'Not categorized' }
 GeminiTextElementCode >> buttonPressedIn: chatWidget [
 
+	self referencedMethod ifNotNil: [ :method |
+		| classToBrowse |
+		classToBrowse := method methodClass.
+		classToBrowse isMetaclass ifTrue: [ classToBrowse := classToBrowse primaryInstance ].
+		CwAppContext default asyncExecInUI: [
+			((EtTools browser: #classes) on: classToBrowse)
+				owningImage: System image;
+				selectedClasses: (Array with: classToBrowse);
+				open;
+				ifNotNil: [ :browser |
+					method methodClass isMetaclass ifTrue: [ browser methodInstanceButtonSelected: nil ].
+					(browser showingPublicMethods xor: method isPublic) ifTrue: [ browser methodPublicButtonSelected: nil ].
+					browser updateApplications: (method application ifNil: [ #() ] ifNotNil: [ Array with: method application ]) restoreToTop: false.
+					browser updateCategories: (method methodClass categoriesFor: method selector) restoreToTop: false.
+					browser updateMethods: (Array with: method) restoreToTop: false ] ].
+		^ self ].
+
 	self referencedClass ifNotNil: [ :referencedClass |
-		referencedClass browse ]
+		CwAppContext default asyncExecInUI: [
+			((EtTools browser: #classes) on: referencedClass)
+				owningImage: System image;
+				selectedClasses: (Array with: referencedClass);
+				open ] ]
 ]
 
 { #category : 'Not categorized' }
@@ -81,7 +102,29 @@ GeminiTextElementCode >> referencedClass [
 ]
 
 { #category : 'Not categorized' }
+GeminiTextElementCode >> referencedMethod [
+
+	| parts className isMeta selector class |
+	parts := '>>' split: code.
+	parts size = 2 ifFalse: [ ^ nil ].
+	className := parts first trimBlanks.
+	selector := parts second trimBlanks.
+	isMeta := className endsWithSubCollection: ' class'.
+	isMeta ifTrue: [ className := (className copyFrom: 1 to: className size - 6) trimBlanks ].
+	class := Smalltalk classAt: className asEsString.
+	class ifNil: [ ^ nil ].
+	class := isMeta ifTrue: [ class class ] ifFalse: [ class ].
+	^ class compiledMethodAt: selector asSymbol ifAbsent: [ nil ]
+]
+
+{ #category : 'Not categorized' }
 GeminiTextElementCode >> referencesClass [
 
 	^ self referencedClass notNil
+]
+
+{ #category : 'Not categorized' }
+GeminiTextElementCode >> referencesMethod [
+
+	^ self referencedMethod notNil
 ]

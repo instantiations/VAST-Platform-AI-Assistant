@@ -13,14 +13,14 @@ GeminiFunctionListClassesInApplications >> applyFunctionTo: arguments in: contex
 	notFoundApplications := OrderedCollection new.
 
 	(arguments at: 'applications') do: [:applicationName |
-		(self classesInApplicationNamed: applicationName) ifNotNil: [ :classes |
-			classesPerApplication
-				at: applicationName
-				put: (classes collect: [ :class | class name ]) sorted
-		] ifNil: [
-			notFoundApplications add: applicationName ] ].
+		(self classesInApplicationNamed: applicationName)
+			ifNotEmpty: [:classes |
+				classesPerApplication
+					at: applicationName
+					put: (classes collect: [:class | class name]) sorted]
+			ifEmpty: [notFoundApplications add: applicationName]].
 
-	^ EsOrderedDictionary
+	^EsOrderedDictionary
 		with: 'classes_per_application' -> classesPerApplication
 		with: 'nonexistent_or_outside_scope_applications' -> notFoundApplications
 ]

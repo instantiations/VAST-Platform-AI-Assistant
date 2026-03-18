@@ -8,7 +8,7 @@ Class {
 	#category : 'GeminiChatApp'
 }
 
-{ #category : 'Not categorized' }
+{ #category : 'Instance Creation' }
 GeminiTextBlockCode class >> code: code [
 
 	^ self basicNew initializeWithCode: code
@@ -17,21 +17,35 @@ GeminiTextBlockCode class >> code: code [
 { #category : 'Interactions' }
 GeminiTextBlockCode >> browse [
 
-	| method class |
-	method := self resolveMethod.
-	method
-		ifNotNil: [ self openComparisonBrowserOn: method. ^ self ].
-	class := self resolveClass.
-	class ifNotNil: [ class browse. ^ self ].
+	self 
+		resolveExistingMethod: [:method | 
+			^self 
+				openMergeWindowForClass: method methodClass 
+				selector: method selector 
+				currentSource: method sourceString] 
+		newMethod: [:class :selector | 
+			^self 
+				openMergeWindowForClass: class 
+				selector: selector 
+				currentSource: ''].
+				
+	self resolveClass ifNotNil: [:class | ^self openClassesBrowserOn: class addMethodCode: false].
 	"Fallback to a workspace when were not able to identify a class or method."
-	StsWorkspace stsPrompt: 'Gemini' default: self code.
+	StsWorkspace stsPrompt: 'Gemini' default: self code
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Interactions' }
 GeminiTextBlockCode >> buttonPressedIn: chatWidget [
 
 	CwAppContext default asyncExecInUI: [
 		self browse ]
+]
+
+{ #category : 'Private',
+  #vaVisibility : 'private' }
+GeminiTextBlockCode >> classMatcher [
+
+	^ '^\w+\s+\w*subclass\:\s*#(\w+).*' asRegex.
 ]
 
 { #category : 'Accessing' }
@@ -60,46 +74,75 @@ GeminiTextBlockCode >> isCodeBlock [
 	^ true
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 GeminiTextBlockCode >> isPointedTo [
 
 	^ isPointedTo
 ]
 
-{ #category : 'Interactions',
+{ #category : 'Private',
   #vaVisibility : 'private' }
-GeminiTextBlockCode >> openComparisonBrowserOn: aMethod [
-
-	| browser currentSource newSource className |
-
-	currentSource := aMethod sourceString.
-	newSource := self code.
-	className := aMethod methodClass name.
-	"Extract the source code following the class definition pattern"
-	browser := ((EtTools browser: #textComparison)
-		on: currentSource
-		and: (newSource copyFrom: className size + 3 to: newSource size)).
-	browser
-		owningImage: System image;
-		selectedMethod: aMethod.
-	browser open
+GeminiTextBlockCode >> methodHeaderStartPositionIn: aString [
+	|indexOfSeparator|
+	indexOfSeparator := aString indexOfSubCollection: '>>' ifAbsent: [ Error signal: 'Method header separator ''>>'' not found.' ].
+	^ indexOfSeparator + 2
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Private',
+  #vaVisibility : 'private' }
+GeminiTextBlockCode >> methodMatcher [
+
+	^  '^(\w+)\s*>>\s*(.+)$' asRegex
+]
+
+{ #category : 'Interactions',
+  #vaVisibility : 'private' }
+GeminiTextBlockCode >> openClassesBrowserOn: class addMethodCode: addMethodCode [
+
+	| browser newSource |
+	
+	browser := ((EtTools browser: #classes) on: class)
+		owningImage: System image;
+		selectedClasses: (Array with: class).
+	browser open.
+	addMethodCode ifTrue:[|body|
+		newSource := self code.
+		body := newSource copyFrom: (self methodHeaderStartPositionIn: newSource) to: newSource size.
+		body isAscii ifTrue:[ body asSBString copyToClipboard ] ].
+
+]
+
+{ #category : 'Not categorized',
+  #vaVisibility : 'private' }
+GeminiTextBlockCode >> openMergeWindowForClass: aClass selector: aSelector currentSource: currentSourceString [
+	"Open a code merge window. If currentSourceString is empty, it acts as a new method."
+
+	| newSource |
+	newSource := self code.
+	newSource copyToClipboard.
+	"Extract the source code following the class definition pattern"
+	GeminiCodeMergeWindow
+		openOn: currentSourceString
+		and: (newSource copyFrom: (self methodHeaderStartPositionIn: newSource) to: newSource size)
+		forClass: aClass
+		selector: aSelector
+]
+
+{ #category : 'Interactions' }
 GeminiTextBlockCode >> pointerEnteredIn: chatWidget [
 
 	isPointedTo := true.
 	chatWidget redraw.
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Interactions' }
 GeminiTextBlockCode >> pointerLeftIn: chatWidget [
 
 	isPointedTo := false.
 	chatWidget redraw.
 ]
 
-{ #category : 'Interactions',
+{ #category : 'Private',
   #vaVisibility : 'private' }
 GeminiTextBlockCode >> resolveClass [
 
@@ -107,7 +150,7 @@ GeminiTextBlockCode >> resolveClass [
 
 	self code isEmpty ifTrue: [^nil].
 	line := self code lines first.
-	matcher := '^\w+\s+\w*subclass\:\s*#(\w+).*' asRegex.
+	matcher := self classMatcher.
 	(matcher matches: line)
 		ifTrue: [
 			"Subexpression 2 corresponds to the class name capture group"
@@ -116,15 +159,18 @@ GeminiTextBlockCode >> resolveClass [
 	^nil
 ]
 
-{ #category : 'Interactions',
+{ #category : 'Private',
   #vaVisibility : 'private' }
-GeminiTextBlockCode >> resolveMethod [
-
+GeminiTextBlockCode >> resolveExistingMethod: existingBlock newMethod: newBlock [
+	"If this code block represents a method:
+		- and there is an existing method, execute the @existingBlock with the existing method as argument and return the result.
+		- but if the method does not exist, but the class does, execute the @newBlock with the class and selector as arguments and return the result.
+	If this code is not a method: return nil."
 	| matcher line className selector class |
 
 	self code isEmpty ifTrue: [^nil].
 	line := self code lines first.
-	matcher := '^(\w+)\s*>>\s*(.+)$' asRegex.
+	matcher := self methodMatcher.
 	(matcher matches: line)
 		ifTrue: [
 			className := matcher subexpression: 2.
@@ -133,7 +179,11 @@ GeminiTextBlockCode >> resolveMethod [
 				do: [:t | (t last = $:) ifTrue: [selector := selector , t]].
 			selector isEmpty ifTrue: [selector := (matcher subexpression: 3) subStrings first].
 			class := Smalltalk at: className asSymbol ifAbsent: [nil].
-			class ifNotNil: [^class compiledMethodAt: selector asSymbol ifAbsent: [nil]]].
+			class ifNotNil: [ | method | 
+				method := class compiledMethodAt: selector asSymbol ifAbsent: [nil].
+				^ method 
+					ifNil: [ newBlock value: class value: selector asSymbol ]
+					ifNotNil:[ existingBlock value: method ]]].
 	^nil
 ]
 

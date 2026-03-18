@@ -4,7 +4,6 @@ Class {
 	#instVars : [
 		'filePathString',
 		'chat',
-		'chatMenu',
 		'chatWidget',
 		'buttonWidget',
 		'statusLine',
@@ -150,10 +149,12 @@ GeminiChatWindow >> createWorkRegion [
 	self updateStatusLine
 ]
 
-{ #category : 'User Interface' }
+{ #category : 'Initialization',
+  #vaVisibility : 'private' }
 GeminiChatWindow >> initializeAfterRealize [
 
 	super initializeAfterRealize.
+	self updateInput: true.
 	inputWidget setInputFocus.
 ]
 
@@ -193,8 +194,8 @@ GeminiChatWindow >> menuActionChatAddFile [
 { #category : 'Operations',
   #vaVisibility : 'private' }
 GeminiChatWindow >> menuActionChatNew [
-
-	self class new open
+	"Open new window on same chat class as is used in the current ChatWindow"
+	(self class chat: chat class new) open
 ]
 
 { #category : 'Operations',
@@ -255,7 +256,7 @@ GeminiChatWindow >> menuActionInspectLog [
 GeminiChatWindow >> menuActionSelectModel: aModel [
 
 	chat model: aModel.
-	GeminiModel default: aModel.
+	chat class generatorClass defaultModel: aModel.
 ]
 
 { #category : 'Operations',
@@ -278,19 +279,18 @@ GeminiChatWindow >> menuActionSetApiKey [
 { #category : 'User Interface',
   #vaVisibility : 'private' }
 GeminiChatWindow >> menuChat [
-	
-	chatMenu ifNotNil: [ ^ chatMenu ].
-	chatMenu :=
-		self newMenu
-			title: 'Chat';
-			subMenuSelector: #menuChat;
-			add: #menuActionChatNew label: 'New' enable: true for: nil;
-			add: #menuActionChatOpen label: 'Open...' enable: true for: nil;
-			add: #menuActionChatSave label: 'Save' enable: true for: nil;
-			add: #menuActionChatSaveAs label: 'Save As...'enable: true for: nil;
-			addLine;
-			add: #menuActionChatAddFile label: 'Add File...'enable: true for: nil.
-			
+
+	| chatMenu |
+
+	(chatMenu := self newMenu)
+		title: 'Chat';
+		add: #menuActionChatNew label: 'New' enable: true for: nil;
+		add: #menuActionChatOpen label: 'Open...' enable: true for: nil;
+		add: #menuActionChatSave label: 'Save' enable: true for: nil;
+		add: #menuActionChatSaveAs label: 'Save As...' enable: true for: nil;
+		addLine;
+		add: #menuActionChatAddFile label: 'Add File...' enable: true for: nil.
+
 	^chatMenu
 ]
 
@@ -299,12 +299,12 @@ GeminiChatWindow >> menuChat [
 GeminiChatWindow >> menuDebug [
 
 	| debugMenu |
-	debugMenu := self newMenu.
-	debugMenu
+
+	(debugMenu := self newMenu)
 		title: 'Debug';
 		add: #menuActionInspectChat label: 'Inspect Chat' enable: true for: nil;
 		add: #menuActionInspectLog label: 'Inspect Log' enable: true for: nil.
-	^ debugMenu
+	^debugMenu
 ]
 
 { #category : 'User Interface',
@@ -312,12 +312,15 @@ GeminiChatWindow >> menuDebug [
 GeminiChatWindow >> menuEdit [
 
 	editMenu notNil ifTrue: [^editMenu].
-	^editMenu := self newMenu
+	(editMenu := self newMenu)
 		title: 'Edit';
-		subMenuSelector: #menuEdit;
-		add: #menuActionEditCopy label: 'Copy' enable: [ true ] for: nil
-		accelerator: (CwAccelerator mask: ControlMask keysym: XKc)
-		acceleratorText: 'Ctrl+C'
+		add: #menuActionEditCopy
+			label: 'Copy'
+			enable: [true]
+			for: nil
+			accelerator: (CwAccelerator mask: ControlMask keysym: XKc)
+			acceleratorText: 'Ctrl+C'.
+	^editMenu
 ]
 
 { #category : 'User Interface',
@@ -325,12 +328,12 @@ GeminiChatWindow >> menuEdit [
 GeminiChatWindow >> menuHelp [
 
 	| helpMenu |
-	helpMenu := self newMenu.
-	helpMenu
+
+	(helpMenu := self newMenu)
 		title: 'Help';
 		add: #openDocumentation label: 'Documentation' enable: false for: nil;
 		add: #openAboutDialog label: 'About Gemini Chat...' enable: true for: nil.
-	^ helpMenu
+	^helpMenu
 ]
 
 { #category : 'User Interface',
@@ -344,25 +347,27 @@ GeminiChatWindow >> menuModelOptions [
 		subMenuSelector: #menuModelOptions;
 		owner: self.
 
-	GeminiModel all do: [ :model |
-		modelOptionsMenu add: (DirectedMessage selector: #menuActionSelectModel: arguments: { model } receiver: self)
+	chat class generatorClass models do: [:model |
+		modelOptionsMenu
+			add: (DirectedMessage selector: #menuActionSelectModel: arguments: { model } receiver: self)
 			label: model label
-			toggle: [ model = chat model ] ].
+			toggle: [model = chat model]].
 
-	^ modelOptionsMenu
+	^modelOptionsMenu
 ]
 
 { #category : 'User Interface',
   #vaVisibility : 'private' }
 GeminiChatWindow >> menuOptions [
+
 	| optionsMenu |
-	optionsMenu := self newMenu.
-	optionsMenu
+
+	(optionsMenu := self newMenu)
 		title: 'Options';
-		addSubMenu:  #menuModelOptions label: 'Model' enable: true for: self;
+		addSubMenu: #menuModelOptions label: 'Model' enable: true for: self;
 		addLine;
 		add: #menuActionSetApiKey label: 'Set API Key...' enable: true for: self.
-	^ optionsMenu
+	^optionsMenu
 ]
 
 { #category : 'User Interface',
@@ -377,13 +382,15 @@ GeminiChatWindow >> openAboutDialog [
 		iconType: XmICONINFO
 ]
 
-{ #category : 'Operations' }
+{ #category : 'Operations',
+  #vaVisibility : 'private' }
 GeminiChatWindow >> pushedSendButton: button clientData: clientData callData: callData [
 
 	self sendUserMessage
 ]
 
-{ #category : 'Operations' }
+{ #category : 'Operations',
+  #vaVisibility : 'private' }
 GeminiChatWindow >> saveToFile: pathString [
 
 	| fileStream |
