@@ -7,22 +7,26 @@ Class {
 { #category : 'Not categorized' }
 GeminiFunctionFindImplementors >> applyFunctionTo: arguments in: context [
 
-	| selectors includeSource methods maxResults |
+	| selectors includeSource matchCasing methods maxResults selectorPatternMatchers |
 
 	selectors := (arguments at: 'selectors') collect: [:each | each asSymbol].
-	includeSource := (arguments at: 'with_source').
+	includeSource := arguments at: 'with_source'.
+	matchCasing := arguments at: 'match_casing' ifAbsent: [true].
 	maxResults := self resultLimitFor: context withSource: includeSource.
 	methods := OrderedCollection new.
+	
+	selectorPatternMatchers := selectors collect: [ :pattern | GeminiSelectorPatternMatcher forPattern: pattern ignoreCase: matchCasing not ].
 
 	(self
 		classesScopedTo: (arguments at: 'applications' ifAbsent: [#()])
 		and: (arguments at: 'classes' ifAbsent: [#()]))
 			do: [:class |
 				{ class. class class } do: [:methodClass |
-					selectors do: [:aSelector |
-						(methodClass includesSelector: aSelector)
-							ifTrue: [| cm |
-								cm := (methodClass compiledMethodAt: aSelector).
+					selectorPatternMatchers do: [ :selectorPatternMatcher |
+						(selectorPatternMatcher matchingSelectorsInClass: methodClass)
+							do: [ :foundSelector |
+								| cm |
+								cm := (methodClass compiledMethodAt: foundSelector).
 								methods add: (
 									includeSource
 										ifTrue: [cm geminiJSON]
@@ -57,10 +61,13 @@ GeminiFunctionFindImplementors >> parameters [
 	^ {
 		GeminiFunctionParameterRequired name: 'selectors'
 			type: (GeminiFunctionParameterTypeArray itemsType: GeminiFunctionParameterTypeString new)
-			description: 'The selectors of methods to find implementors of'.
+			description: 'An array containing the selectors of methods to find implementors / definitions of. Can contain wildcards - * matches any sequence, # matches one character (browseMessage*, symbol#iterals)'.
 		GeminiFunctionParameterRequired name: 'with_source'
 			type: GeminiFunctionParameterTypeBoolean new
 			description: 'Include full source of implementors. Prefer false unless relevant' .
+		GeminiFunctionParameterOptional name: 'match_casing'
+			type: (GeminiFunctionParameterTypeArray itemsType: GeminiFunctionParameterTypeBoolean new)
+			description: 'Results must match parameter casing. True by default'.
 		GeminiFunctionParameterOptional name: 'classes'
 			type: (GeminiFunctionParameterTypeArray itemsType: GeminiFunctionParameterTypeString new)
 			description: 'Scope search to provided classes. Use if possible'.

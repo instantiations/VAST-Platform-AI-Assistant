@@ -24,11 +24,17 @@ GeminiFunctionValidateCode >> description [
 { #category : 'Not categorized' }
 GeminiFunctionValidateCode >> isMethodCode: aString [
 
-	| line matcher |
+	| line |
 	aString isEmpty ifTrue: [^nil].
 	line := aString lines first.
-	matcher := '^(\w+)\s*>>\s*(.+)$' asRegex.
-	^ (matcher matches: line)
+	^self methodMatcher matches: line
+]
+
+{ #category : 'Not categorized',
+  #vaVisibility : 'private' }
+GeminiFunctionValidateCode >> methodMatcher [
+
+	^'^(\w+)\s*(class)?\s*>>\s*(.+)$' asRegex
 ]
 
 { #category : 'Not categorized' }

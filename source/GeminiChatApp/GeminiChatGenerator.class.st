@@ -33,6 +33,12 @@ GeminiChatGenerator class >> forChat: chat [
 ]
 
 { #category : 'Not categorized' }
+GeminiChatGenerator class >> modelNamed: aModelName [
+
+	^self models detect: [:one | one name = aModelName]
+]
+
+{ #category : 'Not categorized' }
 GeminiChatGenerator class >> models [
 
 	^ GeminiModel all

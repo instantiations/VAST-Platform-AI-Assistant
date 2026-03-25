@@ -34,6 +34,12 @@ GeminiTextBlockHeading class >> level: level text: text [
 ]
 
 { #category : 'Not categorized' }
+GeminiTextBlockHeading >> = object [
+
+	^ self class = object class and: [ self level = object level and: [ self textElement = object textElement ] ]
+]
+
+{ #category : 'Not categorized' }
 GeminiTextBlockHeading >> drawOnChatWidget: chatWidget dc: dc [
 
 	chatWidget drawTextBlockHeading: self dc: dc

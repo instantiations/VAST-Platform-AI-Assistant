@@ -73,7 +73,7 @@ GeminiFunctionDescribe >> describePool: aPoolAssoc [
 				definingMethods collect: [:each |
 					EsOrderedDictionary new
 						at: 'class' put: each methodClass name asString;
-						at: 'selector' put: each selector name asString;
+						at: 'selector' put: each selector asString;
 						yourself]);
 		yourself
 ]

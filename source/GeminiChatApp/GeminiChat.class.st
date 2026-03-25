@@ -188,8 +188,8 @@ GeminiChat >> storeOn: stream [
 	stream nextPutAll: ' systemInstruction: '.
 	systemInstruction storeOn: stream.
 	stream nextPutAll: ' model: ('.
-	model class storeOn: stream.
-	stream nextPutAll: ' named: '.
+	self class generatorClass storeOn: stream.
+	stream nextPutAll: ' modelNamed: '.
 	model name storeOn: stream.
 	stream nextPutAll: ') filePaths: ('.
 	(filePaths collect: [ :filePath | filePath originalName ]) storeOn: stream.

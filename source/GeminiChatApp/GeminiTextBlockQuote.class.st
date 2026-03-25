@@ -23,6 +23,12 @@ GeminiTextBlockQuote class >> startingAtLine: line [
 ]
 
 { #category : 'Not categorized' }
+GeminiTextBlockQuote >> = object [
+
+	^ self class = object class and: [ self sequenceBlock = object sequenceBlock ]
+]
+
+{ #category : 'Not categorized' }
 GeminiTextBlockQuote >> addBlock: block [
 
 	sequenceBlock addBlock: block

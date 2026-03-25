@@ -28,6 +28,12 @@ GeminiTextBlockListItem class >> startingAtLine: line [
 ]
 
 { #category : 'Not categorized' }
+GeminiTextBlockListItem >> = object [
+
+	^ self class = object class and: [ self sequenceBlock = object sequenceBlock ]
+]
+
+{ #category : 'Not categorized' }
 GeminiTextBlockListItem >> addBlock: block [
 
 	sequenceBlock addBlock: block

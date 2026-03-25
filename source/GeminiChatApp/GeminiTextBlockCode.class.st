@@ -14,6 +14,12 @@ GeminiTextBlockCode class >> code: code [
 	^ self basicNew initializeWithCode: code
 ]
 
+{ #category : 'Not categorized' }
+GeminiTextBlockCode >> = object [
+
+	^ self class = object class and: [ self code = object code ]
+]
+
 { #category : 'Interactions' }
 GeminiTextBlockCode >> browse [
 
@@ -92,7 +98,7 @@ GeminiTextBlockCode >> methodHeaderStartPositionIn: aString [
   #vaVisibility : 'private' }
 GeminiTextBlockCode >> methodMatcher [
 
-	^  '^(\w+)\s*>>\s*(.+)$' asRegex
+	^'^(\w+)\s*(class)?\s*>>\s*(.+)$' asRegex
 ]
 
 { #category : 'Interactions',
@@ -119,7 +125,6 @@ GeminiTextBlockCode >> openMergeWindowForClass: aClass selector: aSelector curre
 
 	| newSource |
 	newSource := self code.
-	newSource copyToClipboard.
 	"Extract the source code following the class definition pattern"
 	GeminiCodeMergeWindow
 		openOn: currentSourceString
@@ -172,14 +177,19 @@ GeminiTextBlockCode >> resolveExistingMethod: existingBlock newMethod: newBlock 
 	line := self code lines first.
 	matcher := self methodMatcher.
 	(matcher matches: line)
-		ifTrue: [
-			className := matcher subexpression: 2.
-			selector := String new.
-			(matcher subexpression: 3) subStrings
-				do: [:t | (t last = $:) ifTrue: [selector := selector , t]].
-			selector isEmpty ifTrue: [selector := (matcher subexpression: 3) subStrings first].
+		ifTrue: [ |isMeta selectorSubExpression|
+			className := matcher subexpression:  2.
+			isMeta := (matcher subexpression:  3) = 'class'.
+			selectorSubExpression :=  isMeta ifTrue: [4] ifFalse: [3].
+			"keyword selector"
+			selector := String streamContents: [:selectorStream |
+			(matcher subexpression: selectorSubExpression) subStrings
+				do: [:t | (t last = $:) ifTrue: [selectorStream nextPutAll: t]]].
+			"binary selector"
+			selector isEmpty ifTrue: [selector := (matcher subexpression: selectorSubExpression) subStrings first].
 			class := Smalltalk at: className asSymbol ifAbsent: [nil].
 			class ifNotNil: [ | method | 
+				isMeta ifTrue: [class := class class].
 				method := class compiledMethodAt: selector asSymbol ifAbsent: [nil].
 				^ method 
 					ifNil: [ newBlock value: class value: selector asSymbol ]

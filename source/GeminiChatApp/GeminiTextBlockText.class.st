@@ -26,6 +26,12 @@ GeminiTextBlockText class >> text: text [
 ]
 
 { #category : 'Not categorized' }
+GeminiTextBlockText >> = object [
+
+	^ self class = object class and: [ self textElement = object textElement ]
+]
+
+{ #category : 'Not categorized' }
 GeminiTextBlockText >> drawOnChatWidget: chatWidget dc: dc [
 
 	^ chatWidget drawTextBlockText: self dc: dc

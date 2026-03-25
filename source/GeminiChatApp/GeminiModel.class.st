@@ -18,11 +18,12 @@ GeminiModel class >> all [
 
 	allModels ifNil: [
 		allModels := {
-			self name: 'gemini-3.1-pro-preview' label: 'Pro 3.1' contextWindowSize: 1048576.
-			self name: 'gemini-3-pro-preview' label: 'Pro 3 (Deprecated)' contextWindowSize: 1048576.
-			self name: 'gemini-2.5-pro' label: 'Pro 2.5' contextWindowSize: 1048576.
-			self name: 'gemini-2.5-flash' label: 'Flash 2.5' contextWindowSize: 1048576.
-			self name: 'gemini-2.5-flash-lite' label: 'Flash-Lite 2.5' contextWindowSize: 1048576 } ].
+			self name: 'gemini-3.1-pro-preview' label: '3.1 Pro Preview' contextWindowSize: 1048576.
+			self name: 'gemini-3.1-flash-lite-preview' label: '3.1 Flash-Lite Preview' contextWindowSize: 1048576.
+			self name: 'gemini-3-flash-preview' label: '3 Flash Preview' contextWindowSize: 1048576.
+			self name: 'gemini-2.5-pro' label: '2.5 Pro' contextWindowSize: 1048576.
+			self name: 'gemini-2.5-flash' label: '2.5 Flash' contextWindowSize: 1048576.
+			self name: 'gemini-2.5-flash-lite' label: '2.5 Flash-Lite' contextWindowSize: 1048576 } ].
 	^ allModels
 ]
 

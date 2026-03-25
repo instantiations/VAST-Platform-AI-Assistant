@@ -15,6 +15,7 @@ Class {
 		'scrollBarMinMaxValue'
 	],
 	#classVars : [
+		'BaseFontSize',
 		'HeadingFontSets',
 		'BaseFontSet'
 	],
@@ -30,7 +31,18 @@ GeminiChatWidget class >> baseFontSet [
 { #category : 'Not categorized' }
 GeminiChatWidget class >> baseFontSize [
 
-	^ 100
+	^ BaseFontSize ifNil: [ 100 ]
+]
+
+{ #category : 'Not categorized' }
+GeminiChatWidget class >> baseFontSize: newSize [
+
+	CwAppContext default asyncExecInUI: [
+		BaseFontSize := newSize.
+		self resetFontSets.
+		self allInstances do: [ :widget |
+			widget isRealized ifTrue: [
+				widget resetTextSegmentHeights ] ] ]
 ]
 
 { #category : 'Not categorized' }
@@ -215,7 +227,7 @@ GeminiChatWidget >> drawString: textString dc: dc [
 								(dc x > dc leftInset or: [ newLeftIndex > startIndex ]) ifTrue: [
 									leftIndex := newLeftIndex ] ] ].
 						drawnString := string copyFrom: startIndex to: leftIndex.
-						selectionEndPoint ifNotNil: [
+						(selectionEndPoint notNil and: [ dc selectionStartX < Float infinity and: [ dc selectionEndX > dc x ] ]) ifTrue: [
 							| selectionStartIndex selectionEndIndex |
 							selectionStartIndex := (1 to: drawnString size) findFirst: [ :index |
 								(dc x + (dc fontStruct textWidth: (drawnString copyFrom: 1 to: index))) > dc selectionStartX ].
@@ -784,9 +796,9 @@ GeminiChatWidget >> updateSelectionStartEndX: dc [
 
 	selectionEndPoint ifNotNil: [
 		dc selectionStartX: (selectionStartPoint y <= dc y ifTrue: [ dc leftInset ] ifFalse: [
-			selectionStartPoint y < (dc y + dc ascent + dc descent) ifTrue: [ selectionStartPoint x ] ifFalse: [ drawingArea width - dc rightInset ] ]).
+			selectionStartPoint y < (dc y + dc ascent + dc descent) ifTrue: [ selectionStartPoint x ] ifFalse: [ Float infinity ] ]).
 		dc selectionEndX: (selectionEndPoint y <= dc y ifTrue: [ dc leftInset ] ifFalse: [
-			selectionEndPoint y < (dc y + dc ascent + dc descent) ifTrue: [ selectionEndPoint x ] ifFalse: [ drawingArea width - dc rightInset ] ]).
+			selectionEndPoint y < (dc y + dc ascent + dc descent) ifTrue: [ selectionEndPoint x ] ifFalse: [ Float infinity ] ]).
 		dc selectionEndX < dc selectionStartX ifTrue: [
 			| newStartX |
 			newStartX := dc selectionEndX.

@@ -10,7 +10,7 @@ GeminiFunctionGetClassMethods >> applyFunctionTo: arguments in: context [
 	| includeSource filters maxResults methodsCount resultPerClass classesNotFound classNames |
 
 	includeSource := (arguments at: 'with_source').
-	filters := arguments at: 'filters' ifAbsent: [nil].
+	filters := arguments at: 'filters' ifAbsent: [#()].
 	maxResults := self resultLimitFor: context withSource: includeSource.
 	methodsCount := 0.
 	classNames := arguments at: 'classes'.
@@ -25,7 +25,7 @@ GeminiFunctionGetClassMethods >> applyFunctionTo: arguments in: context [
 					keysAndValuesDo: [:side :methodClass | | sideMethods matchingSelectors |
 						sideMethods := OrderedCollection new.
 						matchingSelectors := methodClass selectors.
-						filters ifNotNil: [
+						filters isEmpty ifFalse: [
 							matchingSelectors :=
 								matchingSelectors select: [:selector |
 									filters anySatisfy: [:filter | filter match: selector asString]]].

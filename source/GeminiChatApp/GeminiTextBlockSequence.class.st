@@ -62,7 +62,8 @@ GeminiTextBlockSequence class >> fromString: string [
 					blocks last addBlock: (GeminiTextBlockHeading fromLine: line).
 					previousLines := OrderedCollection new ].
 			] ifFalse: [
-				previousLines add: line ] ] ].
+				(line notEmpty or: [ previousLines isEmpty or: [ previousLines last notEmpty ] ]) ifTrue: [
+					previousLines add: line ] ] ] ].
 	previousLines ifNotEmpty: [
 		blocks last addBlock: (GeminiTextBlockText fromString: (String crlf join: previousLines)) ].
 	sequenceBlock lastTopicLine: lastTopicLine.
@@ -73,6 +74,12 @@ GeminiTextBlockSequence class >> fromString: string [
 GeminiTextBlockSequence class >> new [
 
 	^ self basicNew initialize
+]
+
+{ #category : 'Not categorized' }
+GeminiTextBlockSequence >> = object [
+
+	^ self class = object class and: [ self blocks = object blocks ]
 ]
 
 { #category : 'Not categorized' }
