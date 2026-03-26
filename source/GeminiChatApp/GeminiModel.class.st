@@ -67,6 +67,12 @@ GeminiModel >> = otherObject [
 		and: [ self label = otherObject label ] ]
 ]
 
+{ #category : 'Not categorized' }
+GeminiModel >> apiKey [
+
+	^ GeminiChat apiKey
+]
+
 { #category : 'Accessing' }
 GeminiModel >> contextWindowSize [
 	^contextWindowSize
@@ -99,10 +105,30 @@ GeminiModel >> name [
 	^ name
 ]
 
+{ #category : 'Not categorized' }
+GeminiModel >> proxyUrl [
+
+	^ GeminiChat proxyUrl
+]
+
 { #category : 'Accessing' }
 GeminiModel >> url [
 
 	^ (SstUrl fromString: ('https://generativelanguage.googleapis.com/v1beta/models/%1:streamGenerateContent' bindWith: self name))
 		encodeQuery: (Dictionary with: 'key' -> GeminiChat apiKey);
 		yourself
+]
+
+{ #category : 'Not categorized' }
+GeminiModel >> urlWithoutQuery [
+
+	^ (SstUrl fromString: ('https://generativelanguage.googleapis.com/v1beta/models/%1:streamGenerateContent' bindWith: self name))
+		"encodeQuery: (Dictionary with: 'key' -> GeminiChat apiKey);"
+		yourself
+]
+
+{ #category : 'Not categorized' }
+GeminiModel >> useProxy [
+
+	^self proxyUrl isString and: [self proxyUrl notEmpty]
 ]

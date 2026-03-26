@@ -159,11 +159,23 @@ GeminiChatGenerator >> retryDelaySeconds [
 
 { #category : 'Not categorized' }
 GeminiChatGenerator >> sendRequest [
+"
+  SstHttpClient    
+   initializeTransportScheme: 'httpsl'
+   forHttpsTunnelThrough: 'proxy.mycorp.com:8080'
+   proxyAuth: nil.
+"
 
 	self prepareRequestJSONObject.
 	[
+		| scheme |
+		scheme := generationModel url localEndpointUrl transport.
+		self assert: scheme = 'httpsl'.
 		1 to: 10 do: [ :number |
-			httpClient := SstHttpClient forTransportScheme: generationModel url localEndpointUrl transport.
+			httpClient := SstHttpClient forTransportScheme: scheme.
+			generationModel useProxy ifTrue: [
+				httpClient proxyEnabled: true. " 8080 is used"
+			].
 			requestTimestamp := DateAndTime now.
 			responseOrError := httpClient post: (NeoJSONWriter toString: requestJSONObject) asUtf8Bytes typed: 'application/json;charset=utf-8' at: generationModel url streaming: true.
 			responseOrError isSstError ifTrue: [

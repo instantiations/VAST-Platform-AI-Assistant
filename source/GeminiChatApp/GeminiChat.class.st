@@ -15,7 +15,8 @@ Class {
 		'usageMetadata'
 	],
 	#classInstVars : [
-		'apiKey'
+		'apiKey',
+		'proxyUrl'
 	],
 	#category : 'GeminiChatApp'
 }
@@ -60,6 +61,18 @@ GeminiChat class >> new [
 		'   For methods, include the class name in the header in the format `Class>>selector`. Do not format examples, intended for the user to execute in a workspace, as methods.'
 		'6. Getting source code in VAST may be slow. When using the parameter `with_source` available in many tools, try to minimize cases where a `true` is specified and try favor `false`'
 		))
+]
+
+{ #category : 'Not categorized' }
+GeminiChat class >> proxyUrl [
+
+	^proxyUrl
+]
+
+{ #category : 'Not categorized' }
+GeminiChat class >> proxyUrl: anObject [
+
+	proxyUrl := anObject
 ]
 
 { #category : 'Not categorized' }

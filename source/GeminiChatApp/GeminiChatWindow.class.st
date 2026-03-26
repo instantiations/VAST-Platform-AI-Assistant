@@ -276,6 +276,29 @@ GeminiChatWindow >> menuActionSetApiKey [
 		self updateInput: chat isActivelyGenerating not ]
 ]
 
+{ #category : 'Not categorized' }
+GeminiChatWindow >> menuActionSetProxyUrl [
+
+	| newProxy  |
+	
+	newProxy := CwTextPrompter new
+		title: 'Set Proxy URL';
+		messageString: 'Enter the url of the proxy to access Gemini:';
+		answerString: (GeminiChat proxyUrl ifNil: ['proxy.mycorp.com:8080']);
+		prompt.
+
+	newProxy ifNotNil: [
+		| scheme  | 
+		scheme := chat model url localEndpointUrl transport.
+		SstHttpClient    
+			   initializeTransportScheme: scheme
+			   forHttpsTunnelThrough: newProxy
+			   proxyAuth: nil.
+		GeminiChat proxyUrl: (newProxy ifEmpty: [nil]).	
+		self updateStatusLine.
+		self updateInput: chat isActivelyGenerating not ]
+]
+
 { #category : 'User Interface',
   #vaVisibility : 'private' }
 GeminiChatWindow >> menuChat [
@@ -359,15 +382,15 @@ GeminiChatWindow >> menuModelOptions [
 { #category : 'User Interface',
   #vaVisibility : 'private' }
 GeminiChatWindow >> menuOptions [
-
 	| optionsMenu |
-
-	(optionsMenu := self newMenu)
+	optionsMenu := self newMenu.
+	optionsMenu
 		title: 'Options';
-		addSubMenu: #menuModelOptions label: 'Model' enable: true for: self;
+		addSubMenu:  #menuModelOptions label: 'Model' enable: true for: self;
 		addLine;
-		add: #menuActionSetApiKey label: 'Set API Key...' enable: true for: self.
-	^optionsMenu
+		add: #menuActionSetApiKey label: 'Set API Key...' enable: true for: self;
+		add: #menuActionSetProxyUrl label: 'Set Proxy URL...' enable: true for: self.
+	^ optionsMenu
 ]
 
 { #category : 'User Interface',
