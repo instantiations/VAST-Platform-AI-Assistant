@@ -163,9 +163,10 @@ GeminiChatGenerator >> sendRequest [
 	self prepareRequestJSONObject.
 	[
 		1 to: 10 do: [ :number |
-			httpClient := SstHttpClient forTransportScheme: generationModel url localEndpointUrl transport.
+			(httpClient := SstHttpClient forTransportScheme: generationModel url localEndpointUrl transport)
+				proxyEnabled: true.
 			requestTimestamp := DateAndTime now.
-			responseOrError := httpClient post: (NeoJSONWriter toString: requestJSONObject) asUtf8Bytes typed: 'application/json;charset=utf-8' at: generationModel url streaming: true.
+			responseOrError := httpClient post: (GeminiJSONWriter toString: requestJSONObject) asUtf8Bytes typed: 'application/json;charset=utf-8' at: generationModel url streaming: true.
 			responseOrError isSstError ifTrue: [
 				self handleError
 			] ifFalse: [

@@ -25,7 +25,7 @@ GeminiTextBlockThought >> addBlock: block [
 GeminiTextBlockThought >> buttonPressedIn: chatWidget [
 
 	self toggleIsExpanded.
-	chatWidget resetTextSegmentHeights.
+	chatWidget resetTextSegmentLayout.
 ]
 
 { #category : 'Not categorized' }
@@ -86,6 +86,12 @@ GeminiTextBlockThought >> pointerLeftIn: chatWidget [
 
 	isPointedTo := false.
 	chatWidget redraw.
+]
+
+{ #category : 'Not categorized' }
+GeminiTextBlockThought >> resetLayout [
+
+	self sequenceBlock resetLayout
 ]
 
 { #category : 'Not categorized' }

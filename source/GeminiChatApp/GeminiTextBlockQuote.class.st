@@ -67,6 +67,12 @@ GeminiTextBlockQuote >> matchLine: line [
 ]
 
 { #category : 'Not categorized' }
+GeminiTextBlockQuote >> resetLayout [
+
+	self sequenceBlock resetLayout
+]
+
+{ #category : 'Not categorized' }
 GeminiTextBlockQuote >> sequenceBlock [
 
 	^ sequenceBlock

@@ -2,7 +2,7 @@ Class {
 	#name : 'GeminiTextElementString',
 	#superclass : 'GeminiAbstractTextElement',
 	#instVars : [
-		'string'
+		'textString'
 	],
 	#category : 'GeminiChatApp'
 }
@@ -35,7 +35,7 @@ GeminiTextElementString >> drawOnChatWidget: chatWidget dc: dc [
 GeminiTextElementString >> initializeWithString: initialString [
 
 	self initialize.
-	string := initialString.
+	textString := GeminiTextString string: initialString.
 ]
 
 { #category : 'Not categorized' }
@@ -45,13 +45,25 @@ GeminiTextElementString >> isStringElement [
 ]
 
 { #category : 'Not categorized' }
+GeminiTextElementString >> resetLayout [
+
+	self textString resetLayout
+]
+
+{ #category : 'Not categorized' }
 GeminiTextElementString >> string [
 
-	^ string
+	^ textString string
 ]
 
 { #category : 'Not categorized' }
 GeminiTextElementString >> string: newString [
 
-	string := newString
+	textString := GeminiTextString string: newString
+]
+
+{ #category : 'Not categorized' }
+GeminiTextElementString >> textString [
+
+	^ textString
 ]

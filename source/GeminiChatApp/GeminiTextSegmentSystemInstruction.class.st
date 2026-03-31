@@ -18,7 +18,7 @@ GeminiTextSegmentSystemInstruction class >> forSystemInstruction: systemInstruct
 GeminiTextSegmentSystemInstruction >> buttonPressedIn: chatWidget [
 
 	self toggleIsExpanded.
-	chatWidget resetTextSegmentHeights.
+	chatWidget resetTextSegmentLayout.
 ]
 
 { #category : 'Not categorized' }

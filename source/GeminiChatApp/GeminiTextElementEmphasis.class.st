@@ -51,3 +51,9 @@ GeminiTextElementEmphasis >> isStrong [
 
 	^ isStrong
 ]
+
+{ #category : 'Not categorized' }
+GeminiTextElementEmphasis >> resetLayout [
+
+	self element resetLayout
+]

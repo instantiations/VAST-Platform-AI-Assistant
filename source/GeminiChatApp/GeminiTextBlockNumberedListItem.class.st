@@ -92,6 +92,12 @@ GeminiTextBlockNumberedListItem >> number [
 ]
 
 { #category : 'Not categorized' }
+GeminiTextBlockNumberedListItem >> resetLayout [
+
+	self sequenceBlock resetLayout
+]
+
+{ #category : 'Not categorized' }
 GeminiTextBlockNumberedListItem >> sequenceBlock [
 
 	^ sequenceBlock

@@ -2,7 +2,7 @@ Class {
 	#name : 'GeminiTextElementCode',
 	#superclass : 'GeminiAbstractTextElement',
 	#instVars : [
-		'code',
+		'codeTextString',
 		'isPointedTo'
 	],
 	#category : 'GeminiChatApp'
@@ -51,7 +51,13 @@ GeminiTextElementCode >> buttonPressedIn: chatWidget [
 { #category : 'Not categorized' }
 GeminiTextElementCode >> code [
 
-	^ code
+	^ codeTextString string
+]
+
+{ #category : 'Not categorized' }
+GeminiTextElementCode >> codeTextString [
+
+	^ codeTextString
 ]
 
 { #category : 'Not categorized' }
@@ -64,7 +70,7 @@ GeminiTextElementCode >> drawOnChatWidget: chatWidget dc: dc [
 GeminiTextElementCode >> initializeWithCode: initialCode [
 
 	self initialize.
-	code := initialCode.
+	codeTextString := GeminiTextString string: initialCode.
 	isPointedTo := false.
 ]
 
@@ -97,15 +103,15 @@ GeminiTextElementCode >> pointerLeftIn: chatWidget [
 { #category : 'Not categorized' }
 GeminiTextElementCode >> referencedClass [
 
-	^ (code notEmpty and: [ code first isUppercase and: [ code isSmalltalkIdentifier ] ])
-		ifTrue: [ Smalltalk classAt: code asEsString ]
+	^ (self code notEmpty and: [ self code first isUppercase and: [ self code isSmalltalkIdentifier ] ])
+		ifTrue: [ Smalltalk classAt: self code asEsString ]
 ]
 
 { #category : 'Not categorized' }
 GeminiTextElementCode >> referencedMethod [
 
 	| parts className isMeta selector class |
-	parts := '>>' split: code.
+	parts := '>>' split: self code.
 	parts size = 2 ifFalse: [ ^ nil ].
 	className := parts first trimBlanks.
 	selector := parts second trimBlanks.
@@ -127,4 +133,10 @@ GeminiTextElementCode >> referencesClass [
 GeminiTextElementCode >> referencesMethod [
 
 	^ self referencedMethod notNil
+]
+
+{ #category : 'Not categorized' }
+GeminiTextElementCode >> resetLayout [
+
+	self codeTextString resetLayout
 ]

@@ -127,3 +127,9 @@ GeminiTextBlockSequence >> lastTopicLine: newLastTopicLine [
 
 	lastTopicLine := newLastTopicLine
 ]
+
+{ #category : 'Not categorized' }
+GeminiTextBlockSequence >> resetLayout [
+
+	self blocks do: [ :block | block resetLayout ]
+]

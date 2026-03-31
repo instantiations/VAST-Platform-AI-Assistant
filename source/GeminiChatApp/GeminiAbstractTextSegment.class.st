@@ -46,6 +46,14 @@ GeminiAbstractTextSegment >> resetHeight [
 ]
 
 { #category : 'Not categorized' }
+GeminiAbstractTextSegment >> resetLayout [
+
+	self resetHeight.
+	self textBlocks do: [ :textBlock |
+		textBlock resetLayout ]
+]
+
+{ #category : 'Not categorized' }
 GeminiAbstractTextSegment >> textBlocks [
 
 	^ textBlocks

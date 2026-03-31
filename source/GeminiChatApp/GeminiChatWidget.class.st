@@ -4,6 +4,7 @@ Class {
 	#instVars : [
 		'chat',
 		'scrollBar',
+		'scrollBarValueFactor',
 		'drawingArea',
 		'drawnInteractableAreas',
 		'pointedToInteractableArea',
@@ -42,7 +43,7 @@ GeminiChatWidget class >> baseFontSize: newSize [
 		self resetFontSets.
 		self allInstances do: [ :widget |
 			widget isRealized ifTrue: [
-				widget resetTextSegmentHeights ] ] ]
+				widget resetTextSegmentLayout ] ] ]
 ]
 
 { #category : 'Not categorized' }
@@ -188,70 +189,43 @@ GeminiChatWidget >> drawPendingListMarkers: dc [
 ]
 
 { #category : 'Not categorized' }
-GeminiChatWidget >> drawString: textString dc: dc [
+GeminiChatWidget >> drawStringLayout: layout dc: dc [
 
-	| fontStyles drawnAreas |
+	| drawnAreas |
 
-	fontStyles := dc textMonospaced ifTrue: [ dc fontSet monospaced ] ifFalse: [ dc fontSet proportional ].
-	dc fontStruct: (dc textBolded
-		ifTrue: [ dc textItalicized ifTrue: [ fontStyles boldItalic ] ifFalse: [ fontStyles bold ] ]
-		ifFalse: [ dc textItalicized ifTrue: [ fontStyles italic ] ifFalse: [ fontStyles normal ] ]).
 	dc gc setFont: dc fontStruct font.
 	drawnAreas := OrderedCollection new.
-	(textString class crlf split: textString)
-		do: [ :lineString |
-			(Character tab split: lineString)
-				do: [ :string |
-					| startIndex |
-					startIndex := 1.
-					[ startIndex <= string size ] whileTrue: [
-						| maxWidth leftIndex rightIndex distance drawnString textWidth |
-						maxWidth := drawingArea width - dc rightInset - dc x.
-						leftIndex := startIndex.
-						rightIndex := string size + 1.
-						[ (distance := rightIndex - leftIndex) > 1 ] whileTrue: [
-							| width middleIndex |
-							middleIndex := leftIndex + (distance // 2).
-							width := dc fontStruct textWidth: (string copyFrom: startIndex to: middleIndex).
-							width <= maxWidth ifTrue: [
-								leftIndex := middleIndex.
-							] ifFalse: [
-								rightIndex := middleIndex ] ].
-						leftIndex < string size ifTrue: [
-							(string at: leftIndex + 1) isSeparator ifTrue: [
-								[ leftIndex < string size and: [ (string at: leftIndex + 1) isSeparator ] ] whileTrue: [ leftIndex := leftIndex + 1 ].
-							] ifFalse: [
-								| newLeftIndex |
-								newLeftIndex := leftIndex.
-								[ newLeftIndex >= startIndex and: [ (string at: newLeftIndex) isSeparator not ] ] whileTrue: [ newLeftIndex := newLeftIndex - 1 ].
-								(dc x > dc leftInset or: [ newLeftIndex > startIndex ]) ifTrue: [
-									leftIndex := newLeftIndex ] ] ].
-						drawnString := string copyFrom: startIndex to: leftIndex.
-						(selectionEndPoint notNil and: [ dc selectionStartX < Float infinity and: [ dc selectionEndX > dc x ] ]) ifTrue: [
-							| selectionStartIndex selectionEndIndex |
-							selectionStartIndex := (1 to: drawnString size) findFirst: [ :index |
-								(dc x + (dc fontStruct textWidth: (drawnString copyFrom: 1 to: index))) > dc selectionStartX ].
-							selectionStartIndex ~= 0 ifTrue: [
-								selectionEndIndex := (1 to: drawnString size) findLast: [ :index |
-									(dc x + (dc fontStruct textWidth: (drawnString copyFrom: 1 to: index - 1))) < dc selectionEndX ].
-									selectionEndIndex ~= 0 ifTrue: [
-										dc selectionStream nextPutAll: (drawnString copyFrom: selectionStartIndex to: selectionEndIndex).
-										dc gc setForeground: (dc pixmap getPalette nearestPixelValue: Color selectionBackground).
-										dc pixmap fillRectangle: dc gc x: dc x + (dc fontStruct textWidth: (drawnString copyFrom: 1 to: selectionStartIndex - 1))
-											y: dc y + dc yOffset width: (dc fontStruct textWidth: (drawnString copyFrom: selectionStartIndex to: selectionEndIndex)) height: dc ascent + dc descent ] ] ].
-						dc gc setForeground: (dc pixmap getPalette nearestPixelValue: dc textColor).
-						dc pixmap drawString: dc gc x: dc x y: dc y + dc ascent + dc yOffset string: drawnString.
-						textWidth := dc fontStruct textWidth: drawnString.
-						drawnAreas add: (Rectangle origin: dc x @ dc y extent: textWidth @ (dc ascent + dc descent)).
-						dc x: dc x + textWidth.
-						startIndex := leftIndex + 1.
-						startIndex <= string size ifTrue: [
+	layout
+		do: [ :line |
+			line
+				do: [ :tabPart |
+					tabPart
+						do: [ :drawnString |
+							| textWidth |
+							(selectionEndPoint notNil and: [ dc selectionStartX < Float infinity and: [ dc selectionEndX > dc x ] ]) ifTrue: [
+								| selectionStartIndex selectionEndIndex |
+								selectionStartIndex := (1 to: drawnString size) findFirst: [ :index |
+									(dc x + (dc fontStruct textWidth: (drawnString copyFrom: 1 to: index))) > dc selectionStartX ].
+								selectionStartIndex ~= 0 ifTrue: [
+									selectionEndIndex := (1 to: drawnString size) findLast: [ :index |
+										(dc x + (dc fontStruct textWidth: (drawnString copyFrom: 1 to: index - 1))) < dc selectionEndX ].
+										selectionEndIndex ~= 0 ifTrue: [
+											dc selectionStream nextPutAll: (drawnString copyFrom: selectionStartIndex to: selectionEndIndex).
+											dc gc setForeground: (dc pixmap getPalette nearestPixelValue: Color selectionBackground).
+											dc pixmap fillRectangle: dc gc x: dc x + (dc fontStruct textWidth: (drawnString copyFrom: 1 to: selectionStartIndex - 1))
+												y: dc y + dc yOffset width: (dc fontStruct textWidth: (drawnString copyFrom: selectionStartIndex to: selectionEndIndex)) height: dc ascent + dc descent ] ] ].
+							dc gc setForeground: (dc pixmap getPalette nearestPixelValue: dc textColor).
+							dc pixmap drawString: dc gc x: dc x y: dc y + dc ascent + dc yOffset string: drawnString.
+							textWidth := dc fontStruct textWidth: drawnString.
+							drawnAreas add: (Rectangle origin: dc x @ dc y extent: textWidth @ (dc ascent + dc descent)).
+							dc x: dc x + textWidth ]
+						separatedBy: [
 							dc x: dc leftInset.
 							dc y: dc y + dc ascent + dc descent.
 							dc ascent: dc fontSet proportional normal ascent.
 							dc descent: dc fontSet proportional normal descent.
 							self drawMiddleBackground: dc.
-							self updateSelectionStartEndX: dc ] ] ]
+							self updateSelectionStartEndX: dc ] ]
 				separatedBy: [
 					| newX |
 					newX := dc x - dc leftInset // dc tabWidth + 1 * dc tabWidth + dc leftInset.
@@ -424,7 +398,7 @@ GeminiChatWidget >> drawTextElementCode: textElement dc: dc [
 			ifFalse: [ dc textColor ].
 		dc withTextColor: textColor do: [
 			| drawnAreas |
-			drawnAreas := self drawString: textElement code dc: dc.
+			drawnAreas := self drawTextString: textElement codeTextString dc: dc.
 			hasBrowsableReference ifTrue: [
 				dc interactableAreas add: (GeminiChatWidgetInteractableArea rectangles: drawnAreas handler: textElement) ].
 			drawnAreas ] ]
@@ -487,7 +461,7 @@ GeminiChatWidget >> drawTextElementSequence: textElement dc: dc [
 { #category : 'Not categorized' }
 GeminiChatWidget >> drawTextElementString: textElement dc: dc [
 
-	^ self drawString: textElement string dc: dc
+	^ self drawTextString: textElement textString dc: dc
 ]
 
 { #category : 'Not categorized' }
@@ -558,7 +532,7 @@ GeminiChatWidget >> drawTextSegments: dc [
 			| textSegmentHeight |
 			textSegmentHeight := textSegment height.
 			(textSegmentHeight isNil or: [ 
-				((dc y + textSegmentHeight) > scrollBar value and: [ dc y < (scrollBar value + drawingArea height) ]) or: [
+				((dc y + textSegmentHeight) > (scrollBar value * scrollBarValueFactor) and: [ dc y < (scrollBar value * scrollBarValueFactor + drawingArea height) ]) or: [
 					selectionEndPoint notNil and: [ (dc y + textSegmentHeight) > (selectionStartPoint y min: selectionEndPoint y) and: [ dc y < (selectionStartPoint y max: selectionEndPoint y) ] ] ] ])
 						ifFalse: [
 							dc y: dc y + textSegmentHeight
@@ -566,6 +540,20 @@ GeminiChatWidget >> drawTextSegments: dc [
 							textSegment height: (self drawTextSegment: textSegment dc: dc) ] ]
 		separatedBy: [
 			dc y: dc y + (self class baseFontSet proportional normal height * 3 // 2) ].
+]
+
+{ #category : 'Not categorized' }
+GeminiChatWidget >> drawTextString: textString dc: dc [
+
+	| fontStyles |
+
+	fontStyles := dc textMonospaced ifTrue: [ dc fontSet monospaced ] ifFalse: [ dc fontSet proportional ].
+	dc fontStruct: (dc textBolded
+		ifTrue: [ dc textItalicized ifTrue: [ fontStyles boldItalic ] ifFalse: [ fontStyles bold ] ]
+		ifFalse: [ dc textItalicized ifTrue: [ fontStyles italic ] ifFalse: [ fontStyles normal ] ]).
+	textString layout ifNil: [
+		textString layout: (self layOutString: textString string dc: dc) ].
+	^ self drawStringLayout: textString layout dc: dc
 ]
 
 { #category : 'Not categorized' }
@@ -586,7 +574,7 @@ GeminiChatWidget >> drawingAreaButtonPress: ignored clientData: clientData callD
 	| point |
 
 	buttonEvent button = Button1 ifFalse: [ ^ self ].
-	point := buttonEvent point + (0 @ scrollBar value).
+	point := buttonEvent point + (0 @( scrollBar value * scrollBarValueFactor)).
 	(drawnInteractableAreas detect: [ :interactableArea | interactableArea containsPoint: point ] ifNone: [ nil ])
 		ifNotNil: [ :interactableArea |
 			interactableArea buttonPressedIn: self ]
@@ -627,7 +615,7 @@ GeminiChatWidget >> drawingAreaExposed: ignored clientData: clientData callData:
 		leftInsetQuoteBlockIncrement: dc tabWidth;
 		leftInsetListItemBlockIncrement: (self class baseFontSet proportional normal textWidth: (String new: 8 withAll: Character space));
 		rightInset: 20;
-		yOffset: scrollBar value negated;
+		yOffset: (scrollBar value * scrollBarValueFactor) negated;
 		y: self class baseFontSet proportional normal height * 3 // 2;
 		pendingListMarkers: OrderedCollection new;
 		interactableAreas: OrderedCollection new;
@@ -649,10 +637,10 @@ GeminiChatWidget >> drawingAreaExposed: ignored clientData: clientData callData:
 	spacing := self class baseFontSet proportional normal height * 3 // 4.
 	scrollBarNextMinMaxValue := dc y + spacing.
 	scrollBar
-		maximum: (scrollBarNextMinMaxValue + spacing max: (scrollBarMinMaxValue + drawingArea height));
-		sliderSize: drawingArea height;
-		increment: self class baseFontSet proportional normal height;
-		pageIncrement: drawingArea height.
+		maximum: (scrollBarNextMinMaxValue + spacing max: (scrollBarMinMaxValue + drawingArea height)) + scrollBarValueFactor - 1 // scrollBarValueFactor;
+		sliderSize: drawingArea height + scrollBarValueFactor - 1 // scrollBarValueFactor;
+		increment: self class baseFontSet proportional normal height + scrollBarValueFactor - 1 // scrollBarValueFactor;
+		pageIncrement: drawingArea height + scrollBarValueFactor - 1 // scrollBarValueFactor.
 	drawnInteractableAreas := dc interactableAreas.
 	selectedString := dc selectionStream contents.
 	dc gc freeGC.
@@ -664,7 +652,7 @@ GeminiChatWidget >> drawingAreaPointerMotion: ignored clientData: clientData cal
 
 	| point |
 
-	point := motionEvent point + (0 @ scrollBar value).
+	point := motionEvent point + (0 @ (scrollBar value * scrollBarValueFactor)).
 	selecting ifTrue: [
 		selectionEndPoint := point.
 		CwAppContext default asyncExecInUI: [
@@ -684,6 +672,7 @@ GeminiChatWidget >> drawingAreaPointerMotion: ignored clientData: clientData cal
 GeminiChatWidget >> initialize [
 
 	super initialize.
+	scrollBarValueFactor := self class baseFontSet proportional normal height.
 	selecting := false.
 	scrollBarMinMaxValue := 0.
 	scrollBarNextMinMaxValue := 0.
@@ -706,6 +695,59 @@ GeminiChatWidget >> initializeAfterCreate [
 			receiver: self
 			selector: #scrolledWindowDestroyed:clientData:callData:
 			clientData: nil
+]
+
+{ #category : 'Not categorized' }
+GeminiChatWidget >> layOutString: textString dc: dc [
+
+	^ Array streamContents: [ :lineStream |
+		| x |
+		x := dc x.
+		(textString class crlf split: textString)
+			do: [ :lineString |
+				lineStream nextPut: (Array streamContents: [ :tabPartStream |
+					(Character tab split: lineString)
+						do: [ :string |
+							tabPartStream nextPut: (Array streamContents: [ :drawnStringStream |
+								| startIndex |
+								startIndex := 1.
+								[ startIndex <= string size ] whileTrue: [
+									| maxWidth leftIndex rightIndex distance drawnString textWidth |
+									maxWidth := drawingArea width - dc rightInset - x.
+									leftIndex := startIndex.
+									rightIndex := string size + 1.
+									[ (distance := rightIndex - leftIndex) > 1 ] whileTrue: [
+										| width middleIndex |
+										middleIndex := leftIndex + (distance // 2).
+										width := dc fontStruct textWidth: (string copyFrom: startIndex to: middleIndex).
+										width <= maxWidth ifTrue: [
+											leftIndex := middleIndex.
+										] ifFalse: [
+											rightIndex := middleIndex ] ].
+									leftIndex < string size ifTrue: [
+										(string at: leftIndex + 1) isSeparator ifTrue: [
+											[ leftIndex < string size and: [ (string at: leftIndex + 1) isSeparator ] ] whileTrue: [ leftIndex := leftIndex + 1 ].
+										] ifFalse: [
+											| newLeftIndex |
+											newLeftIndex := leftIndex.
+											[ newLeftIndex >= startIndex and: [ (string at: newLeftIndex) isSeparator not ] ] whileTrue: [ newLeftIndex := newLeftIndex - 1 ].
+											(x > dc leftInset or: [ newLeftIndex > startIndex ]) ifTrue: [
+												leftIndex := newLeftIndex ] ] ].
+									drawnString := string copyFrom: startIndex to: leftIndex.
+									drawnStringStream nextPut: drawnString.
+									textWidth := dc fontStruct textWidth: drawnString.
+									x := x + textWidth.
+									startIndex := leftIndex + 1.
+									startIndex <= string size ifTrue: [
+										x := dc leftInset ] ] ]) ]
+						separatedBy: [
+							| newX |
+							newX := x - dc leftInset // dc tabWidth + 1 * dc tabWidth + dc leftInset.
+							x := newX.
+							x > (drawingArea width - dc rightInset) ifTrue: [
+								x := dc leftInset ] ] ]) ]
+			separatedBy: [
+				x := dc leftInset ] ]
 ]
 
 { #category : 'Not categorized' }
@@ -733,10 +775,10 @@ GeminiChatWidget >> pointedToLinkColor [
 ]
 
 { #category : 'Not categorized' }
-GeminiChatWidget >> resetTextSegmentHeights [
+GeminiChatWidget >> resetTextSegmentLayout [
 
 	CwAppContext default asyncExecInUI: [
-		chat resetTextSegmentHeights.
+		chat resetTextSegmentLayout.
 		selecting := false.
 		selectionStartPoint := nil.
 		selectionEndPoint := nil.
@@ -753,8 +795,8 @@ GeminiChatWidget >> scrollBarValueChanged: ignored clientData: clientData callDa
 GeminiChatWidget >> scrollToNextUserMessage [
 
 	scrollBarMinMaxValue := scrollBarNextMinMaxValue.
-	scrollBar maximum: scrollBarMinMaxValue + drawingArea height.
-	scrollBar value: scrollBarMinMaxValue.
+	scrollBar maximum: scrollBarMinMaxValue + drawingArea height + scrollBarValueFactor - 1 // scrollBarValueFactor.
+	scrollBar value: scrollBarMinMaxValue // scrollBarValueFactor.
 ]
 
 { #category : 'Not categorized' }
@@ -767,7 +809,7 @@ GeminiChatWidget >> scrolledWindowDestroyed: scrolledWindow clientData: clientDa
 { #category : 'Not categorized' }
 GeminiChatWidget >> scrolledWindowExposedOrResized: scrolledWindow clientData: clientData callData: callData [
 
-	chat resetTextSegmentHeights.
+	chat resetTextSegmentLayout.
 	selectionStartPoint := nil.
 	selectionEndPoint := nil.
 ]

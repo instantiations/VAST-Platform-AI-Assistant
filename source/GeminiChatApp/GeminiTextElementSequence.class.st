@@ -160,3 +160,9 @@ GeminiTextElementSequence >> isSequenceElement [
 
 	^ true
 ]
+
+{ #category : 'Not categorized' }
+GeminiTextElementSequence >> resetLayout [
+
+	self elements do: [ :element | element resetLayout ]
+]

@@ -49,10 +49,59 @@ GeminiCodeMergeWindow class >> openOn: leftStr and: rightStr forClass: aClass se
 ]
 
 { #category : 'Not categorized' }
+GeminiCodeMergeWindow >> alignEditors [
+	"Inject empty annotations based on the padding calculated by the comparer."
+
+	comparer ifNil: [^self].
+	
+	leftEditor annotationClearAll.
+	rightEditor annotationClearAll.
+	
+	"1 = ANNOTATION_STANDARD"
+	leftEditor annotationSetVisible: 1.
+	rightEditor annotationSetVisible: 1.
+
+	comparer leftPaddings keysAndValuesDo: [:line :count |
+		| padding |
+		padding := WriteStream on: String new.
+		
+		"Scintilla annotations consume exactly the number of lines corresponding 
+		 to the number of newlines in the string PLUS ONE for the text itself.
+		 Therefore, to consume N lines of padding, the string must contain exactly 
+		 N - 1 newlines!"
+		1 to: (count - 1 max: 0) do: [:i | padding nextPut: Character lf].
+		padding nextPut: $ .
+		
+		leftEditor annotationSetText: (line - 1 max: 0) text: padding contents.
+	].
+
+	comparer rightPaddings keysAndValuesDo: [:line :count |
+		| padding |
+		padding := WriteStream on: String new.
+		1 to: (count - 1 max: 0) do: [:i | padding nextPut: Character lf].
+		padding nextPut: $ .
+		
+		rightEditor annotationSetText: (line - 1 max: 0) text: padding contents.
+	].
+]
+
+{ #category : 'Not categorized' }
 GeminiCodeMergeWindow >> cancel [
 	"Close the window."
 
 	self close
+]
+
+{ #category : 'Not categorized' }
+GeminiCodeMergeWindow >> compilerError: error [
+	"Report a compiler error to the user."
+
+	| errorPos |
+	errorPos := error startPosition - 1 max: 0.
+	rightEditor
+		setInputFocus;
+		insertAndShow: errorPos value: error message;
+		setSelection: errorPos @ (errorPos + error message size)
 ]
 
 { #category : 'Not categorized' }
@@ -146,35 +195,43 @@ GeminiCodeMergeWindow >> createWorkRegion [
 
 { #category : 'Not categorized' }
 GeminiCodeMergeWindow >> highlightAllDifferences [
-	"Highlight all unequal runs in orange and equal runs in green in both editors."
+	"Highlight line changes in light colors, and intra-line changes in darker colors."
 
-	| unequalRuns equalRuns runChars |
+	| runChars |
 	comparer ifNil: [^self].
 	
 	self setupIndicatorsFor: leftEditor.
 	self setupIndicatorsFor: rightEditor.
 	
-	"1. Highlight Differences (Indicator 0)"
+	"1. Full-line Deletions (Light Red)"
 	leftEditor indicatorSetCurrent: 0.
-	rightEditor indicatorSetCurrent: 0.
-	
-	unequalRuns := comparer unEqualRuns.
-	unequalRuns do: [:runLines | 
+	comparer deletedRuns do: [:runLines | 
 		runChars := comparer convertRunToCharacterLocations: runLines.
 		self highlightRange: (runChars at: 1) x to: (runChars at: 2) x on: leftEditor.
-		self highlightRange: (runChars at: 1) y to: (runChars at: 2) y on: rightEditor.
 	].
 
-	"2. Highlight Matches (Indicator 1)"
-	leftEditor indicatorSetCurrent: 1.
+	"2. Full-line Insertions (Light Green)"
 	rightEditor indicatorSetCurrent: 1.
-	
-	equalRuns := comparer equalRuns.
-	equalRuns do: [:runLines | 
+	comparer insertedRuns do: [:runLines | 
 		runChars := comparer convertRunToCharacterLocations: runLines.
-		self highlightRange: (runChars at: 1) x to: (runChars at: 2) x on: leftEditor.
 		self highlightRange: (runChars at: 1) y to: (runChars at: 2) y on: rightEditor.
 	].
+	
+	"3. Character-level Deletions (Dark Red)"
+	leftEditor indicatorSetCurrent: 2.
+	comparer deletedCharRuns do: [:runLines | 
+		runChars := comparer convertRunToCharacterLocations: runLines.
+		self highlightRange: (runChars at: 1) x to: (runChars at: 2) x on: leftEditor.
+	].
+
+	"4. Character-level Insertions (Dark Green)"
+	rightEditor indicatorSetCurrent: 3.
+	comparer insertedCharRuns do: [:runLines | 
+		runChars := comparer convertRunToCharacterLocations: runLines.
+		self highlightRange: (runChars at: 1) y to: (runChars at: 2) y on: rightEditor.
+	].
+	
+	self alignEditors.
 ]
 
 { #category : 'Not categorized' }
@@ -208,7 +265,7 @@ GeminiCodeMergeWindow >> initializeAfterRealize [
 GeminiCodeMergeWindow >> initializeComparer [
 	"Initialize the comparer with the text from our editors."
 
-	comparer := EtStringComparer new
+	comparer := EtDMPStringComparer new
 		string1: leftEditor getString;
 		string2: rightEditor getString;
 		compare;
@@ -233,10 +290,10 @@ GeminiCodeMergeWindow >> leftString: aString [
 GeminiCodeMergeWindow >> merge [
 	"Compile the new method source."
 
-	| newSource |
+	| newSource result |
 	newSource := rightEditor getText.
-	theClass compile: newSource.
-	self close
+	result := theClass compile: newSource notifying: self.
+	result ifNotNil: [ self close ]
 ]
 
 { #category : 'Not categorized' }
@@ -266,23 +323,33 @@ GeminiCodeMergeWindow >> scNotification: aWidget clientData: anObject callData: 
 
 { #category : 'Not categorized' }
 GeminiCodeMergeWindow >> setupIndicatorsFor: anEditor [
-	"Configure indicator 0 (orange) for differences and 1 (green) for matches."
+	"Configure indicators for line and character diffs."
 
 	"8 is the constant for INDIC_STRAIGHTBOX"
 	
-	"Configure Indicator 0: Differences (Orange)"
+	"Indicator 0: Line Deletions (Light Red)"
 	anEditor indicatorSetStyle: 0 style: 8. 
-	anEditor indicatorSetFore: 0 color: 16r00A5FF. "Color is BBGGRR in Scintilla"
-	anEditor indicatorSetAlpha: 0 alpha: 40. 
-	anEditor indicatorSetOutlineAlpha: 0 alpha: 100. 
+	anEditor indicatorSetFore: 0 color: 16r0000FF. 
+	anEditor indicatorSetAlpha: 0 alpha: 25. 
 	anEditor indicatorSetUnder: 0 under: 1.
 
-	"Configure Indicator 1: Matches (Green)"
+	"Indicator 1: Line Insertions (Light Green)"
 	anEditor indicatorSetStyle: 1 style: 8. 
 	anEditor indicatorSetFore: 1 color: 16r00FF00. 
-	anEditor indicatorSetAlpha: 1 alpha: 40. 
-	anEditor indicatorSetOutlineAlpha: 1 alpha: 100. 
+	anEditor indicatorSetAlpha: 1 alpha: 25. 
 	anEditor indicatorSetUnder: 1 under: 1.
+
+	"Indicator 2: Char Deletions (Dark Red)"
+	anEditor indicatorSetStyle: 2 style: 8. 
+	anEditor indicatorSetFore: 2 color: 16r0000FF. 
+	anEditor indicatorSetAlpha: 2 alpha: 100. 
+	anEditor indicatorSetUnder: 2 under: 1.
+
+	"Indicator 3: Char Insertions (Dark Green)"
+	anEditor indicatorSetStyle: 3 style: 8. 
+	anEditor indicatorSetFore: 3 color: 16r00FF00. 
+	anEditor indicatorSetAlpha: 3 alpha: 100. 
+	anEditor indicatorSetUnder: 3 under: 1.
 ]
 
 { #category : 'Not categorized' }

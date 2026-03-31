@@ -75,6 +75,12 @@ GeminiAbstractTextBlock >> isThoughtBlock [
 	^ false
 ]
 
+{ #category : 'Not categorized' }
+GeminiAbstractTextBlock >> resetLayout [
+
+	self textElement resetLayout
+]
+
 { #category : 'Accessing' }
 GeminiAbstractTextBlock >> textElement [
 

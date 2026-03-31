@@ -153,10 +153,10 @@ GeminiChat >> model: newModel [
 ]
 
 { #category : 'Not categorized' }
-GeminiChat >> resetTextSegmentHeights [
+GeminiChat >> resetTextSegmentLayout [
 
 	textSegmentsMutex critical: [
-		textSegments do: [ :textSegment | textSegment resetHeight ] ]
+		textSegments do: [ :textSegment | textSegment resetLayout ] ]
 ]
 
 { #category : 'Not categorized' }

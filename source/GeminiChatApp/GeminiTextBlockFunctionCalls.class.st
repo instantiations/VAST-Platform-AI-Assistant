@@ -25,7 +25,7 @@ GeminiTextBlockFunctionCalls >> addFunctionCall: functionCallContentPart [
 GeminiTextBlockFunctionCalls >> buttonPressedIn: chatWidget [
 
 	self toggleIsExpanded.
-	chatWidget resetTextSegmentHeights.
+	chatWidget resetTextSegmentLayout.
 ]
 
 { #category : 'Not categorized' }
@@ -86,6 +86,18 @@ GeminiTextBlockFunctionCalls >> pointerLeftIn: chatWidget [
 
 	isPointedTo := false.
 	chatWidget redraw.
+]
+
+{ #category : 'Not categorized' }
+GeminiTextBlockFunctionCalls >> resetLayout [
+
+	"Nothing to do"
+]
+
+{ #category : 'Not categorized' }
+GeminiTextBlockFunctionCalls >> textElement [
+
+	self shouldNotImplement
 ]
 
 { #category : 'Not categorized' }

@@ -27,3 +27,9 @@ GeminiAbstractTextElement >> isStringElement [
 
 	^ false
 ]
+
+{ #category : 'Not categorized' }
+GeminiAbstractTextElement >> resetLayout [
+
+	self subclassResponsibility
+]

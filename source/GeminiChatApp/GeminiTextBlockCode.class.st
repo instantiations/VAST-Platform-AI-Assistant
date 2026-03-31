@@ -177,16 +177,15 @@ GeminiTextBlockCode >> resolveExistingMethod: existingBlock newMethod: newBlock 
 	line := self code lines first.
 	matcher := self methodMatcher.
 	(matcher matches: line)
-		ifTrue: [ |isMeta selectorSubExpression|
+		ifTrue: [ |isMeta|
 			className := matcher subexpression:  2.
 			isMeta := (matcher subexpression:  3) = 'class'.
-			selectorSubExpression :=  isMeta ifTrue: [4] ifFalse: [3].
 			"keyword selector"
 			selector := String streamContents: [:selectorStream |
-			(matcher subexpression: selectorSubExpression) subStrings
+			(matcher subexpression: 4) subStrings
 				do: [:t | (t last = $:) ifTrue: [selectorStream nextPutAll: t]]].
 			"binary selector"
-			selector isEmpty ifTrue: [selector := (matcher subexpression: selectorSubExpression) subStrings first].
+			selector isEmpty ifTrue: [selector := (matcher subexpression: 4) subStrings first].
 			class := Smalltalk at: className asSymbol ifAbsent: [nil].
 			class ifNotNil: [ | method | 
 				isMeta ifTrue: [class := class class].

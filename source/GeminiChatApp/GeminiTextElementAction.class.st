@@ -66,3 +66,9 @@ GeminiTextElementAction >> pointerLeftIn: chatWidget [
 	isPointedTo := false.
 	chatWidget redraw.
 ]
+
+{ #category : 'Not categorized' }
+GeminiTextElementAction >> resetLayout [
+
+	self element resetLayout
+]
