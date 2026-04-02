@@ -23,6 +23,11 @@ Gemini AI Assistant adds [Google's Gemini AI](https://ai.google.dev/) to the VAS
 - From the Configuration Maps Browser, use the `Names>>Import>>Load Configuration Maps from Tonel Repository` menu item and point to the root directory of the local clone of the VAST Platform AI Assistant repository (which you cloned in the first step).
 - In the window that opens, add only the config map for the `Gemini AI Assistant` that corresponds to your version of VAST (e.g. `Gemini AI Assistant (VAST 14.1.0)`) to the list of config maps to import and load.
 - Once loaded, open `Gemini AI Assistant` from the Transcript window's `Tools` menu and fill-in your Gemini API key via the `Options>>Set API Key...` menu of the Gemini AI Assistant window.
+- If you need to use an HTTP proxy, evaluate the following in a workspace with the correct URL for the proxy to set it in the global configuration for the ‘httpsl’ transport. See the class SstHttpConfiguration for methods for setting credentials for the proxy or a list of excepted domains, and the [section on ‘Configuring an HTTP Client to Use a Proxy’](https://www.instantiations.com/vast-support/documentation/1500/ss/sst89s.html) in the documentation for further details.
+  ```smalltalk
+  (SstTransport configurationForIdentifier: 'httpsl')
+  	proxyUrl: 'https://proxy.local:8080' sstAsUrl
+  ```
 - You are ready to start asking questions to Gemini!
 
 ### Features Overview
