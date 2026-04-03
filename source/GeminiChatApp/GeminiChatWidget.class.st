@@ -9,6 +9,7 @@ Class {
 		'drawnInteractableAreas',
 		'pointedToInteractableArea',
 		'selecting',
+		'selectionScrollTimeoutID',
 		'selectionStartPoint',
 		'selectionEndPoint',
 		'selectedString',
@@ -61,6 +62,12 @@ GeminiChatWidget class >> resetFontSets [
 	HeadingFontSets ifNotNil: [
 		HeadingFontSets do: [ :headingFontSet | headingFontSet freeFonts ].
 		HeadingFontSets := nil ].
+]
+
+{ #category : 'Not categorized' }
+GeminiChatWidget >> addSelectionScrollTimeout [
+
+	selectionScrollTimeoutID := CwAppContext default addTimeout: 25 receiver: self selector: #selectionScrollTimeoutElapsed: clientData: nil
 ]
 
 { #category : 'Not categorized' }
@@ -597,6 +604,7 @@ GeminiChatWidget >> drawingAreaButtonRelease: ignored clientData: clientData cal
 
 	buttonEvent button = Button1 ifFalse: [ ^ self ].
 	selecting := false.
+	self removeSelectionScrollTimeout.
 ]
 
 { #category : 'Not categorized' }
@@ -655,6 +663,9 @@ GeminiChatWidget >> drawingAreaPointerMotion: ignored clientData: clientData cal
 	point := motionEvent point + (0 @ (scrollBar value * scrollBarValueFactor)).
 	selecting ifTrue: [
 		selectionEndPoint := point.
+		selectionScrollTimeoutID ifNil: [
+			(motionEvent point y between: 0 and: drawingArea height) ifFalse: [
+				self addSelectionScrollTimeout ] ].
 		CwAppContext default asyncExecInUI: [
 			drawingArea redraw ]
 	] ifFalse: [
@@ -674,6 +685,7 @@ GeminiChatWidget >> initialize [
 	super initialize.
 	scrollBarValueFactor := self class baseFontSet proportional normal height.
 	selecting := false.
+	selectionScrollTimeoutID := nil.
 	scrollBarMinMaxValue := 0.
 	scrollBarNextMinMaxValue := 0.
 ]
@@ -775,11 +787,20 @@ GeminiChatWidget >> pointedToLinkColor [
 ]
 
 { #category : 'Not categorized' }
+GeminiChatWidget >> removeSelectionScrollTimeout [
+
+	selectionScrollTimeoutID ifNotNil: [
+		CwAppContext default removeTimeout: selectionScrollTimeoutID.
+		selectionScrollTimeoutID := nil ]
+]
+
+{ #category : 'Not categorized' }
 GeminiChatWidget >> resetTextSegmentLayout [
 
 	CwAppContext default asyncExecInUI: [
 		chat resetTextSegmentLayout.
 		selecting := false.
+		self removeSelectionScrollTimeout.
 		selectionStartPoint := nil.
 		selectionEndPoint := nil.
 		drawingArea redraw ].
@@ -802,6 +823,7 @@ GeminiChatWidget >> scrollToNextUserMessage [
 { #category : 'Not categorized' }
 GeminiChatWidget >> scrolledWindowDestroyed: scrolledWindow clientData: clientData callData: callData [
 
+	self removeSelectionScrollTimeout.
 	chat ifNotNil: [
 		chat removeDependent: self ]
 ]
@@ -818,6 +840,23 @@ GeminiChatWidget >> scrolledWindowExposedOrResized: scrolledWindow clientData: c
 GeminiChatWidget >> selectedString [
 
 	^ selectedString
+]
+
+{ #category : 'Not categorized' }
+GeminiChatWidget >> selectionScrollTimeoutElapsed: clientData [
+
+	| relativeSelectionEndY distanceSelectionEndY valueDelta previousValue |
+
+	selectionScrollTimeoutID := nil.
+	(selecting and: [ selectionEndPoint notNil ]) ifFalse: [ ^ self ].
+	relativeSelectionEndY := selectionEndPoint y - (scrollBar value * scrollBarValueFactor).
+	(relativeSelectionEndY between: 0 and: drawingArea height) ifTrue: [ ^ self ].
+	distanceSelectionEndY := relativeSelectionEndY negative ifTrue: [ relativeSelectionEndY abs ] ifFalse: [ relativeSelectionEndY - drawingArea height ].
+	valueDelta := ((distanceSelectionEndY // 4 min: scrollBar pageIncrement * scrollBarValueFactor) max: scrollBarValueFactor) * relativeSelectionEndY sign.
+	previousValue := scrollBar value * scrollBarValueFactor.
+	scrollBar setValue: (previousValue + valueDelta) // scrollBarValueFactor notify: true.
+	selectionEndPoint := selectionEndPoint + (0 @ (scrollBar value * scrollBarValueFactor - previousValue)).
+	self addSelectionScrollTimeout
 ]
 
 { #category : 'Not categorized' }

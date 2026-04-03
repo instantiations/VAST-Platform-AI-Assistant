@@ -20,22 +20,14 @@ Class {
 	#category : 'GeminiChatApp'
 }
 
-{ #category : 'Not categorized' }
+{ #category : 'Internal' }
 GeminiCodeMergeWindow class >> desiredWindowSize [
 	"Answer the desired window size."
 
-	^self windowRatio * (700 @ 600)
+	^self windowRatio * (700 @ 500)
 ]
 
-{ #category : 'Not categorized' }
-GeminiCodeMergeWindow class >> open [
-	"Open an instance of the receiver as a windowed part.
-	<script>"
-
-	^self new open
-]
-
-{ #category : 'Not categorized' }
+{ #category : 'Internal' }
 GeminiCodeMergeWindow class >> openOn: leftStr and: rightStr forClass: aClass selector: aSelector [
 	"Open a new comparison view with the provided strings for the given class and selector."
 
@@ -48,9 +40,9 @@ GeminiCodeMergeWindow class >> openOn: leftStr and: rightStr forClass: aClass se
 	^view
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Internal' }
 GeminiCodeMergeWindow >> alignEditors [
-	"Inject empty annotations based on the padding calculated by the comparer."
+	"Inject empty annotations based on the padding calculated by the comparer, with a light grey background."
 
 	comparer ifNil: [^self].
 	
@@ -73,6 +65,7 @@ GeminiCodeMergeWindow >> alignEditors [
 		padding nextPut: $ .
 		
 		leftEditor annotationSetText: (line - 1 max: 0) text: padding contents.
+		leftEditor annotationSetStyle: (line - 1 max: 0) style: 51.
 	].
 
 	comparer rightPaddings keysAndValuesDo: [:line :count |
@@ -82,29 +75,34 @@ GeminiCodeMergeWindow >> alignEditors [
 		padding nextPut: $ .
 		
 		rightEditor annotationSetText: (line - 1 max: 0) text: padding contents.
+		rightEditor annotationSetStyle: (line - 1 max: 0) style: 51.
 	].
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Actions' }
 GeminiCodeMergeWindow >> cancel [
 	"Close the window."
 
 	self close
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Internal' }
 GeminiCodeMergeWindow >> compilerError: error [
 	"Report a compiler error to the user."
 
 	| errorPos |
 	errorPos := error startPosition - 1 max: 0.
+	
 	rightEditor
+		setReadonly: false;
 		setInputFocus;
 		insertAndShow: errorPos value: error message;
-		setSelection: errorPos @ (errorPos + error message size)
+		setSelection: errorPos @ (errorPos + error message size);
+		setReadonly: true
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Internal',
+  #vaVisibility : 'private' }
 GeminiCodeMergeWindow >> createWorkRegion [
 	"Create and lay out the subparts for the comparison view."
 
@@ -193,53 +191,55 @@ GeminiCodeMergeWindow >> createWorkRegion [
 			rightOffset: 5]
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Internal',
+  #vaVisibility : 'private' }
 GeminiCodeMergeWindow >> highlightAllDifferences [
-	"Highlight line changes in light colors, and intra-line changes in darker colors."
-
-	| runChars |
-	comparer ifNil: [^self].
+	"Highlight all unequal runs in red/green (full line) and red/green (characters)."
 	
-	self setupIndicatorsFor: leftEditor.
-	self setupIndicatorsFor: rightEditor.
-	
-	"1. Full-line Deletions (Light Red)"
+	"Indicator 0 is Red (Removed characters), Indicator 1 is Green (Added characters)"
 	leftEditor indicatorSetCurrent: 0.
-	comparer deletedRuns do: [:runLines | 
-		runChars := comparer convertRunToCharacterLocations: runLines.
-		self highlightRange: (runChars at: 1) x to: (runChars at: 2) x on: leftEditor.
-	].
-
-	"2. Full-line Insertions (Light Green)"
 	rightEditor indicatorSetCurrent: 1.
-	comparer insertedRuns do: [:runLines | 
-		runChars := comparer convertRunToCharacterLocations: runLines.
-		self highlightRange: (runChars at: 1) y to: (runChars at: 2) y on: rightEditor.
-	].
 	
-	"3. Character-level Deletions (Dark Red)"
-	leftEditor indicatorSetCurrent: 2.
-	comparer deletedCharRuns do: [:runLines | 
+	"1. Apply background styles to full lines"
+	comparer unEqualRuns do: [:runLines | 	| runChars |
 		runChars := comparer convertRunToCharacterLocations: runLines.
-		self highlightRange: (runChars at: 1) x to: (runChars at: 2) x on: leftEditor.
+		"Left Editor (Removed lines -> Marker 1 Light Red)"
+		self markerRange: (runChars at: 1) x to: (runChars at: 2) x on: leftEditor markerNumber: 1.
+		"Right Editor (Added lines -> Marker 2 Light Green)"
+		self markerRange: (runChars at: 1) y to: (runChars at: 2) y on: rightEditor markerNumber: 2.
 	].
 
-	"4. Character-level Insertions (Dark Green)"
-	rightEditor indicatorSetCurrent: 3.
-	comparer insertedCharRuns do: [:runLines | 
-		runChars := comparer convertRunToCharacterLocations: runLines.
-		self highlightRange: (runChars at: 1) y to: (runChars at: 2) y on: rightEditor.
+	"2. Apply Red indicator to removed characters"
+	comparer deletedCharRuns do: [:charRuns | 
+		self indicatorRange: (charRuns at: 1) x to: (charRuns at: 2) x on: leftEditor.
 	].
-	
-	self alignEditors.
+
+	"3. Apply Green indicator to added characters"
+	comparer insertedCharRuns do: [:charRuns | 
+		self indicatorRange: (charRuns at: 1) y to: (charRuns at: 2) y on: rightEditor.
+	].
 ]
 
-{ #category : 'Not categorized' }
-GeminiCodeMergeWindow >> highlightRange: startChar to: endChar on: editor [
+{ #category : 'Internal',
+  #vaVisibility : 'private' }
+GeminiCodeMergeWindow >> includeEditMenu [
+
+	^ false
+]
+
+{ #category : 'Internal',
+  #vaVisibility : 'private' }
+GeminiCodeMergeWindow >> includeFileMenu [
+
+	^ false
+]
+
+{ #category : 'Internal',
+  #vaVisibility : 'private' }
+GeminiCodeMergeWindow >> indicatorRange: startChar to: endChar on: editor [
 	"Apply the currently selected indicator to the character range."
 
 	| start len |
-	"Convert from 1-based Smalltalk string indexes to 0-based Scintilla indexes"
 	start := (startChar - 1) max: 0.
 	len := (endChar - startChar) max: 0.
 	
@@ -248,62 +248,118 @@ GeminiCodeMergeWindow >> highlightRange: startChar to: endChar on: editor [
 	].
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Initialization',
+  #vaVisibility : 'private' }
 GeminiCodeMergeWindow >> initializeAfterRealize [
 	"The widgets are now fully created. Populate them with initial data."
 
 	super initializeAfterRealize.
 
+	"1. Apply Smalltalk syntax highlighting first"
+	leftEditor lexerSmalltalk.
+	rightEditor lexerSmalltalk.
+
+	"2. Clear previous styling so the lexer can take over correctly"
+	leftEditor clearDocumentStyle.
+	rightEditor clearDocumentStyle.
+
+	"3. Set initial strings"
 	leftString notNil ifTrue: [ leftEditor setText: leftString asString ].
 	rightString notNil ifTrue: [ rightEditor setText: rightString asString ].
 
+	"4. Do the comparison and apply marker styling"
 	self initializeComparer.
+	self initializeStyles.
 	self highlightAllDifferences.
+	self alignEditors.
+	
+	"5. Make editors read-only"
+	leftEditor setReadonly: true.
+	rightEditor setReadonly: true.
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Initialization',
+  #vaVisibility : 'private' }
 GeminiCodeMergeWindow >> initializeComparer [
 	"Initialize the comparer with the text from our editors."
 
-	comparer := EtDMPStringComparer new
+	comparer := DMPStringComparer new
 		string1: leftEditor getString;
 		string2: rightEditor getString;
 		compare;
 		yourself.
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Initialization',
+  #vaVisibility : 'private' }
+GeminiCodeMergeWindow >> initializeStyles [
+
+	self setupStylesFor: leftEditor.
+	self setupStylesFor: rightEditor.
+	self setupIndicatorsFor: leftEditor.
+	self setupIndicatorsFor: rightEditor.
+]
+
+{ #category : 'Internal' }
 GeminiCodeMergeWindow >> label [
 	"Return the window title."
 
-	^'Method MergeView'
+	^theSelector ifNil: [ 'Class MergeView' ] ifNotNil: [ 'Method MergeView' ]
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Initialization' }
 GeminiCodeMergeWindow >> leftString: aString [
 	"Store the left string to be displayed later."
 
 	leftString := aString
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Internal',
+  #vaVisibility : 'private' }
+GeminiCodeMergeWindow >> markerRange: startChar to: endChar on: editor markerNumber: markerNumber [
+	"Add a line marker to the lines covering the character range."
+
+	| startLine endLine len start |
+	start := (startChar - 1) max: 0.
+	len := (endChar - startChar) max: 0.
+	
+	len > 0 ifTrue: [
+		startLine := editor lineFromPosition: start.
+		endLine := editor lineFromPosition: start + len - 1.
+		startLine to: endLine do: [:line |
+			editor markerAdd: line markerNumber: markerNumber
+		].
+	].
+]
+
+{ #category : 'Actions' }
 GeminiCodeMergeWindow >> merge [
-	"Compile the new method source."
+	"Compile the new method or class definition source."
 
 	| newSource result |
 	newSource := rightEditor getText.
+	
+	"When theSelector is nil, we have a class definition."
+	theSelector ifNil: [
+		Compiler evaluate: newSource for: nil ifFail: [ :error |
+			self compilerError: error.
+			^self ].
+		self close.
+		^self ].
+
 	result := theClass compile: newSource notifying: self.
 	result ifNotNil: [ self close ]
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Initialization' }
 GeminiCodeMergeWindow >> rightString: aString [
 	"Store the right string to be displayed later."
 
 	rightString := aString
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Internal',
+  #vaVisibility : 'private' }
 GeminiCodeMergeWindow >> scNotification: aWidget clientData: anObject callData: aCallData [
 	"Callback to synchronize scrolling between the two editors."
 
@@ -321,38 +377,48 @@ GeminiCodeMergeWindow >> scNotification: aWidget clientData: anObject callData: 
 			isScrolling := false]
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Initialization',
+  #vaVisibility : 'private' }
 GeminiCodeMergeWindow >> setupIndicatorsFor: anEditor [
-	"Configure indicators for line and character diffs."
+	"Configure indicator 0 (red) for removed characters and 1 (green) for added characters."
 
 	"8 is the constant for INDIC_STRAIGHTBOX"
 	
-	"Indicator 0: Line Deletions (Light Red)"
+	"Configure Indicator 0: Removed (Red)"
 	anEditor indicatorSetStyle: 0 style: 8. 
-	anEditor indicatorSetFore: 0 color: 16r0000FF. 
-	anEditor indicatorSetAlpha: 0 alpha: 25. 
+	anEditor indicatorSetFore: 0 color: 16r0000FF. "BBGGRR"
+	anEditor indicatorSetAlpha: 0 alpha: 60. 
+	anEditor indicatorSetOutlineAlpha: 0 alpha: 100. 
 	anEditor indicatorSetUnder: 0 under: 1.
 
-	"Indicator 1: Line Insertions (Light Green)"
+	"Configure Indicator 1: Added (Green)"
 	anEditor indicatorSetStyle: 1 style: 8. 
-	anEditor indicatorSetFore: 1 color: 16r00FF00. 
-	anEditor indicatorSetAlpha: 1 alpha: 25. 
+	anEditor indicatorSetFore: 1 color: 16r00AA00. "BBGGRR - slightly darker green"
+	anEditor indicatorSetAlpha: 1 alpha: 60. 
+	anEditor indicatorSetOutlineAlpha: 1 alpha: 100. 
 	anEditor indicatorSetUnder: 1 under: 1.
-
-	"Indicator 2: Char Deletions (Dark Red)"
-	anEditor indicatorSetStyle: 2 style: 8. 
-	anEditor indicatorSetFore: 2 color: 16r0000FF. 
-	anEditor indicatorSetAlpha: 2 alpha: 100. 
-	anEditor indicatorSetUnder: 2 under: 1.
-
-	"Indicator 3: Char Insertions (Dark Green)"
-	anEditor indicatorSetStyle: 3 style: 8. 
-	anEditor indicatorSetFore: 3 color: 16r00FF00. 
-	anEditor indicatorSetAlpha: 3 alpha: 100. 
-	anEditor indicatorSetUnder: 3 under: 1.
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Initialization',
+  #vaVisibility : 'private' }
+GeminiCodeMergeWindow >> setupStylesFor: anEditor [
+	"Configure styles for diff lines and light grey padding backgrounds."
+
+	"Marker 1 (Light Red) for Left Editor (Removed)"
+	anEditor markerDefine: 1 markerSymbol: 22. "SC_MARK_BACKGROUND"
+	anEditor markerSetBack: 1 colour: 16rEAEAFE. "BBGGRR format"
+
+	"Marker 2 (Light Green) for Right Editor (Added)"
+	anEditor markerDefine: 2 markerSymbol: 22. "SC_MARK_BACKGROUND"
+	anEditor markerSetBack: 2 colour: 16rDDF0E6. "BBGGRR format"
+		
+	"Style 51 (Very Light Grey) for Padding lines"
+	anEditor 
+		styleSetBack: 51 color: 16rF5F5F5; "BBGGRR format"
+		styleSetEolFilled: 51 value: true.
+]
+
+{ #category : 'Initialization' }
 GeminiCodeMergeWindow >> theClass: aClass theSelector: aSelector [
 	"Set the class and selector for the method being compared."
 

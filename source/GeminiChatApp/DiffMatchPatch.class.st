@@ -203,30 +203,6 @@ DiffMatchPatch >> diffComputeText1: text1 text2: text2 [
 ]
 
 { #category : 'Not categorized' }
-DiffMatchPatch >> diffLinesText1: text1 text2: text2 [
-	"Diffs two strings by line rather than by character."
-	| lines1 lines2 diffs |
-	lines1 := self linesFrom: text1.
-	lines2 := self linesFrom: text2.
-	
-	"We can reuse the exact same myers algorithm, but pass it the Arrays of lines instead of Strings!
-	 Because Smalltalk treats Arrays and Strings similarly (both respond to #size, #at:, #copyFrom:to:),
-	 the algorithm will find the shortest sequence of lines to insert/delete."
-	
-	diffs := self myersDiffText1: lines1 text2: lines2.
-	
-	"Now we convert the results (which are Collections of lines) back into flat Strings"
-	diffs do: [:diff |
-		| flatText |
-		flatText := WriteStream on: String new.
-		diff text do: [:lineStr | flatText nextPutAll: lineStr].
-		diff operation: diff operation text: flatText contents.
-	].
-	
-	^diffs
-]
-
-{ #category : 'Not categorized' }
 DiffMatchPatch >> diffMainText1: text1 text2: text2 [
 	| prefixLen suffixLen prefix suffix str1 str2 diffs |
 	text1 = text2 ifTrue: [

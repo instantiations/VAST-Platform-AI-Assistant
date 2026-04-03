@@ -35,7 +35,16 @@ GeminiTextBlockCode >> browse [
 				selector: selector 
 				currentSource: ''].
 				
-	self resolveClass ifNotNil: [:class | ^self openClassesBrowserOn: class addMethodCode: false].
+	self 
+		resolveExistingClass: [:class | 
+			^self 
+				openMergeWindowForClassDefinition: class 
+				currentSource: class definitionString] 
+		newClass: [:className | 
+			^self 
+				openMergeWindowForClassDefinition: nil 
+				currentSource: ''].
+
 	"Fallback to a workspace when were not able to identify a class or method."
 	StsWorkspace stsPrompt: 'Gemini' default: self code
 ]
@@ -101,23 +110,6 @@ GeminiTextBlockCode >> methodMatcher [
 	^'^(\w+)\s*(class)?\s*>>\s*(.+)$' asRegex
 ]
 
-{ #category : 'Interactions',
-  #vaVisibility : 'private' }
-GeminiTextBlockCode >> openClassesBrowserOn: class addMethodCode: addMethodCode [
-
-	| browser newSource |
-	
-	browser := ((EtTools browser: #classes) on: class)
-		owningImage: System image;
-		selectedClasses: (Array with: class).
-	browser open.
-	addMethodCode ifTrue:[|body|
-		newSource := self code.
-		body := newSource copyFrom: (self methodHeaderStartPositionIn: newSource) to: newSource size.
-		body isAscii ifTrue:[ body asSBString copyToClipboard ] ].
-
-]
-
 { #category : 'Not categorized',
   #vaVisibility : 'private' }
 GeminiTextBlockCode >> openMergeWindowForClass: aClass selector: aSelector currentSource: currentSourceString [
@@ -131,6 +123,17 @@ GeminiTextBlockCode >> openMergeWindowForClass: aClass selector: aSelector curre
 		and: (newSource copyFrom: (self methodHeaderStartPositionIn: newSource) to: newSource size)
 		forClass: aClass
 		selector: aSelector
+]
+
+{ #category : 'Not categorized' }
+GeminiTextBlockCode >> openMergeWindowForClassDefinition: aClass currentSource: currentSourceString [
+	"Open a code merge window for a class definition."
+
+	GeminiCodeMergeWindow
+		openOn: currentSourceString
+		and: self code
+		forClass: aClass
+		selector: nil
 ]
 
 { #category : 'Interactions' }
@@ -147,20 +150,25 @@ GeminiTextBlockCode >> pointerLeftIn: chatWidget [
 	chatWidget redraw.
 ]
 
-{ #category : 'Private',
-  #vaVisibility : 'private' }
-GeminiTextBlockCode >> resolveClass [
+{ #category : 'Not categorized' }
+GeminiTextBlockCode >> resolveExistingClass: existingBlock newClass: newBlock [
+	"If this code block represents a class definition:
+		- and there is an existing class, execute the @existingBlock with the existing class as argument and return the result.
+		- but if the class does not exist, execute the @newBlock with the class name as argument and return the result.
+	If this code is not a class definition: return nil."
 
-	| matcher line className |
+	| matcher line className class |
 
 	self code isEmpty ifTrue: [^nil].
 	line := self code lines first.
 	matcher := self classMatcher.
 	(matcher matches: line)
 		ifTrue: [
-			"Subexpression 2 corresponds to the class name capture group"
 			className := matcher subexpression: 2.
-			^Smalltalk at: className asSymbol ifAbsent: [nil]].
+			class := Smalltalk at: className asSymbol ifAbsent: [nil].
+			^ class 
+				ifNil: [ newBlock value: className asSymbol ]
+				ifNotNil: [ existingBlock value: class ] ].
 	^nil
 ]
 

@@ -8,38 +8,38 @@ Class {
 	#category : 'GeminiChatApp'
 }
 
-{ #category : 'Not categorized' }
+{ #category : 'Instance Creation' }
 DiffOperation class >> operation: aSymbol text: aString [
 	^self new operation: aSymbol text: aString
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Testing' }
 DiffOperation >> isDelete [
 	^operation == #delete
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Testing' }
 DiffOperation >> isEqual [
 	^operation == #equal
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Testing' }
 DiffOperation >> isInsert [
 	^operation == #insert
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 DiffOperation >> operation [
 	^operation
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Initialization' }
 DiffOperation >> operation: aSymbol text: aString [
 	operation := aSymbol.
 	text := aString
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Printing' }
 DiffOperation >> printOn: aStream [
 	aStream 
 		nextPutAll: self class name;
@@ -50,7 +50,7 @@ DiffOperation >> printOn: aStream [
 		nextPut: $)
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 DiffOperation >> text [
 	^text
 ]

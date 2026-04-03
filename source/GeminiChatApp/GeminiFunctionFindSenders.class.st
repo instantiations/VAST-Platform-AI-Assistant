@@ -11,7 +11,7 @@ GeminiFunctionFindSenders >> applyFunctionTo: arguments in: context [
 
 	selectorStrings := arguments at: 'selectors'.
 	includeSource := arguments at: 'with_source'.
-	matchCase := arguments at: 'match_case' ifAbsent: [true].
+	matchCase := arguments at: 'match_casing' ifAbsent: [true].
 	maxResults := self resultLimitFor: context withSource: includeSource.
 	methods := OrderedCollection new.
 	selectorPatternMatchers :=selectorStrings collect: [ :pattern | GeminiSelectorPatternMatcher forPattern: pattern ignoreCase: matchCase not ].
