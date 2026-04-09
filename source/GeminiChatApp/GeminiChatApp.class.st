@@ -68,7 +68,8 @@ GeminiChatApp class >> removeFromSystemMenu [
 { #category : 'Loading/Removing' }
 GeminiChatApp class >> removing [
 
-	GeminiModel reset.
+	GeminiAbstractModel reset.
+	GeminiChatGenerator reset.
 	GeminiLog clearCurrent.
 ]
 

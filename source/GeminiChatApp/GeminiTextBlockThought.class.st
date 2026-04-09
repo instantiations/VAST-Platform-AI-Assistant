@@ -33,6 +33,7 @@ GeminiTextBlockThought >> copyStateFrom: anotherThoughtBlock [
 	"Copy any state from another block into self"
 	isExpanded := anotherThoughtBlock isExpanded.
 	isPointedTo := anotherThoughtBlock isPointedTo.
+	self sequenceBlock copyStateFrom: anotherThoughtBlock sequenceBlock.
 ]
 
 { #category : 'Not categorized' }

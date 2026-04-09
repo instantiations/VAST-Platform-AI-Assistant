@@ -12,7 +12,7 @@ Class {
 		'generatorMutex',
 		'generationError',
 		'filePaths',
-		'usageMetadata'
+		'tokenUsage'
 	],
 	#classInstVars : [
 		'apiKey'
@@ -30,12 +30,6 @@ GeminiChat class >> apiKey [
 GeminiChat class >> apiKey: newAPIKey [
 
 	apiKey := newAPIKey
-]
-
-{ #category : 'Not categorized' }
-GeminiChat class >> generatorClass [
-
-	^ GeminiChatGenerator
 ]
 
 { #category : 'Not categorized' }
@@ -65,7 +59,7 @@ GeminiChat class >> new [
 { #category : 'Not categorized' }
 GeminiChat class >> systemInstruction: systemInstruction [
 
-	^ self systemInstruction: systemInstruction model: self generatorClass defaultModel
+	^ self systemInstruction: systemInstruction model: GeminiAbstractModel default
 ]
 
 { #category : 'Not categorized' }
@@ -86,31 +80,31 @@ GeminiChat class >> systemInstruction: systemInstruction model: model userMessag
 	^ self systemInstruction: systemInstruction model: model filePaths: OrderedCollection new userMessages: userMessages
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Actions' }
 GeminiChat >> addFilePath: filePath [
 
 	filePaths add: filePath
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Events' }
 GeminiChat >> changedTextSegments [
 
 	self changed: #textSegments
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 GeminiChat >> filePaths [
 
 	^ filePaths
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Generation' }
 GeminiChat >> generationError: newGenerationError [
 
 	generationError := newGenerationError
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Generation' }
 GeminiChat >> generationFinished [
 
 	generatorMutex critical: [
@@ -118,7 +112,7 @@ GeminiChat >> generationFinished [
 	self changed: #generating.
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Initialization' }
 GeminiChat >> initializeWithSystemInstruction: initialSystemInstruction model: initialModel filePaths: initialFilePaths userMessages: initialUserMessages [
 
 	self initialize.
@@ -131,48 +125,49 @@ GeminiChat >> initializeWithSystemInstruction: initialSystemInstruction model: i
 		userMessages do: [ :userMessage | stream nextPut: userMessage userText; nextPut: userMessage modelText ] ].
 	textSegmentsMutex := Semaphore forMutualExclusion.
 	generatorMutex := Semaphore forMutualExclusion.
+	tokenUsage := GeminiTokenUsage new.
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Generation' }
 GeminiChat >> isActivelyGenerating [
 
 	^ generatorMutex critical: [
 		generator notNil and: [ generator retryDelaySeconds isNil ] ]
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 GeminiChat >> model [
 
 	^ model
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 GeminiChat >> model: newModel [
 
 	model := newModel
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Actions' }
 GeminiChat >> resetTextSegmentLayout [
 
 	textSegmentsMutex critical: [
 		textSegments do: [ :textSegment | textSegment resetLayout ] ]
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Generation' }
 GeminiChat >> retryGenerating: aGenerator [
 	generator := aGenerator.
 	generator startGenerating
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Actions' }
 GeminiChat >> sendUserMessage: messageString [
 
 	| userMessage |
 
 	generatorMutex critical: [
 		generator ifNotNil: [ Error signal: 'Cannot add a user message while still generating the model''s response to the previous one' ].
-		generator := self class generatorClass forChat: self ].
+		generator := model generatorClass forChat: self ].
 	userMessages add: (userMessage := GeminiUserMessage message: messageString).
 	textSegmentsMutex critical: [
 		textSegments add: userMessage userText; add: userMessage modelText ].
@@ -188,8 +183,8 @@ GeminiChat >> storeOn: stream [
 	stream nextPutAll: ' systemInstruction: '.
 	systemInstruction storeOn: stream.
 	stream nextPutAll: ' model: ('.
-	self class generatorClass storeOn: stream.
-	stream nextPutAll: ' modelNamed: '.
+	GeminiAbstractModel storeOn: stream.
+	stream nextPutAll: ' named: '.
 	model name storeOn: stream.
 	stream nextPutAll: ') filePaths: ('.
 	(filePaths collect: [ :filePath | filePath originalName ]) storeOn: stream.
@@ -199,13 +194,13 @@ GeminiChat >> storeOn: stream [
 	stream nextPut: $).
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 GeminiChat >> systemInstruction [
 
 	^ systemInstruction
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 GeminiChat >> textSegments [
 
 	| segments |
@@ -221,7 +216,19 @@ GeminiChat >> textSegments [
 	^ segments
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
+GeminiChat >> tokenUsage [
+
+	^ tokenUsage
+]
+
+{ #category : 'Accessing' }
+GeminiChat >> tokenUsage: newTokenUsage [
+
+	tokenUsage := newTokenUsage
+]
+
+{ #category : 'Generation' }
 GeminiChat >> updateLastModelTextSegment [
 
 	textSegmentsMutex critical: [| removed |
@@ -232,19 +239,7 @@ GeminiChat >> updateLastModelTextSegment [
 	self changedTextSegments
 ]
 
-{ #category : 'Not categorized' }
-GeminiChat >> usageMetadata [
-
-	^ usageMetadata
-]
-
-{ #category : 'Not categorized' }
-GeminiChat >> usageMetadata: newUsageMetadata [
-
-	usageMetadata := newUsageMetadata
-]
-
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 GeminiChat >> userMessages [
 
 	^ userMessages

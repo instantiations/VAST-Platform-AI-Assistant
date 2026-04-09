@@ -4,10 +4,9 @@ Class {
 	#category : 'GeminiChatApp'
 }
 
-{ #category : 'Not categorized' }
-GeminiOSDrawingArea >> wmPaint: wParam with: lParam [
+{ #category : 'Not categorized',
+  #vaVisibility : 'private' }
+GeminiOSDrawingArea >> extStyle [
 
-	self paintDo: [ :rect |
-		self exposeOSRect: rect ].
-	^ 1
+	^ super extStyle bitOr: 16r02000000 "WS_EX_COMPOSITED"
 ]

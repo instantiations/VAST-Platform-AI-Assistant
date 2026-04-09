@@ -256,7 +256,7 @@ GeminiChatWindow >> menuActionInspectLog [
 GeminiChatWindow >> menuActionSelectModel: aModel [
 
 	chat model: aModel.
-	chat class generatorClass defaultModel: aModel.
+	GeminiAbstractModel default: aModel.
 ]
 
 { #category : 'Operations',
@@ -347,11 +347,14 @@ GeminiChatWindow >> menuModelOptions [
 		subMenuSelector: #menuModelOptions;
 		owner: self.
 
-	chat class generatorClass models do: [:model |
-		modelOptionsMenu
-			add: (DirectedMessage selector: #menuActionSelectModel: arguments: { model } receiver: self)
-			label: model label
-			toggle: [model = chat model]].
+	GeminiAbstractModel allGrouped
+		do: [ :models |
+			models do: [ :model |
+				modelOptionsMenu
+					add: (DirectedMessage selector: #menuActionSelectModel: arguments: { model } receiver: self)
+					label: model label
+					toggle: [ model = chat model ] ] ]
+		separatedBy: [ modelOptionsMenu addLine ].
 
 	^modelOptionsMenu
 ]
@@ -417,15 +420,12 @@ GeminiChatWindow >> sendUserMessage [
   #vaVisibility : 'private' }
 GeminiChatWindow >> statusLineText [
 
-	| usage total max |
+	| max |
 	(GeminiChat apiKey isNil or: [ GeminiChat apiKey isEmpty ]) ifTrue: [
 		^ 'Please enter a valid API key in Options > Set API Key...' ].
 
-	usage := chat usageMetadata.
-	usage ifNil: [ ^ 'Tokens: - / -' ].
-	total := usage at: 'totalTokenCount' ifAbsent: [ 0 ].
 	max := chat model contextWindowSize.
-	^ 'Tokens: ', total printString, ' / ', (max ifNil: ['?'] ifNotNil: [max printString])
+	^ chat tokenUsage printString, ' / ', (max ifNil: ['?'] ifNotNil: [max printString])
 ]
 
 { #category : 'User Interface',

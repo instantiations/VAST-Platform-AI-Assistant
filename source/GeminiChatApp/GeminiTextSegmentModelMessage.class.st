@@ -11,12 +11,10 @@ GeminiTextSegmentModelMessage class >> textBlocks: textBlocks [
 ]
 
 { #category : 'Not categorized' }
-GeminiTextSegmentModelMessage >> copyStateFrom: anOldMessage [
+GeminiTextSegmentModelMessage >> copyStateFrom: oldMessage [
 	"Transfer any state in old message that is not regenerated when creating new message with #modelText"
-	self textBlocks doWithIndex: [:block :index |
-			 anOldMessage textBlocks size >= index
-				ifTrue: [
-				block copyStateFrom: (anOldMessage textBlocks at: index)]	]
+	oldMessage textBlocks doWithIndex: [ :oldTextBlock :index |
+		(textBlocks at: index) copyStateFrom: oldTextBlock ]
 ]
 
 { #category : 'Not categorized' }

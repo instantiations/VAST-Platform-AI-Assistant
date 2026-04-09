@@ -98,6 +98,13 @@ GeminiTextBlockSequence >> blocks [
 ]
 
 { #category : 'Not categorized' }
+GeminiTextBlockSequence >> copyStateFrom: otherSequenceBlock [
+
+	otherSequenceBlock blocks doWithIndex: [ :otherTextBlock :index |
+		(blocks at: index) copyStateFrom: otherTextBlock ]
+]
+
+{ #category : 'Not categorized' }
 GeminiTextBlockSequence >> drawOnChatWidget: chatWidget dc: dc [
 
 	chatWidget drawTextBlockSequence: self dc: dc
