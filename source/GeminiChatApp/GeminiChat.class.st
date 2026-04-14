@@ -135,6 +135,19 @@ GeminiChat >> isActivelyGenerating [
 		generator notNil and: [ generator retryDelaySeconds isNil ] ]
 ]
 
+{ #category : 'Not categorized' }
+GeminiChat >> isGenerating [
+
+	^ generatorMutex critical: [ generator notNil ]
+]
+
+{ #category : 'Not categorized' }
+GeminiChat >> isStoppingGeneration [
+
+	^ generatorMutex critical: [
+		generator notNil and: [ generator isStopping ] ]
+]
+
 { #category : 'Accessing' }
 GeminiChat >> model [
 
@@ -173,6 +186,14 @@ GeminiChat >> sendUserMessage: messageString [
 		textSegments add: userMessage userText; add: userMessage modelText ].
 	self changedTextSegments.
 	generator startGenerating
+]
+
+{ #category : 'Not categorized' }
+GeminiChat >> stopGeneration [
+
+	generatorMutex critical: [
+		generator ifNotNil: [
+			generator stopGenerating ] ]
 ]
 
 { #category : 'Not categorized' }

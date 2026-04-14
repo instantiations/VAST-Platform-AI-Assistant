@@ -52,14 +52,6 @@ GeminiChatWindow class >> new [
 
 { #category : 'User Interface',
   #vaVisibility : 'private' }
-GeminiChatWindow >> closeWindow [
-
-	chat ifNotNil: [ chat removeDependent: self ].
-	^ super closeWindow
-]
-
-{ #category : 'User Interface',
-  #vaVisibility : 'private' }
 GeminiChatWindow >> createMenusBeforeWorkRegion [
 
 	self menuBar
@@ -101,7 +93,7 @@ GeminiChatWindow >> createWorkRegion [
 					marginWidth: 10;
 					addCallback: XmNactivateCallback
 						receiver: self
-						selector: #pushedSendButton:clientData:callData:
+						selector: #pushedButton:clientData:callData:
 						clientData: nil]) manageChild.
 	statusLine := (self newLabelWidget: #statusLineText) manageChild.
 
@@ -154,7 +146,7 @@ GeminiChatWindow >> createWorkRegion [
 GeminiChatWindow >> initializeAfterRealize [
 
 	super initializeAfterRealize.
-	self updateInput: true.
+	self updateInput.
 	inputWidget setInputFocus.
 ]
 
@@ -172,7 +164,7 @@ GeminiChatWindow >> initializeWithFilePathString: initialFilePathString chat: in
   #vaVisibility : 'private' }
 GeminiChatWindow >> keyPressedInInputWidget: widget clientData: clientData callData: callData [
 
-	(callData keysym = XKReturn and: [ (callData state noMask: ShiftMask) and: [ buttonWidget sensitive ] ]) ifTrue: [
+	(callData keysym = XKReturn and: [ (callData state noMask: ShiftMask) and: [ chat isGenerating not ] ]) ifTrue: [
 		self sendUserMessage ]
 ]
 
@@ -273,7 +265,7 @@ GeminiChatWindow >> menuActionSetApiKey [
 	newKey ifNotNil: [
 		GeminiChat apiKey: newKey.
 		self updateStatusLine.
-		self updateInput: chat isActivelyGenerating not ]
+		self updateInput ]
 ]
 
 { #category : 'User Interface',
@@ -385,11 +377,15 @@ GeminiChatWindow >> openAboutDialog [
 		iconType: XmICONINFO
 ]
 
-{ #category : 'Operations',
+{ #category : 'Not categorized',
   #vaVisibility : 'private' }
-GeminiChatWindow >> pushedSendButton: button clientData: clientData callData: callData [
+GeminiChatWindow >> pushedButton: button clientData: clientData callData: callData [
 
-	self sendUserMessage
+	chat isGenerating ifFalse: [
+		self sendUserMessage
+	] ifTrue: [
+		chat stopGeneration.
+		self updateInput ]
 ]
 
 { #category : 'Operations',
@@ -410,9 +406,9 @@ GeminiChatWindow >> saveToFile: pathString [
 GeminiChatWindow >> sendUserMessage [
 
 	inputWidget value ifNotEmpty: [
-		self updateInput: false.
 		chatWidget scrollToNextUserMessage.
-		chat sendUserMessage: inputWidget value ].
+		chat sendUserMessage: inputWidget value.
+		self updateInput ].
 	inputWidget value: ''.
 ]
 
@@ -435,19 +431,21 @@ GeminiChatWindow >> update: aParameter [
 	aParameter = #textSegments ifTrue: [
 		self updateStatusLine].
 	aParameter = #generating ifTrue:[ 
-		self updateInput: true].
+		self updateInput].
 	super update: aParameter
 ]
 
-{ #category : 'User Interface',
+{ #category : 'Not categorized',
   #vaVisibility : 'private' }
-GeminiChatWindow >> updateInput: beActive [
+GeminiChatWindow >> updateInput [
 
-	| beSensitive |
+	| hasAPIKey |
 
-	beSensitive := beActive and: [ GeminiChat apiKey notNil and: [ GeminiChat apiKey notEmpty ] ].
-	inputWidget foregroundColor: (beSensitive ifTrue: [ Color black ] ifFalse: [ Color darkGray ]).
-	buttonWidget sensitive: beSensitive.
+	hasAPIKey := GeminiChat apiKey notNil and: [ GeminiChat apiKey notEmpty ].
+	inputWidget foregroundColor: (hasAPIKey & chat isGenerating not ifTrue: [ Color black ] ifFalse: [ Color darkGray ]).
+	buttonWidget
+		labelString: (chat isGenerating ifTrue: [ chat isStoppingGeneration ifTrue: [ (UnicodeString escaped: 'Stopping\u{2026}') ] ifFalse: [ 'Stop' ] ] ifFalse: [ 'Send' ]);
+		setSensitive: hasAPIKey & chat isStoppingGeneration not.
 ]
 
 { #category : 'User Interface',
@@ -457,4 +455,14 @@ GeminiChatWindow >> updateStatusLine [
 	"Private - Update the status line."
 
 	^ statusLine labelString: self statusLineText
+]
+
+{ #category : 'Not categorized',
+  #vaVisibility : 'private' }
+GeminiChatWindow >> windowClose: widget clientData: clientData callData: callData [
+
+	super windowClose: widget clientData: clientData callData: callData.
+	callData doit & chat notNil ifTrue: [
+		chat removeDependent: self;
+			stopGeneration ].
 ]

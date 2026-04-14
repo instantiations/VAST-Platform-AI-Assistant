@@ -28,7 +28,7 @@ GeminiFunctionDescribe >> describeClass: aClassAssoc [
 
 	^EsOrderedDictionary new
 		at: 'class' put: aClassAssoc key asString;
-		at: 'super' put: aClassAssoc value superclass name asString;
+		at: 'super' put: (aClassAssoc value superclass ifNotNil: [ :superclass | superclass name asString ]);
 		at: 'application' put: aClassAssoc value controller name asString;
 		yourself
 ]

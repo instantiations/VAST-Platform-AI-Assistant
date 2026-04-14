@@ -35,7 +35,7 @@ GeminiUserMessage >> addNewGeneratedContent [
 { #category : 'Not categorized' }
 GeminiUserMessage >> applyFunctionsInLastGeneratedContentUsing: functionsSet inContext: functionCallContext [
 
-	generatedContents last addFunctionResponseParts:
+	(generatedContents ifEmpty: [ ^ false ]) last addFunctionResponseParts:
 		((generatedContents last functionCallParts ifEmpty: [ ^ false ])
 			collect: [ :part | functionsSet applyFunctionCall: part in: functionCallContext ]).
 	^ true

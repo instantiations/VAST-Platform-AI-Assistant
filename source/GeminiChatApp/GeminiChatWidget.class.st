@@ -869,7 +869,8 @@ GeminiChatWidget >> toggleIndicatorExpanded: isExpanded [
 GeminiChatWidget >> update: ignored [
 
 	CwAppContext default asyncExecInUI: [
-		drawingArea redraw ]
+		drawingArea isRealized ifTrue: [
+			drawingArea redraw ] ]
 ]
 
 { #category : 'Not categorized' }

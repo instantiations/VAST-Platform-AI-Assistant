@@ -9,7 +9,8 @@ Class {
 		'httpClient',
 		'requestTimestamp',
 		'responseOrError',
-		'retryDelaySeconds'
+		'retryDelaySeconds',
+		'shouldStop'
 	],
 	#category : 'GeminiChatApp'
 }
@@ -27,7 +28,9 @@ GeminiChatAbstractGenerator >> generate [
 		self sendRequest.
 		(chat userMessages last applyFunctionsInLastGeneratedContentUsing: functionsSet inContext: (GeminiFunctionCallContext model: generationModel filePaths: chat filePaths))
 			ifTrue: [ chat updateLastModelTextSegment ]
-			ifFalse: [ ^ self ] ].
+			ifFalse: [ ^ self ].
+		shouldStop
+			ifTrue: [ ^ self ] ].
 	Error signal: 'Maximum number of generations reached'
 ]
 
@@ -77,12 +80,13 @@ GeminiChatAbstractGenerator >> handleResponse [
 	responseObjects := OrderedCollection new.
 	characterStream := GeminiPeekableStream on: (GeminiCharacterGraphemeStream on: (GeminiUTF8DecodingStream on: (GeminiStreamedByteMessageReadStream on: responseOrError))).
 	stream := self jsonResponseStreamOn: characterStream.
-	[ stream atEnd ] whileFalse: [
+	[ stream atEnd | shouldStop ] whileFalse: [
 		| responseObject contentParts |
 		responseObject := responseObjects add: stream next.
 		contentParts := self parseResponse: responseObject.
-		chat userMessages last addModelContentPartsToLastGeneratedContent: contentParts.
-		chat updateLastModelTextSegment ].
+		contentParts ifNotEmpty: [
+			chat userMessages last addModelContentPartsToLastGeneratedContent: contentParts.
+			chat updateLastModelTextSegment ] ].
 	GeminiLog current addEntry: (GeminiLogEntryGeneratedContent timestamp: requestTimestamp model: generationModel requestObject: requestJSONObject
 		responseHeader: responseOrError header responseObjects: responseObjects).
 ]
@@ -90,10 +94,14 @@ GeminiChatAbstractGenerator >> handleResponse [
 { #category : 'Not categorized' }
 GeminiChatAbstractGenerator >> handleRetryDelay [
 
+	| retryDelayEndDateAndTime |
+
 	httpClient shutDown.
 	httpClient := nil.
 	chat changedTextSegments.
-	(Delay forSeconds: retryDelaySeconds) wait.
+	retryDelayEndDateAndTime := DateAndTime now + (Duration seconds: retryDelaySeconds).
+	[ (DateAndTime now >= retryDelayEndDateAndTime) | shouldStop ] whileFalse: [
+		(Delay forMilliseconds: 500) wait ].
 	retryDelaySeconds := nil
 ]
 
@@ -104,6 +112,13 @@ GeminiChatAbstractGenerator >> initializeWithChat: initialChat [
 	chat := initialChat.
 	generationModel := chat model.
 	functionsSet := GeminiFunctionsSet new.
+	shouldStop := false.
+]
+
+{ #category : 'Not categorized' }
+GeminiChatAbstractGenerator >> isStopping [
+
+	^ shouldStop
 ]
 
 { #category : 'Not categorized',
@@ -173,7 +188,9 @@ GeminiChatAbstractGenerator >> sendRequest [
 			responseOrError := httpClient post: (GeminiJSONWriter toString: requestJSONObject) asUtf8Bytes typed: 'application/json;charset=utf-8' at: self url
 				using: self requestCredentials withHeaders: self requestHeaders streaming: true.
 			responseOrError isSstError ifTrue: [
-				self handleError
+				self handleError.
+				shouldStop ifTrue: [
+					^ self ].
 			] ifFalse: [
 				self handleResponse.
 				^ self ] ].
@@ -198,6 +215,12 @@ GeminiChatAbstractGenerator >> startGenerating [
 		chat changedTextSegments.
 		chat generationFinished]
 			fork
+]
+
+{ #category : 'Not categorized' }
+GeminiChatAbstractGenerator >> stopGenerating [
+
+	shouldStop := true
 ]
 
 { #category : 'Not categorized',
