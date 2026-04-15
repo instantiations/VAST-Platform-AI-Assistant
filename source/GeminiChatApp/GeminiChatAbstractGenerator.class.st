@@ -27,7 +27,7 @@ GeminiChatAbstractGenerator >> generate [
 	1 to: 100 do: [ :number |
 		self sendRequest.
 		(chat userMessages last applyFunctionsInLastGeneratedContentUsing: functionsSet inContext: (GeminiFunctionCallContext model: generationModel filePaths: chat filePaths))
-			ifTrue: [ chat updateLastModelTextSegment ]
+			ifTrue: [ CwAppContext default syncExecInUI: [ chat updateLastModelTextSegment ] ]
 			ifFalse: [ ^ self ].
 		shouldStop
 			ifTrue: [ ^ self ] ].
@@ -75,8 +75,9 @@ GeminiChatAbstractGenerator >> handleResponse [
 
 	| responseObjects characterStream stream |
 
-	chat userMessages last addNewGeneratedContent.
-	chat updateLastModelTextSegment.
+	CwAppContext default syncExecInUI: [
+		chat userMessages last addNewGeneratedContent.
+		chat updateLastModelTextSegment ].
 	responseObjects := OrderedCollection new.
 	characterStream := GeminiPeekableStream on: (GeminiCharacterGraphemeStream on: (GeminiUTF8DecodingStream on: (GeminiStreamedByteMessageReadStream on: responseOrError))).
 	stream := self jsonResponseStreamOn: characterStream.
@@ -85,8 +86,9 @@ GeminiChatAbstractGenerator >> handleResponse [
 		responseObject := responseObjects add: stream next.
 		contentParts := self parseResponse: responseObject.
 		contentParts ifNotEmpty: [
-			chat userMessages last addModelContentPartsToLastGeneratedContent: contentParts.
-			chat updateLastModelTextSegment ] ].
+			CwAppContext default syncExecInUI: [
+				chat userMessages last addModelContentPartsToLastGeneratedContent: contentParts.
+				chat updateLastModelTextSegment ] ] ].
 	GeminiLog current addEntry: (GeminiLogEntryGeneratedContent timestamp: requestTimestamp model: generationModel requestObject: requestJSONObject
 		responseHeader: responseOrError header responseObjects: responseObjects).
 ]
@@ -98,11 +100,14 @@ GeminiChatAbstractGenerator >> handleRetryDelay [
 
 	httpClient shutDown.
 	httpClient := nil.
-	chat changedTextSegments.
 	retryDelayEndDateAndTime := DateAndTime now + (Duration seconds: retryDelaySeconds).
+	CwAppContext default syncExecInUI: [
+		chat changedTextSegments ].
 	[ (DateAndTime now >= retryDelayEndDateAndTime) | shouldStop ] whileFalse: [
 		(Delay forMilliseconds: 500) wait ].
-	retryDelaySeconds := nil
+	retryDelaySeconds := nil.	
+	CwAppContext default syncExecInUI: [
+		chat changedTextSegments ]
 ]
 
 { #category : 'Not categorized' }
@@ -204,17 +209,19 @@ GeminiChatAbstractGenerator >> sendRequest [
 { #category : 'Not categorized' }
 GeminiChatAbstractGenerator >> startGenerating [
 
+	chat generationError: nil.
 	[
 		[
-			chat generationError: nil.
-			self generate]
-				when: ExError
-				do: [:error |
-					chat generationError: (GeminiChatGenerationErrorInfo forError: error withGenerator: self).
-					error exitWith: nil].
-		chat changedTextSegments.
-		chat generationFinished]
-			fork
+			self generate
+		] when: ExError do: [ :error |
+			CwAppContext default syncExecInUI: [
+				chat generationError: (GeminiChatGenerationErrorInfo forError: error withGenerator: self) ].
+			error exitWith: nil ].
+		CwAppContext default syncExecInUI: [
+			chat
+				changedTextSegments;
+				generationFinished ]
+	] fork
 ]
 
 { #category : 'Not categorized' }

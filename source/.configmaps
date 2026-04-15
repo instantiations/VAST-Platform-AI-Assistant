@@ -22,18 +22,18 @@
 				]
 			}
 		],
-		#ts : 3953627409,
+		#ts : 3953717406,
 		#comment : '',
 		#formatVersion : '1.1',
 		#applications : OrderedCollection [
 			{
 				#name : 'GeminiChatApp',
-				#versionName : '1.203',
-				#ts : 3953627125
+				#versionName : '1.207',
+				#ts : 3953717118
 			}
 		],
 		#name : 'Gemini AI Assistant (VAST 14.1)',
-		#versionName : '1.203'
+		#versionName : '1.207'
 	},
 	{
 		#conditions : [
@@ -58,17 +58,17 @@
 				]
 			}
 		],
-		#ts : 3953627417,
+		#ts : 3953717416,
 		#comment : '',
 		#formatVersion : '1.1',
 		#applications : OrderedCollection [
 			{
 				#name : 'GeminiChatApp',
-				#versionName : '1.203',
-				#ts : 3953627125
+				#versionName : '1.207',
+				#ts : 3953717118
 			}
 		],
 		#name : 'Gemini AI Assistant (VAST 15.0)',
-		#versionName : '1.203'
+		#versionName : '1.207'
 	}
 ]

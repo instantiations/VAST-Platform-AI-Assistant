@@ -7,9 +7,7 @@ Class {
 		'model',
 		'userMessages',
 		'textSegments',
-		'textSegmentsMutex',
 		'generator',
-		'generatorMutex',
 		'generationError',
 		'filePaths',
 		'tokenUsage'
@@ -107,8 +105,7 @@ GeminiChat >> generationError: newGenerationError [
 { #category : 'Generation' }
 GeminiChat >> generationFinished [
 
-	generatorMutex critical: [
-		generator := nil ].
+	generator := nil.
 	self changed: #generating.
 ]
 
@@ -123,29 +120,25 @@ GeminiChat >> initializeWithSystemInstruction: initialSystemInstruction model: i
 	userMessages := initialUserMessages.
 	textSegments := OrderedCollection streamContents: [ :stream |
 		userMessages do: [ :userMessage | stream nextPut: userMessage userText; nextPut: userMessage modelText ] ].
-	textSegmentsMutex := Semaphore forMutualExclusion.
-	generatorMutex := Semaphore forMutualExclusion.
 	tokenUsage := GeminiTokenUsage new.
 ]
 
 { #category : 'Generation' }
 GeminiChat >> isActivelyGenerating [
 
-	^ generatorMutex critical: [
-		generator notNil and: [ generator retryDelaySeconds isNil ] ]
+	^ generator notNil and: [ generator retryDelaySeconds isNil ]
 ]
 
 { #category : 'Not categorized' }
 GeminiChat >> isGenerating [
 
-	^ generatorMutex critical: [ generator notNil ]
+	^ generator notNil
 ]
 
 { #category : 'Not categorized' }
 GeminiChat >> isStoppingGeneration [
 
-	^ generatorMutex critical: [
-		generator notNil and: [ generator isStopping ] ]
+	^ generator notNil and: [ generator isStopping ]
 ]
 
 { #category : 'Accessing' }
@@ -163,8 +156,7 @@ GeminiChat >> model: newModel [
 { #category : 'Actions' }
 GeminiChat >> resetTextSegmentLayout [
 
-	textSegmentsMutex critical: [
-		textSegments do: [ :textSegment | textSegment resetLayout ] ]
+	self textSegments do: [ :textSegment | textSegment resetLayout ]
 ]
 
 { #category : 'Generation' }
@@ -178,12 +170,10 @@ GeminiChat >> sendUserMessage: messageString [
 
 	| userMessage |
 
-	generatorMutex critical: [
-		generator ifNotNil: [ Error signal: 'Cannot add a user message while still generating the model''s response to the previous one' ].
-		generator := model generatorClass forChat: self ].
+	generator ifNotNil: [ Error signal: 'Cannot add a user message while still generating the model''s response to the previous one' ].
+	generator := model generatorClass forChat: self.
 	userMessages add: (userMessage := GeminiUserMessage message: messageString).
-	textSegmentsMutex critical: [
-		textSegments add: userMessage userText; add: userMessage modelText ].
+	textSegments add: userMessage userText; add: userMessage modelText.
 	self changedTextSegments.
 	generator startGenerating
 ]
@@ -191,9 +181,8 @@ GeminiChat >> sendUserMessage: messageString [
 { #category : 'Not categorized' }
 GeminiChat >> stopGeneration [
 
-	generatorMutex critical: [
-		generator ifNotNil: [
-			generator stopGenerating ] ]
+	generator ifNotNil: [
+		generator stopGenerating ]
 ]
 
 { #category : 'Not categorized' }
@@ -226,13 +215,12 @@ GeminiChat >> textSegments [
 
 	| segments |
 	
-	segments := OrderedCollection new.
-	segments add: systemInstructionTextSegment.
-	textSegmentsMutex critical: [
-		segments addAll: textSegments ].
+	(segments := OrderedCollection new)
+		add: systemInstructionTextSegment;
+		addAll: textSegments.
 	generationError ifNotNil: [
 		segments add: (GeminiTextSegmentError fromError: generationError inChat: self) ].
-	(generatorMutex critical: [ generator ifNotNil: [ generator retryDelaySeconds ] ]) ifNotNil: [ :seconds |
+	(generator ifNotNil: [ generator retryDelaySeconds ]) ifNotNil: [ :seconds |
 			segments add: (GeminiTextSegmentDelay forSeconds: seconds) ].
 	^ segments
 ]
@@ -252,11 +240,11 @@ GeminiChat >> tokenUsage: newTokenUsage [
 { #category : 'Generation' }
 GeminiChat >> updateLastModelTextSegment [
 
-	textSegmentsMutex critical: [| removed |
-		removed := textSegments removeLast.
-		textSegments add: userMessages last modelText.
-		"Transfer chat state kept in message to updated/reparsed message"
-		textSegments last copyStateFrom: removed].
+	| removed |
+
+	removed := textSegments removeLast.
+	textSegments add: userMessages last modelText.
+	textSegments last copyStateFrom: removed.
 	self changedTextSegments
 ]
 

@@ -388,6 +388,16 @@ GeminiChatWindow >> pushedButton: button clientData: clientData callData: callDa
 		self updateInput ]
 ]
 
+{ #category : 'Not categorized' }
+GeminiChatWindow >> restartWindowFromSnapshot: widgetHierarchySnapshot [
+
+	chatWidget ifNotNil: [
+		chatWidget release.
+		chatWidget := nil ].
+		
+	^ super restartWindowFromSnapshot: widgetHierarchySnapshot
+]
+
 { #category : 'Operations',
   #vaVisibility : 'private' }
 GeminiChatWindow >> saveToFile: pathString [

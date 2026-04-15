@@ -623,7 +623,7 @@ GeminiChatWidget >> drawingAreaExposed: ignored clientData: clientData callData:
 		leftInsetQuoteBlockIncrement: dc tabWidth;
 		leftInsetListItemBlockIncrement: (self class baseFontSet proportional normal textWidth: (String new: 8 withAll: Character space));
 		rightInset: 20;
-		yOffset: (scrollBar value * scrollBarValueFactor) negated;
+		yOffset: (scrollBar value * scrollBarValueFactor + callData event y) negated;
 		y: self class baseFontSet proportional normal height * 3 // 2;
 		pendingListMarkers: OrderedCollection new;
 		interactableAreas: OrderedCollection new;
@@ -639,9 +639,9 @@ GeminiChatWidget >> drawingAreaExposed: ignored clientData: clientData callData:
 		dc gc setFont: self class baseFontSet proportional normal font; setForeground: (dc pixmap getPalette nearestPixelValue: Color darkGray).
 		dc pixmap drawString: dc gc x: dc leftInset y: dc y + self class baseFontSet proportional normal ascent + dc yOffset string: '...'.
 		dc y: dc y + self class baseFontSet proportional normal height ].
-	dc pixmap copyArea: drawingArea window gc: dc gc srcX: callData event x srcY: 0
-		srcWidth: drawingArea width srcHeight: callData event height
-		destX: callData event x destY: callData event y destWidth: drawingArea width destHeight: callData event height.
+	dc pixmap copyArea: drawingArea window gc: dc gc
+		srcX: callData event x srcY: 0 srcWidth: callData event width srcHeight: callData event height
+		destX: callData event x destY: callData event y destWidth: callData event width destHeight: callData event height.
 	spacing := self class baseFontSet proportional normal height * 3 // 4.
 	scrollBarNextMinMaxValue := dc y + spacing.
 	scrollBar
@@ -787,6 +787,14 @@ GeminiChatWidget >> pointedToLinkColor [
 ]
 
 { #category : 'Not categorized' }
+GeminiChatWidget >> release [
+
+	super release.
+	chat ifNotNil: [
+		chat removeDependent: self ]
+]
+
+{ #category : 'Not categorized' }
 GeminiChatWidget >> removeSelectionScrollTimeout [
 
 	selectionScrollTimeoutID ifNotNil: [
@@ -868,9 +876,8 @@ GeminiChatWidget >> toggleIndicatorExpanded: isExpanded [
 { #category : 'Not categorized' }
 GeminiChatWidget >> update: ignored [
 
-	CwAppContext default asyncExecInUI: [
-		drawingArea isRealized ifTrue: [
-			drawingArea redraw ] ]
+	drawingArea isRealized ifTrue: [
+		drawingArea redraw ]
 ]
 
 { #category : 'Not categorized' }
