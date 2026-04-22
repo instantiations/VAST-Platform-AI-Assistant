@@ -686,6 +686,7 @@ GeminiChatWidget >> initialize [
 	scrollBarValueFactor := self class baseFontSet proportional normal height.
 	selecting := false.
 	selectionScrollTimeoutID := nil.
+	selectedString := ''.
 	scrollBarMinMaxValue := 0.
 	scrollBarNextMinMaxValue := 0.
 ]
@@ -766,6 +767,12 @@ GeminiChatWidget >> layOutString: textString dc: dc [
 GeminiChatWidget >> linkColor [
 
 	^ Color darkBlue
+]
+
+{ #category : 'Not categorized' }
+GeminiChatWidget >> menu: menu owner: owner [
+
+	drawingArea menu: menu owner: owner
 ]
 
 { #category : 'Not categorized' }

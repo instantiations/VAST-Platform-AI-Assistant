@@ -50,6 +50,13 @@ GeminiChatWindow class >> new [
 	^ self chat: GeminiChat new
 ]
 
+{ #category : 'Not categorized',
+  #vaVisibility : 'private' }
+GeminiChatWindow >> convertSelectionText: w [
+
+	"Ignore"
+]
+
 { #category : 'User Interface',
   #vaVisibility : 'private' }
 GeminiChatWindow >> createMenusBeforeWorkRegion [
@@ -66,11 +73,27 @@ GeminiChatWindow >> createMenusBeforeWorkRegion [
   #vaVisibility : 'private' }
 GeminiChatWindow >> createWorkRegion [
 
-	| sash |
+	| sash selectedType unknown notSymbol |
 
 	sash := (self newSash: XmHORIZONTAL) manageChild.
-	chatWidget := (GeminiChatWidget createWidget: 'chat' parent: self defaultWidgetParent argBlock: [:w | ]) manageChild.
-	chatWidget chat: chat.
+	(chatWidget := GeminiChatWidget createWidget: 'chat' parent: self defaultWidgetParent argBlock: nil)
+		manageChild;
+		chat: chat;
+		menu:
+			(CwMenu new
+				configureBlock: [
+					selectedType := self stsSelectedType.
+					unknown := selectedType == ##unknownselector or: [ selectedType == ##unknownglobal ].
+					notSymbol := selectedType notNil and: [ selectedType ~~ ##symbol ] ];
+				add: #menuEditCopy label: MxEST70 enable: [ self enableCopy ] for: self;
+				addLine;
+				add: #menuEditExecute label: MxEST72 enable: [ self allowExecution ];
+				add: #menuEditInspect label: MxEST37 enable: [ self allowExecution ];
+				addLine;
+				add: #stsSenders label: [ self stsSendersLabelFor: selectedType ] enable: [ true ] for: self;
+				add: #stsImplementors label: [ self stsImplementorsLabelFor: selectedType ] enable: [ notSymbol ] visible: [ unknown not ] for: self;
+				yourself)
+			owner: self.
 	inputWidget :=
 		(self defaultWidgetParent
 			createScrolledText: 'text'
@@ -83,6 +106,7 @@ GeminiChatWindow >> createWorkRegion [
 		receiver: self
 		selector: #keyPressedInInputWidget:clientData:callData:
 		clientData: nil.
+	self addTargetTextWidgetCallbacks: inputWidget.
 
 	buttonWidget :=
 		(self defaultWidgetParent
@@ -222,15 +246,6 @@ GeminiChatWindow >> menuActionChatSaveAs [
 
 { #category : 'Operations',
   #vaVisibility : 'private' }
-GeminiChatWindow >> menuActionEditCopy [
-
-	chatWidget selectedString ifNotEmpty: [ :selectedString |
-		selectedString asEsString ifNotNil: [ :esString |
-			esString copyToClipboard ] ]
-]
-
-{ #category : 'Operations',
-  #vaVisibility : 'private' }
 GeminiChatWindow >> menuActionInspectChat [
 
 	self inspect
@@ -306,12 +321,56 @@ GeminiChatWindow >> menuEdit [
 	editMenu notNil ifTrue: [^editMenu].
 	(editMenu := self newMenu)
 		title: 'Edit';
-		add: #menuActionEditCopy
-			label: 'Copy'
-			enable: [true]
+		add: #menuEditCopy
+			label: MxEST70
+			enable: [ self enableCopy ]
 			for: nil
 			accelerator: (CwAccelerator mask: ControlMask keysym: XKc)
-			acceleratorText: 'Ctrl+C'.
+			acceleratorText: MxEST84;
+		addLine;
+		add: #menuEditExecute
+			label: MxEST72	
+			enable: [ self allowExecution ]
+			for: nil
+			accelerator: (CwAccelerator mask: ControlMask keysym: XKe)
+			acceleratorText: MxEST86;
+		add: #menuEditInspect
+			label: MxEST37
+			enable: [ self allowExecution ]
+			for: nil
+			accelerator: (CwAccelerator mask: ControlMask keysym: XKq)
+			acceleratorText: MxEST88;
+		addLine;
+		add: #stsClassReferencesFromTextWidget
+			label: 'Browse References'
+			enable: [true]
+			for: nil
+			accelerator: (CwAccelerator mask: ControlMask | ShiftMask keysym: XKr)
+			acceleratorText: 'Ctrl+Shift+R';
+		add: #stsClassHierarchyFromTextWidget
+			label: 'Browse Hierarchy'
+			enable: [true]
+			for: nil
+			accelerator: (CwAccelerator mask: ControlMask | ShiftMask keysym: XKh)
+			acceleratorText: 'Ctrl+Shift+H';
+		add: #stsAllImplementors
+			label: 'Browse All Implementors'
+			enable: [true]
+			for: nil
+			accelerator: (CwAccelerator mask: ControlMask | ShiftMask keysym: XKm)
+			acceleratorText: 'Ctrl+Shift+M';
+		add: #stsAllSenders
+			label: 'Browse All Senders'
+			enable: [true]
+			for: nil
+			accelerator: (CwAccelerator mask: ControlMask | ShiftMask keysym: XKn)
+			acceleratorText: 'Ctrl+Shift+N';
+		add: #stsMethodsIncludingString
+			label: 'Browse Methods Including String'
+			enable: [true]
+			for: nil
+			accelerator: (CwAccelerator mask: ControlMask | ShiftMask keysym: XKf)
+			acceleratorText: 'Ctrl+Shift+F'.
 	^editMenu
 ]
 
@@ -432,6 +491,13 @@ GeminiChatWindow >> statusLineText [
 
 	max := chat model contextWindowSize.
 	^ chat tokenUsage printString, ' / ', (max ifNil: ['?'] ifNotNil: [max printString])
+]
+
+{ #category : 'Not categorized',
+  #vaVisibility : 'private' }
+GeminiChatWindow >> targetTextWidget: widget [
+
+	super targetTextWidget: (widget ifNil: [ GeminiChatTextWidgetAdapter for: chatWidget ])
 ]
 
 { #category : 'User Interface',
