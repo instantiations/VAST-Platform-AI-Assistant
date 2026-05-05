@@ -1,77 +1,89 @@
 # VAST Platform AI Assistant
 
-This repository contains tools that support AI Assisted development in the [VAST platform](https://www.instantiations.com/vast-platform/) development environment. Currently, there is support for Gemini AI.
+This repository contains tools that support AI Assisted development in the [VAST platform](https://www.instantiations.com/vast-platform/) development environment. Use natural language to ask questions about the VAST code base and let the AI assist you in the development of VAST systems.
 
-## Gemini AI Assistant
+### Supported Model Providers
 
-Gemini AI Assistant adds [Google's Gemini AI](https://ai.google.dev/) to the VAST Platform: use natural language to ask questions about the entire VAST code base and let Gemini assist you in the development of VAST systems.
+The VAST Platform AI Assistant can be used with different Large Language Models (LLMs). It primarily supports use of [Google’s Gemini models](https://deepmind.google/models/gemini/). Preliminary support is available for using other models through any API compatible with the OpenAI Responses API as offered for example by [Ollama](https://ollama.com), [LMStudio](https://lmstudio.ai) and [LiteLLM](https://www.litellm.ai). Note that not all models may work, [Ollama models](https://ollama.com/search?c=tools) and [LMStudio models](https://lmstudio.ai/models?filter=tools) need to be able to use tools, thinking or reasoning capability on the other hand is recommended but not required.
 
-![Gemini AI Assistant](/docs/images/GeminiAIAssistant-Window.png)
+<p align="center">
+<img src="./docs/images/ConfigurationQuery-Gemini.png" width=800>
+</p>
 
 ### Quick Start
 
 #### Prerequisites
 
-- [VAST Platform](https://www.instantiations.com/vast-platform/) version 14.1 or later.
-- OpenSSL libraries installed and [configured in VAST](https://www.instantiations.com/vast-support/documentation/FAQ/index.html#page/FAQ/va09002.html).
-- A Google Gemini API key, obtainable via [Google AI studio](https://aistudio.google.com/api-keys).
+* [VAST Platform](https://www.instantiations.com/vast-platform/) version 14.1 or later.
+* OpenSSL libraries installed and [configured in VAST](https://www.instantiations.com/vast-support/documentation/FAQ/index.html#page/FAQ/va09002.html).
 
-#### Get started
+#### Install and Load
 
-- Clone this repository.
-- In VAST, **install the Tonel tools feature**. From the Transcript window, you can use the `Tools>>Load/Unload Features` menu item to load the `ST: Tonel Support` feature. We need [Tonel](https://www.instantiations.com/vast-support/documentation/1410/#page/sg/tonel/tnl01-index.519.01.html) to import the source code from this github repository into your local Envy library.
-- From the Configuration Maps Browser, use the `Names>>Import>>Load Configuration Maps from Tonel Repository` menu item and point to the root directory of the local clone of the VAST Platform AI Assistant repository (which you cloned in the first step).
-- In the window that opens, add only the config map for the `Gemini AI Assistant` that corresponds to your version of VAST (e.g. `Gemini AI Assistant (VAST 14.1.0)`) to the list of config maps to import and load.
-- Once loaded, open `Gemini AI Assistant` from the Transcript window's `Tools` menu and fill-in your Gemini API key via the `Options>>Set API Key...` menu of the Gemini AI Assistant window.
-- If you need to use an HTTP proxy, evaluate the following in a workspace with the correct URL for the proxy to set it in the global configuration for the ‘httpsl’ transport. See the class SstHttpConfiguration for methods for setting credentials for the proxy or a list of excepted domains, and the [section on ‘Configuring an HTTP Client to Use a Proxy’](https://www.instantiations.com/vast-support/documentation/1500/ss/sst89s.html) in the documentation for further details.
+* Clone, or [download a ZIP archive](https://github.com/instantiations/VAST-Platform-AI-Assistant/archive/refs/heads/main.zip) of, this repository.
+* In VAST, load [Tonel](https://www.instantiations.com/vast-support/documentation/1410/#page/sg/tonel/tnl01-index.519.01.html) support: from the System Transcript window, use the menu item *Tools › Load/Unload Features* and load the ‘ST: Tonel Support’ feature.
+* From the Configuration Maps Browser, use the menu item *Names › Import › Load Configuration Maps from Tonel Repository* and select the root directory of the local clone or extracted archive of the repository.
+* In the window that opens, add and load the config map for the AI Assistant that corresponds to your version of VAST, either ‘VAST AI Assistant (VAST 14.1)’ or ‘VAST AI Assistant (VAST 15.0)’.
+* Once loaded, open *AI Assistant* from the System Transcript window’s *Tools* menu. Follow the next section to add your configuration.
+
+#### Configure
+
+* From the AI Assistant window’s menu, select *Options › Settings*. This opens the settings window showing the configured providers and models. To use the AI Assistant, at least one provider and a model must be configured.
+* Select ‘Providers’ and either add an API key for Gemini, or press ‘+’ and add the connection details for your preferred Responses API provider. A Gemini API key can be obtained through [Google AI Studio](https://aistudio.google.com/api-keys).
+* Select ‘Models’ and add the models you want to use to the list. The available models for each provider will be shown automatically.
+* If multiple models are configured, you can select which to use in the AI Assistant’s *Options › Model* menu.
+* You are ready to start asking questions!
+
+#### Configuring a Proxy (optional)
+
+* If you need to use an HTTP proxy, evaluate the following in a workspace with the correct URL for the proxy to set it in the global configuration for the ‘httpsl’ transport. See the class SstHttpConfiguration for methods for setting credentials for the proxy or a list of excepted domains, and the [section on ‘Configuring an HTTP Client to Use a Proxy’](https://www.instantiations.com/vast-support/documentation/1500/ss/sst89s.html) in the documentation for further details.
+
   ```smalltalk
   (SstTransport configurationForIdentifier: 'httpsl')
   	proxyUrl: 'https://proxy.local:8080' sstAsUrl
   ```
-- You are ready to start asking questions to Gemini!
 
 ### Features Overview
 
-The Gemini AI Assistant allows you to interact with Google Gemini AI models directly from your VAST platform IDE. The AI model is connected to your development image and has access to all source code through [Gemini functions](https://ai.google.dev/gemini-api/docs/function-calling). In addition, you can supply additional information to the model by adding files to the conversation. This can be useful to, for example, share stack dumps with Gemini when trying to analyze the origin of walkbacks.
+The AI Assistant allows you to interact with multiple AI models directly from your VAST platform IDE. The AI model is connected to your development image and has access to all source code. In addition, you can supply additional information to the model by adding files to the conversation. This can be useful to, for example, share stack dumps with the AI when trying to analyze the origin of walkbacks.
 
 #### Chat
 
-Interact with Gemini AI by typing in the bottom pane of the Gemini AI Assistant window and hit the 'send' button. Gemini will write it's response in the top pane of the window and markdown will be rendered into user-friendly readable text.
+Interact with the AI by typing in the bottom pane of the AI Assistant window and hit the ‘Send’ button. The AI will write its response in the top pane of the window, with Markdown rendered into user-friendly readable text.
 
-When you use a model with thinking support, it is possible to display the thoughts by expanding the line that mentions 'Thoughts'.
+When you use a model with thinking support, it is possible to display the thoughts by expanding the line that mentions ‘Thoughts’:
 
-<img src="./docs/images/thoughts.png" width="250" height="250" alt="Thoughts">
+<p align="center">
+<img src="./docs/images/Thoughts-Gemini.png" width=516 alt="Thoughts entry for how to open a chat">
+</p>
 
 #### Code
 
-When Gemini's response includes Smalltalk source code, it is displayed with a vertical grey bar on the left. Click the grey bar to open the code in a Workspace. If the code contains a method definition of an existing method, a differences browser is opened to highlight the changes Gemini proposes to the current source code.
+When the response includes Smalltalk source code, it is displayed with a vertical grey bar on the left. Clicking the grey bar will open an appropriate tool - for proposed changes to classes or methods, a merge tool, otherwise a Workspace.
 
-![Gemini Code Integrations](/docs/images/Code-windows.png)
-
-Further integration with development tools to improve coding assistance by Gemini is underway.
+<p align="center">
+<img src="./docs/images/MergeTool-Gemini.png" width=734 alt="Merge tool on suggested layout change">
+</p>
 
 #### Tools
 
-Gemini AI Assistant has access to a set of tools designed to help navigate, understand, and write code within the VAST Platform Smalltalk environment. If you want to know which ones these are, just ask Gemini "Can you list your tools?".
+The AI Assistant has access to a set of tools designed to help navigate, understand, and write code within the VAST Platform Smalltalk environment. If you want to know which ones these are, just ask for a list of the tools:
 
-![Gemini Tools](/docs/images/Gemini-Tools.png)
+<p align="center">
+<img src="./docs/images/Tools-Gemini.png" width=782 alt="Available Tools">
+</p>
 
 #### Files
 
-Add files to the conversation via the toolbar menu and reference these in your conversation with Gemini.
+Add files to the conversation via the toolbar menu and reference these in your conversation:
 
-<img src="/docs/images/Files.png" width="250" height="250" alt="Files">
-
-#### Options
-
-The Options menu allows to choose the version of the Gemini model that Gemini Chat uses.
+<p align="center">
+<img src="./docs/images/Files.png" width=182 alt="Dialog to attach file">
+</p>
 
 ### Contributing
 
-We encourage contributions!
-Please check the guidelines in the [CONTRIBUTING](CONTRIBUTING.md) file.
+We encourage contributions! Please check the guidelines in the [CONTRIBUTING](CONTRIBUTING.md) file.
 
 ### License
 
-The source code is distributed under the Apache 2.0 license.
-See the [LICENSE](LICENSE) file for details.
+The source code is distributed under the Apache 2.0 license. See the [LICENSE](LICENSE) file for details.

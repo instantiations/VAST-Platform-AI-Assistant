@@ -22,18 +22,53 @@
 				]
 			}
 		],
-		#ts : 3954304207,
+		#ts : 3955398605,
 		#comment : '',
 		#formatVersion : '1.1',
 		#applications : OrderedCollection [
 			{
-				#name : 'GeminiChatApp',
-				#versionName : '1.220',
-				#ts : 3954303919
+				#name : 'AIAssistantCoreApp',
+				#versionName : '1.247',
+				#ts : 3955378522
+			},
+			{
+				#name : 'AIAssistantFunctionsApp',
+				#versionName : '1.239',
+				#ts : 3955003202
+			},
+			{
+				#name : 'AIAssistantMergeViewApp',
+				#versionName : '1.235',
+				#ts : 3954999602
+			},
+			{
+				#name : 'AIAssistantUIApp',
+				#versionName : '1.245',
+				#ts : 3955366516
+			},
+			{
+				#name : 'AIProviderGeminiApp',
+				#versionName : '1.246',
+				#ts : 3955370417
+			},
+			{
+				#name : 'AIProviderGeminiUIApp',
+				#versionName : '1.239',
+				#ts : 3955003202
+			},
+			{
+				#name : 'AIProviderOpenAIResponsesApp',
+				#versionName : '1.242',
+				#ts : 3955345231
+			},
+			{
+				#name : 'AIProviderOpenAIResponsesUIApp',
+				#versionName : '1.241',
+				#ts : 3955023032
 			}
 		],
-		#name : 'Gemini AI Assistant (VAST 14.1)',
-		#versionName : '1.220'
+		#name : 'VAST AI Assistant (VAST 14.1)',
+		#versionName : '1.247'
 	},
 	{
 		#conditions : [
@@ -58,17 +93,52 @@
 				]
 			}
 		],
-		#ts : 3954304216,
+		#ts : 3955398616,
 		#comment : '',
 		#formatVersion : '1.1',
 		#applications : OrderedCollection [
 			{
-				#name : 'GeminiChatApp',
-				#versionName : '1.220',
-				#ts : 3954303919
+				#name : 'AIAssistantCoreApp',
+				#versionName : '1.247',
+				#ts : 3955378522
+			},
+			{
+				#name : 'AIAssistantFunctionsApp',
+				#versionName : '1.239',
+				#ts : 3955003202
+			},
+			{
+				#name : 'AIAssistantMergeViewApp',
+				#versionName : '1.235',
+				#ts : 3954999602
+			},
+			{
+				#name : 'AIAssistantUIApp',
+				#versionName : '1.245',
+				#ts : 3955366516
+			},
+			{
+				#name : 'AIProviderGeminiApp',
+				#versionName : '1.246',
+				#ts : 3955370417
+			},
+			{
+				#name : 'AIProviderGeminiUIApp',
+				#versionName : '1.239',
+				#ts : 3955003202
+			},
+			{
+				#name : 'AIProviderOpenAIResponsesApp',
+				#versionName : '1.242',
+				#ts : 3955345231
+			},
+			{
+				#name : 'AIProviderOpenAIResponsesUIApp',
+				#versionName : '1.241',
+				#ts : 3955023032
 			}
 		],
-		#name : 'Gemini AI Assistant (VAST 15.0)',
-		#versionName : '1.220'
+		#name : 'VAST AI Assistant (VAST 15.0)',
+		#versionName : '1.247'
 	}
 ]
