@@ -34,3 +34,15 @@ AIChatTextBlockThought >> resetLayout [
 
 	self sequenceBlock resetLayout
 ]
+
+{ #category : 'Not categorized' }
+AIChatTextBlockThought >> spacingFactorAfter [
+
+	^ 2 / 3
+]
+
+{ #category : 'Not categorized' }
+AIChatTextBlockThought >> spacingFactorBefore [
+
+	^ 2 / 3
+]

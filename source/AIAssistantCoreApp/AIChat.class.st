@@ -9,6 +9,7 @@ Class {
 		'textSegments',
 		'generator',
 		'generationError',
+		'generationErrorTextSegment',
 		'filePaths',
 		'tokenUsage'
 	],
@@ -75,6 +76,14 @@ AIChat >> changedTextSegments [
 	self changed: #textSegments
 ]
 
+{ #category : 'Not categorized' }
+AIChat >> debugGenerationError [
+
+	self generationError: nil.
+	generator generationErrorHandler: #debug.
+	self generationFinished.
+]
+
 { #category : 'Accessing' }
 AIChat >> filePaths [
 
@@ -84,7 +93,12 @@ AIChat >> filePaths [
 { #category : 'Generation' }
 AIChat >> generationError: newGenerationError [
 
-	generationError := newGenerationError
+	generationError := newGenerationError.
+	generationErrorTextSegment := generationError ifNotNil: [
+		generationErrorTextSegment := (AIChatTextSegmentError forError: generationError
+			onRetry: [ self retryGeneration ] onInspect: [ generationError inspect ] onDebug: [ self debugGenerationError ]) ].
+	self changedTextSegments.
+	self changed: #generating.
 ]
 
 { #category : 'Generation' }
@@ -111,13 +125,13 @@ AIChat >> initializeWithSystemInstruction: initialSystemInstruction model: initi
 { #category : 'Generation' }
 AIChat >> isActivelyGenerating [
 
-	^ generator notNil and: [ generator retryDelaySeconds isNil ]
+	^ generator notNil and: [ generator retryDelaySeconds isNil and: [ generationError isNil ] ]
 ]
 
 { #category : 'Not categorized' }
 AIChat >> isGenerating [
 
-	^ generator notNil
+	^ generator notNil and: [ generationError isNil ]
 ]
 
 { #category : 'Not categorized' }
@@ -138,10 +152,11 @@ AIChat >> model: newModel [
 	model := newModel
 ]
 
-{ #category : 'Generation' }
-AIChat >> retryGenerating: aGenerator [
-	generator := aGenerator.
-	generator startGenerating
+{ #category : 'Not categorized' }
+AIChat >> retryGeneration [
+
+	self generationError: nil.
+	generator generationErrorHandler: #retry.
 ]
 
 { #category : 'Actions' }
@@ -149,7 +164,11 @@ AIChat >> sendUserMessage: messageString [
 
 	| userMessage |
 
-	generator ifNotNil: [ Error signal: 'Cannot add a user message while still generating the model''s response to the previous one' ].
+	generator ifNotNil: [
+		generationError ifNil: [
+			Error signal: 'Cannot add a user message while still generating the model''s response to the previous one' ].
+		self generationError: nil.
+		generator generationErrorHandler: #exit ].
 	generator := model generatorClass forChat: self.
 	userMessages add: (userMessage := AIChatUserMessage message: messageString).
 	textSegments add: userMessage userText; add: userMessage modelText.
@@ -170,6 +189,14 @@ AIChat >> systemInstruction [
 	^ systemInstruction
 ]
 
+{ #category : 'Not categorized' }
+AIChat >> terminateGeneration [
+
+	self stopGeneration.
+	generator ifNotNil: [
+		generator generationErrorHandler: #exit ]
+]
+
 { #category : 'Accessing' }
 AIChat >> textSegments [
 
@@ -178,8 +205,8 @@ AIChat >> textSegments [
 	(segments := OrderedCollection new)
 		add: systemInstructionTextSegment;
 		addAll: textSegments.
-	generationError ifNotNil: [
-		segments add: (AIChatTextSegmentError fromError: generationError inChat: self) ].
+	generationErrorTextSegment ifNotNil: [
+		segments add: generationErrorTextSegment ].
 	(generator ifNotNil: [ generator retryDelaySeconds ]) ifNotNil: [ :seconds |
 			segments add: (AIChatTextSegmentDelay forSeconds: seconds) ].
 	^ segments

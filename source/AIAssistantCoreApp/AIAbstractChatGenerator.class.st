@@ -10,7 +10,9 @@ Class {
 		'requestTimestamp',
 		'responseOrError',
 		'retryDelaySeconds',
-		'shouldStop'
+		'shouldStop',
+		'generationErrorHandlerSemaphore',
+		'generationErrorHandler'
 	],
 	#category : 'AIAssistantCoreApp'
 }
@@ -39,6 +41,13 @@ AIAbstractChatGenerator >> generate [
 		shouldStop
 			ifTrue: [ ^ self ] ].
 	Error signal: 'Maximum number of generations reached'
+]
+
+{ #category : 'Not categorized' }
+AIAbstractChatGenerator >> generationErrorHandler: symbol [
+
+	generationErrorHandler := symbol.
+	generationErrorHandlerSemaphore signal.
 ]
 
 { #category : 'Not categorized' }
@@ -125,6 +134,7 @@ AIAbstractChatGenerator >> initializeWithChat: initialChat [
 	generationModel := chat model.
 	functionsSet := AIFunctionsSet new.
 	shouldStop := false.
+	generationErrorHandlerSemaphore := Semaphore new.
 ]
 
 { #category : 'Not categorized' }
@@ -202,18 +212,22 @@ AIAbstractChatGenerator >> sendRequest [
 { #category : 'Not categorized' }
 AIAbstractChatGenerator >> startGenerating [
 
-	chat generationError: nil.
 	[
 		[
-			self generate
+			self generate.
+			CwAppContext default syncExecInUI: [
+				chat
+					changedTextSegments;
+					generationFinished ]
 		] when: ExError do: [ :error |
 			CwAppContext default syncExecInUI: [
-				chat generationError: (AIChatGenerationErrorInfo forError: error withGenerator: self) ].
-			error exitWith: nil ].
-		CwAppContext default syncExecInUI: [
-			chat
-				changedTextSegments;
-				generationFinished ]
+				chat generationError: error ].
+			generationErrorHandlerSemaphore wait.
+			((Dictionary
+				with: #debug -> [ error pass ]
+				with: #retry -> [ error retry ]
+				with: #exit -> [ error exitWith: nil ])
+					at: generationErrorHandler) value ]
 	] fork
 ]
 

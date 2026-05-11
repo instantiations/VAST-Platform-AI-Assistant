@@ -13,3 +13,15 @@ AIChatTextBlockListItem >> resetLayout [
 
 	self sequenceBlock resetLayout
 ]
+
+{ #category : 'Not categorized' }
+AIChatTextBlockListItem >> spacingFactorAfter [
+
+	^ 1 / 10
+]
+
+{ #category : 'Not categorized' }
+AIChatTextBlockListItem >> spacingFactorBefore [
+
+	^ 1 / 10
+]

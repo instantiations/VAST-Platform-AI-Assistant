@@ -11,6 +11,7 @@ Class {
 		'leftInsetQuoteBlockIncrement',
 		'leftInsetListItemBlockIncrement',
 		'rightInset',
+		'lineSpacing',
 		'textColor',
 		'textBolded',
 		'textItalicized',
@@ -155,6 +156,16 @@ AIChatWidgetDrawingContext >> leftInsetQuoteBlockIncrement [
 { #category : 'Not categorized' }
 AIChatWidgetDrawingContext >> leftInsetQuoteBlockIncrement: anObject [
 	leftInsetQuoteBlockIncrement := anObject
+]
+
+{ #category : 'Not categorized' }
+AIChatWidgetDrawingContext >> lineSpacing [
+	^lineSpacing
+]
+
+{ #category : 'Not categorized' }
+AIChatWidgetDrawingContext >> lineSpacing: anObject [
+	lineSpacing := anObject
 ]
 
 { #category : 'Not categorized' }
@@ -313,6 +324,18 @@ AIChatWidgetDrawingContext >> withLeftInset: newValue do: block [
 AIChatWidgetDrawingContext >> withLeftInsetIncreasedBy: leftInsetIncrement do: block [
 
 	^ self withLeftInset: leftInset + leftInsetIncrement do: block
+]
+
+{ #category : 'Not categorized' }
+AIChatWidgetDrawingContext >> withLineSpacing: newValue do: block [
+
+	| oldValue blockValue |
+
+	oldValue := lineSpacing.
+	lineSpacing := newValue.
+	blockValue := block value.
+	lineSpacing := oldValue.
+	^ blockValue
 ]
 
 { #category : 'Not categorized' }

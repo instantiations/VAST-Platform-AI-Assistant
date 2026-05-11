@@ -5,27 +5,14 @@ Class {
 }
 
 { #category : 'Not categorized' }
-AIChatTextSegmentError class >> fromError: error inChat: chat [
+AIChatTextSegmentError class >> forError: error onRetry: retryBlock onInspect: inspectBlock onDebug: debugBlock [
 
-	| sequence sstError |
-
-	sequence := AIChatTextBlockSequence new.
-	sequence
-		addBlock: (
-			AIChatTextBlockText text: (AIChatTextElementString string: 'ERROR: ' , error description));
-		addBlock: (
-			AIChatTextBlockText text: (
-				AIChatTextElementAction
-					element: (AIChatTextElementString string: 'Retry')
-					block: [error retryInChat: chat])).
-
-	((error error arguments size >= 2) and: [(sstError := error error arguments second) isSstError])
-		ifTrue: [
-			sequence addBlock: (
-				AIChatTextBlockText text: (
-					AIChatTextElementAction
-						element: (AIChatTextElementString string: 'Show More')
-						block: [sstError errorObject contents asString inspect]))].
-
-	^self basicNew initializeWithTextBlocks: { sequence }
+	^ self basicNew initializeWithTextBlocks: {
+		AIChatTextBlockText text: (AIChatTextElementString string: 'ERROR: ' , error description).
+		AIChatTextBlockText text: (AIChatTextElementSequence elements: {
+			AIChatTextElementAction element: (AIChatTextElementString string: 'Retry') block: retryBlock.
+			AIChatTextElementString string: (String new: 2 withAll: Character space).
+			AIChatTextElementAction element: (AIChatTextElementString string: 'Inspect') block: inspectBlock.
+			AIChatTextElementString string: (String new: 2 withAll: Character space).
+			AIChatTextElementAction element: (AIChatTextElementString string: 'Debug') block: debugBlock }) }
 ]

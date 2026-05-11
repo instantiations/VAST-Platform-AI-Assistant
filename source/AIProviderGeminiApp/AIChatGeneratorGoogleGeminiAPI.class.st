@@ -31,18 +31,18 @@ AIChatGeneratorGoogleGeminiAPI >> parseResponse: responseObject [
 
 	| firstCandidate firstCandidateContent |
 
-	(responseObject includesKey: 'usageMetadata')
-		ifTrue: [|metadata|
-			metadata := responseObject at: 'usageMetadata'.
-			chat tokenUsage: (AIChatTokenUsage prompt: (metadata at: 'promptTokenCount') total:  (metadata at: 'totalTokenCount'))].
-	firstCandidate := (responseObject at: 'candidates' ifAbsent: [^self]) first.
-	firstCandidateContent := firstCandidate at: 'content' ifAbsent: [nil].
-	firstCandidateContent
-		ifNil: [Error signal: 'Model stopped, reason: ' , (firstCandidate at: 'finishReason')].
-	(firstCandidateContent at: 'role') = 'model'
-		ifFalse: [Error signal: 'Expected generated content to have the role "model"'].
-	^(firstCandidateContent at: 'parts' ifAbsent: [#()])
-		collect: [:partJSON | AIAbstractChatGeneratedContentPart fromJSON: partJSON]
+	responseObject at: 'error' ifPresent: [ :error |
+		Error signal: ('Received error in generated contents stream (code: %1, status: %2): %3' bindWith: (error at: 'code' ifAbsent: [ nil ])
+			with: (error at: 'status' ifAbsent: [ nil ]) with: (error at: 'message' ifAbsent: [ nil ])) ].
+
+	responseObject at: 'usageMetadata' ifPresent: [ :usageMetadata |
+		chat tokenUsage: (AIChatTokenUsage prompt: (usageMetadata at: 'promptTokenCount') total: (usageMetadata at: 'totalTokenCount')) ].
+
+	firstCandidate := (responseObject at: 'candidates' ifAbsent: [ ^ #() ]) first.
+	firstCandidateContent := firstCandidate at: 'content' ifAbsent: [
+		Error signal: 'Model stopped, reason: ' , (firstCandidate at: 'finishReason') ].
+	(firstCandidateContent at: 'role') = 'model' ifFalse: [ Error signal: 'Expected generated content to have the role "model"' ].
+	^ (firstCandidateContent at: 'parts' ifAbsent: [ #() ] ) collect: [ :partJSON | AIAbstractChatGeneratedContentPart fromJSON: partJSON ]
 ]
 
 { #category : 'Not categorized',

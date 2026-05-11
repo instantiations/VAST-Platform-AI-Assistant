@@ -34,3 +34,15 @@ AIChatTextBlockFunctionCalls >> resetLayout [
 
 	"Nothing to do"
 ]
+
+{ #category : 'Not categorized' }
+AIChatTextBlockFunctionCalls >> spacingFactorAfter [
+
+	^ 2 / 3
+]
+
+{ #category : 'Not categorized' }
+AIChatTextBlockFunctionCalls >> spacingFactorBefore [
+
+	^ 2 / 3
+]

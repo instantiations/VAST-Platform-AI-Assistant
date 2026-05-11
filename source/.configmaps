@@ -22,14 +22,14 @@
 				]
 			}
 		],
-		#ts : 3955398605,
+		#ts : 3955953005,
 		#comment : '',
 		#formatVersion : '1.1',
 		#applications : OrderedCollection [
 			{
 				#name : 'AIAssistantCoreApp',
-				#versionName : '1.247',
-				#ts : 3955378522
+				#versionName : '1.252',
+				#ts : 3955950925
 			},
 			{
 				#name : 'AIAssistantFunctionsApp',
@@ -43,13 +43,13 @@
 			},
 			{
 				#name : 'AIAssistantUIApp',
-				#versionName : '1.245',
-				#ts : 3955366516
+				#versionName : '1.251',
+				#ts : 3955711520
 			},
 			{
 				#name : 'AIProviderGeminiApp',
-				#versionName : '1.246',
-				#ts : 3955370417
+				#versionName : '1.253',
+				#ts : 3955952419
 			},
 			{
 				#name : 'AIProviderGeminiUIApp',
@@ -68,7 +68,7 @@
 			}
 		],
 		#name : 'VAST AI Assistant (VAST 14.1)',
-		#versionName : '1.247'
+		#versionName : '1.253'
 	},
 	{
 		#conditions : [
@@ -93,14 +93,14 @@
 				]
 			}
 		],
-		#ts : 3955398616,
+		#ts : 3955953014,
 		#comment : '',
 		#formatVersion : '1.1',
 		#applications : OrderedCollection [
 			{
 				#name : 'AIAssistantCoreApp',
-				#versionName : '1.247',
-				#ts : 3955378522
+				#versionName : '1.252',
+				#ts : 3955950925
 			},
 			{
 				#name : 'AIAssistantFunctionsApp',
@@ -114,13 +114,13 @@
 			},
 			{
 				#name : 'AIAssistantUIApp',
-				#versionName : '1.245',
-				#ts : 3955366516
+				#versionName : '1.251',
+				#ts : 3955711520
 			},
 			{
 				#name : 'AIProviderGeminiApp',
-				#versionName : '1.246',
-				#ts : 3955370417
+				#versionName : '1.253',
+				#ts : 3955952419
 			},
 			{
 				#name : 'AIProviderGeminiUIApp',
@@ -139,6 +139,6 @@
 			}
 		],
 		#name : 'VAST AI Assistant (VAST 15.0)',
-		#versionName : '1.247'
+		#versionName : '1.253'
 	}
 ]

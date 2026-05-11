@@ -62,7 +62,11 @@ AIChatTextBlockSequence class >> fromString: string [
 					blocks last addBlock: (AIChatTextBlockHeading fromLine: line).
 					previousLines := OrderedCollection new ].
 			] ifFalse: [
-				(line notEmpty or: [ previousLines isEmpty or: [ previousLines last notEmpty ] ]) ifTrue: [
+				line ifEmpty: [
+					previousLines ifNotEmpty: [
+						blocks last addBlock: (AIChatTextBlockText fromString: (String crlf join: previousLines)).
+						previousLines := OrderedCollection new ].
+				] ifNotEmpty: [
 					previousLines add: line ] ] ] ].
 	previousLines ifNotEmpty: [
 		blocks last addBlock: (AIChatTextBlockText fromString: (String crlf join: previousLines)) ].

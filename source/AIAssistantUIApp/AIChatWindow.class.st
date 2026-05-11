@@ -563,5 +563,5 @@ AIChatWindow >> windowClose: widget clientData: clientData callData: callData [
 	AIAbstractModel removeDependent: self.
 	callData doit & chat notNil ifTrue: [
 		chat removeDependent: self;
-			stopGeneration ].
+			terminateGeneration ].
 ]
