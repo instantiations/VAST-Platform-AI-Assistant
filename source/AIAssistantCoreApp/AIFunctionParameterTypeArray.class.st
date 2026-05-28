@@ -14,16 +14,16 @@ AIFunctionParameterTypeArray class >> itemsType: itemsType [
 ]
 
 { #category : 'Not categorized' }
+AIFunctionParameterTypeArray class >> typeName [
+
+	^ 'array'
+]
+
+{ #category : 'Not categorized' }
 AIFunctionParameterTypeArray >> initializeWithItemsType: initialItemsType [
 
 	self initialize.
 	itemsType := initialItemsType.
-]
-
-{ #category : 'Not categorized' }
-AIFunctionParameterTypeArray >> name [
-
-	^ 'array'
 ]
 
 { #category : 'Not categorized' }

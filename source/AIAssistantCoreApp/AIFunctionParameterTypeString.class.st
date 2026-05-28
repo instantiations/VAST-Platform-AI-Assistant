@@ -5,7 +5,7 @@ Class {
 }
 
 { #category : 'Not categorized' }
-AIFunctionParameterTypeString >> name [
+AIFunctionParameterTypeString class >> typeName [
 
 	^ 'string'
 ]

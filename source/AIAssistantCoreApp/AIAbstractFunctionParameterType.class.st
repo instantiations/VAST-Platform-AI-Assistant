@@ -5,9 +5,15 @@ Class {
 }
 
 { #category : 'Not categorized' }
-AIAbstractFunctionParameterType >> name [
+AIAbstractFunctionParameterType class >> typeName [
 
 	self subclassResponsibility
+]
+
+{ #category : 'Not categorized' }
+AIAbstractFunctionParameterType >> name [
+
+	^ self class typeName
 ]
 
 { #category : 'Not categorized' }

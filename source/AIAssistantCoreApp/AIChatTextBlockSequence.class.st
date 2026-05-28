@@ -27,13 +27,13 @@ AIChatTextBlockSequence class >> fromString: string [
 			line := matchedLine ].
 		matchedBlocksCount = blocks size ifFalse: [
 			previousLines ifNotEmpty: [
-				blocks last addBlock: (AIChatTextBlockText fromString: (String crlf join: previousLines)) ].
+				blocks last addBlock: (AIChatTextBlockText fromString: (CldtConstants::LineDelimiter join: previousLines)) ].
 			previousLines := OrderedCollection new.
 			blocks size - matchedBlocksCount timesRepeat: [
 				blocks removeLast ] ].
 		encounteredCodeStart ifTrue: [
 			(line beginsWithSubCollection: '```') ifTrue: [
-				blocks last addBlock: (AIChatTextBlockCode code: (String crlf join: previousLines allButFirst)).
+				blocks last addBlock: (AIChatTextBlockCode code: (CldtConstants::LineDelimiter join: previousLines allButFirst)).
 				previousLines := OrderedCollection new.
 				encounteredCodeStart := false
 			] ifFalse: [
@@ -45,7 +45,7 @@ AIChatTextBlockSequence class >> fromString: string [
 			[ { AIChatTextBlockQuote. AIChatTextBlockListItem. AIChatTextBlockNumberedListItem }
 				anySatisfy: [ :blockKind | (startedBlock := blockKind startingAtLine: line) notNil ] ] whileTrue: [
 					previousLines ifNotEmpty: [
-						blocks last addBlock: (AIChatTextBlockText fromString: (String crlf join: previousLines)) ].
+						blocks last addBlock: (AIChatTextBlockText fromString: (CldtConstants::LineDelimiter join: previousLines)) ].
 					previousLines := OrderedCollection new.
 					blocks last addBlock: startedBlock.
 					blocks add: startedBlock.
@@ -54,7 +54,7 @@ AIChatTextBlockSequence class >> fromString: string [
 			isHeading := line beginsWithSubCollection: '#'.
 			isCodeStart | isHeading ifTrue: [
 				previousLines ifNotEmpty: [
-					blocks last addBlock: (AIChatTextBlockText fromString: (String crlf join: previousLines)) ].
+					blocks last addBlock: (AIChatTextBlockText fromString: (CldtConstants::LineDelimiter join: previousLines)) ].
 				isCodeStart ifTrue: [
 					previousLines := OrderedCollection with: line.
 					encounteredCodeStart := true ].
@@ -64,12 +64,12 @@ AIChatTextBlockSequence class >> fromString: string [
 			] ifFalse: [
 				line ifEmpty: [
 					previousLines ifNotEmpty: [
-						blocks last addBlock: (AIChatTextBlockText fromString: (String crlf join: previousLines)).
+						blocks last addBlock: (AIChatTextBlockText fromString: (CldtConstants::LineDelimiter join: previousLines)).
 						previousLines := OrderedCollection new ].
 				] ifNotEmpty: [
 					previousLines add: line ] ] ] ].
 	previousLines ifNotEmpty: [
-		blocks last addBlock: (AIChatTextBlockText fromString: (String crlf join: previousLines)) ].
+		blocks last addBlock: (AIChatTextBlockText fromString: (CldtConstants::LineDelimiter join: previousLines)) ].
 	sequenceBlock lastTopicLine: lastTopicLine.
 	^ sequenceBlock
 ]

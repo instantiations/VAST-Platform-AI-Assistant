@@ -41,7 +41,16 @@ AIChatWidgetTargetTextWidgetAdapter >> getSelectionPosition [
 { #category : 'Not categorized' }
 AIChatWidgetTargetTextWidgetAdapter >> getString [
 
-	^ chatWidget selectedString asEsString ifNil: [ '' ]
+	| selectedString |
+
+	selectedString := chatWidget selectedString.
+	^ selectedString isEsString ifTrue: [ selectedString ] ifFalse: [
+		EsAbstractCodePageConverter current
+			convert: selectedString asUtf8Bytes asString
+			fromCodePage: EsAbstractCodePageConverter utf8CodePage
+			toCodePage: EsAbstractCodePageConverter current codePage
+			bufferSize: nil
+			policy: EsCodePageConversionPolicy new ]
 ]
 
 { #category : 'Not categorized' }

@@ -87,27 +87,27 @@ AISettingsSectionModels >> createModelDetails: modelDetails [
 	self createModelDetailsGeneral: generalModelDetailsPane.
 	specificModelDetailsPane := modelDetails createForm: 'SpecificModelDetailsForm' argBlock: [:w | ].
 
-	updateButton :=
+	(updateButton :=
 		modelDetails
 			createPushButton: 'updateModelButton'
 			argBlock: [:w |
 				w
-					labelString: 'Save';
-					addCallback: XmNactivateCallback
-						receiver: self
-						selector: #updateModelButton:clientData:callData:
-						clientData: nil].
-	registerButton :=
+					labelString: 'Save'])
+		addCallback: XmNactivateCallback
+			receiver: self
+			selector: #updateModelButton:clientData:callData:
+			clientData: nil.
+	(registerButton :=
 		modelDetails
 			createPushButton: 'registerModelButton'
 			argBlock: [:w |
 				w
 					labelString: 'Save';
-					sensitive: false;
-					addCallback: XmNactivateCallback
-						receiver: self
-						selector: #registerModelButton:clientData:callData:
-						clientData: nil].
+					sensitive: false])
+		addCallback: XmNactivateCallback
+			receiver: self
+			selector: #registerModelButton:clientData:callData:
+			clientData: nil.
 
 	generalModelDetailsPane
 		setValuesBlock: [:w |
@@ -159,16 +159,16 @@ AISettingsSectionModels >> createModelDetailsGeneral: modelDetailsGeneral [
 
 	providerLabel :=
 		modelDetailsGeneral createLabel: 'providerLabel' argBlock: [:w | w labelString: 'Provider:'].
-	providerCombo :=
+	(providerCombo :=
 		modelDetailsGeneral
 			createComboBox: 'providerCombo'
 			argBlock: [:w |
 				w
-					items: self initialProviderList;
-					addCallback: XmNsingleSelectionCallback
-						receiver: self
-						selector: #providerChanged:clientData:callData:
-						clientData: nil].
+					items: self initialProviderList])
+		addCallback: XmNsingleSelectionCallback
+			receiver: self
+			selector: #providerChanged:clientData:callData:
+			clientData: nil.
 
 	modelNameLabel :=
 		modelDetailsGeneral
@@ -177,15 +177,14 @@ AISettingsSectionModels >> createModelDetailsGeneral: modelDetailsGeneral [
 				w
 					labelString: 'Model:';
 					alignment: XmALIGNMENTEND].
-	modelNameCombo :=
+	(modelNameCombo :=
 		modelDetailsGeneral
 			createComboBox: 'nameCombo'
-			argBlock: [:w |
-				w
-					addCallback: XmNsingleSelectionCallback
-					receiver: self
-					selector: #modelNameChanged:clientData:callData:
-					clientData: nil].
+			argBlock: nil)
+		addCallback: XmNsingleSelectionCallback
+			receiver: self
+			selector: #modelNameChanged:clientData:callData:
+			clientData: nil.
 
 	labelLabel :=
 		modelDetailsGeneral
@@ -194,15 +193,14 @@ AISettingsSectionModels >> createModelDetailsGeneral: modelDetailsGeneral [
 				w
 					labelString: 'Label:';
 					alignment: XmALIGNMENTEND].
-	labelInput :=
+	(labelInput :=
 		modelDetailsGeneral
 			createText: 'labelInput'
-			argBlock: [:w |
-				w
-					addCallback: XmNvalueChangedCallback
-					receiver: self
-					selector: #labelChanged:clientData:callData:
-					clientData: nil].
+			argBlock: nil)
+		addCallback: XmNvalueChangedCallback
+			receiver: self
+			selector: #labelChanged:clientData:callData:
+			clientData: nil.
 
 	providerCombo
 		setValuesBlock: [:w |
@@ -283,44 +281,44 @@ AISettingsSectionModels >> createSettingsPane: aForm [
 
 	modelSettings := aForm createForm: 'ModelSettingsForm' argBlock: nil.
 
-	modelList :=
+	(modelList :=
 		modelSettings
 			createScrolledList: 'ModelList'
 			argBlock: [:w |
 				w
 					items: self initialModelList;
-					selectionPolicy: XmSINGLESELECT;
-					addCallback: XmNsingleSelectionCallback
-						receiver: self
-						selector: #modelChanged:clientData:callData:
-						clientData: nil;
-					manageChild].
+					selectionPolicy: XmSINGLESELECT])
+		manageChild;
+		addCallback: XmNsingleSelectionCallback
+			receiver: self
+			selector: #modelChanged:clientData:callData:
+			clientData: nil.
 	sash :=
 		CwSash
 			createWidget: 'modelSettingsSash'
 			parent: modelSettings
 			argBlock: [:w | w orientation: XmVERTICAL].
 
-	newButton :=
+	(newButton :=
 		modelSettings
 			createPushButton: 'newModelButton'
 			argBlock: [:w |
 				w
-					labelString: '+';
-					addCallback: XmNactivateCallback
-						receiver: self
-						selector: #newModelButton:clientData:callData:
-						clientData: nil].
-	unregisterButton :=
+					labelString: '+'])
+		addCallback: XmNactivateCallback
+			receiver: self
+			selector: #newModelButton:clientData:callData:
+			clientData: nil.
+	(unregisterButton :=
 		modelSettings
 			createPushButton: 'removeModelButton'
 			argBlock: [:w |
 				w
-					labelString: '-';
-					addCallback: XmNactivateCallback
-						receiver: self
-						selector: #unregisterModelButton:clientData:callData:
-						clientData: nil].
+					labelString: '-'])
+		addCallback: XmNactivateCallback
+			receiver: self
+			selector: #unregisterModelButton:clientData:callData:
+			clientData: nil.
 
 	modelDetailsPane := modelSettings createForm: 'ModelDetailsCommonForm' argBlock: [:w | ].
 	self createModelDetails: modelDetailsPane.
@@ -492,8 +490,9 @@ AISettingsSectionModels >> initialize [
 AISettingsSectionModels >> labelChanged: label clientData: clientData callData: callData [
 	"When a provider typeis selected, we can create a new, unregistered provider"
 
-	currentModel label: label value.
-	self detailsChanged
+	self for: labelInput doCallback: [
+		currentModel label: label value.
+		self detailsChanged ]
 ]
 
 { #category : 'Events',
@@ -611,18 +610,6 @@ AISettingsSectionModels >> newModelButton: a clientData: clientData callData: ca
 	newButton sensitive: false.
 	unregisterButton sensitive: false.
 	self allDetailsClear
-]
-
-{ #category : 'Private',
-  #vaVisibility : 'private' }
-AISettingsSectionModels >> noCallback: aWidget during: aBlock [
-
-	| callbacks |
-
-	callbacks := aWidget valueChangedCallback.
-	[	aWidget valueChangedCallback: nil.
-		aBlock value: aWidget]
-			ensure: [aWidget valueChangedCallback: callbacks]
 ]
 
 { #category : 'Events',

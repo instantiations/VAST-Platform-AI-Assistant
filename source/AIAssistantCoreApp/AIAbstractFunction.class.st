@@ -4,6 +4,12 @@ Class {
 	#category : 'AIAssistantCoreApp'
 }
 
+{ #category : 'Not categorized' }
+AIAbstractFunction class >> isAbstract [
+
+	^ self = AIAbstractFunction
+]
+
 { #category : 'System Search',
   #vaVisibility : 'private' }
 AIAbstractFunction >> applicationNamed: applicationName [
@@ -76,6 +82,12 @@ AIAbstractFunction >> classesScopedTo: applicationNames and: classNames [
 		do: [:appName | classesToSearch addAll: (self classesInApplicationNamed: appName)].
 	classesToSearch isEmpty ifTrue: [classesToSearch := System allClasses].
 	^classesToSearch
+]
+
+{ #category : 'Not categorized' }
+AIAbstractFunction >> defaultEnabled [
+
+	^ true
 ]
 
 { #category : 'Accessing',

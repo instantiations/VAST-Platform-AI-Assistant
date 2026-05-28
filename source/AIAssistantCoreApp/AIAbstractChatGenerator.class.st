@@ -132,7 +132,7 @@ AIAbstractChatGenerator >> initializeWithChat: initialChat [
 	self initialize.
 	chat := initialChat.
 	generationModel := chat model.
-	functionsSet := AIFunctionsSet new.
+	functionsSet := AIFunctionsSet current copy.
 	shouldStop := false.
 	generationErrorHandlerSemaphore := Semaphore new.
 ]

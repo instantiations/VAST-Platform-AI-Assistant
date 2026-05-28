@@ -5,7 +5,7 @@ Class {
 }
 
 { #category : 'Not categorized' }
-AIFunctionParameterTypeBoolean >> name [
+AIFunctionParameterTypeBoolean class >> typeName [
 
 	^ 'boolean'
 ]

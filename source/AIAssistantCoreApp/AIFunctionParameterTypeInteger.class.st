@@ -5,7 +5,7 @@ Class {
 }
 
 { #category : 'Not categorized' }
-AIFunctionParameterTypeInteger >> name [
+AIFunctionParameterTypeInteger class >> typeName [
 
 	^ 'integer'
 ]

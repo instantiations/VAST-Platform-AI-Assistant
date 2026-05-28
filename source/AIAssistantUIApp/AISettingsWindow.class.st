@@ -31,7 +31,7 @@ AISettingsWindow >> closeWindow [
   #vaVisibility : 'private' }
 AISettingsWindow >> createSettingPanes: aForm [
 
-	sectionModels := { AISettingsSectionProviders new. AISettingsSectionModels new }.
+	sectionModels := { AISettingsSectionProviders new. AISettingsSectionModels new. AISettingsSectionFunctions new }.
 	settingPanes := sectionModels collect: [:each | each createSettingsPane: aForm]
 ]
 

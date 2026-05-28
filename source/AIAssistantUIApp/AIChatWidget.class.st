@@ -101,14 +101,14 @@ AIChatWidget >> createWidgetSystem [
 
 	(scrollBar := self primaryWidget createScrollBar: self primaryWidget name , 'ScrollBar' argBlock: nil)
 		manageChild;
-		valueChangedCallback: (OrderedCollection with: (CwCallbackRec
+		addCallback: XmNvalueChangedCallback
 			receiver: self
 			selector: #scrollBarValueChanged:clientData:callData:
-			clientData: nil));
-		dragCallback: (OrderedCollection with: (CwCallbackRec
+			clientData: nil;
+		addCallback: XmNdragCallback
 			receiver: self
 			selector: #scrollBarValueChanged:clientData:callData:
-			clientData: nil)).
+			clientData: nil.
 	(drawingArea := AIChatWidgetDrawingArea createWidget: self primaryWidget name , 'DrawingArea' parent: self primaryWidget argBlock: nil)
 		manageChild;
 		addCallback: XmNexposeCallback
@@ -224,7 +224,7 @@ AIChatWidget >> drawStringLayout: layout dc: dc [
 										(dc x + (dc fontStruct textWidth: (drawnString copyFrom: 1 to: index - 1))) < dc selectionEndX ].
 										selectionEndIndex ~= 0 ifTrue: [
 											dc selectionStream nextPutAll: (drawnString copyFrom: selectionStartIndex to: selectionEndIndex).
-											dc gc setForeground: (dc pixmap getPalette nearestPixelValue: Color selectionBackground).
+											dc gc setForeground: (dc pixmap getPalette nearestPixelValue: self selectionBackgroundColor).
 											dc pixmap fillRectangle: dc gc x: dc x + (dc fontStruct textWidth: (drawnString copyFrom: 1 to: selectionStartIndex - 1))
 												y: dc y + dc yOffset width: (dc fontStruct textWidth: (drawnString copyFrom: selectionStartIndex to: selectionEndIndex))
 												height: dc ascent + dc descent + dc lineSpacing ] ] ].
@@ -246,7 +246,7 @@ AIChatWidget >> drawStringLayout: layout dc: dc [
 					selectionEndPoint ifNotNil: [
 						(dc x < dc selectionEndX and: [ newX > dc selectionStartX ]) ifTrue: [
 							dc selectionStream tab.
-							dc gc setForeground: (dc pixmap getPalette nearestPixelValue: Color selectionBackground).
+							dc gc setForeground: (dc pixmap getPalette nearestPixelValue: self selectionBackgroundColor).
 							dc pixmap fillRectangle: dc gc x: dc x y: dc y + dc yOffset width: newX - dc x height: dc ascent + dc descent + dc lineSpacing ] ].
 					drawnAreas add: (Rectangle origin: dc x @ dc y extent: (newX - dc x) @ (dc ascent + dc descent + dc lineSpacing)).
 					dc x: newX.
@@ -388,7 +388,7 @@ AIChatWidget >> drawTextBlocks: textBlocks dc: dc [
 			selectionEndPoint ifNotNil: [
 				(dc selectionStartX <= dc leftInset and: [ dc selectionEndX > dc leftInset ]) ifTrue: [
 					dc selectionStream newLine.
-					dc gc setForeground: (dc pixmap getPalette nearestPixelValue: Color selectionBackground).
+					dc gc setForeground: (dc pixmap getPalette nearestPixelValue: self selectionBackgroundColor).
 					dc pixmap fillRectangle: dc gc x: dc leftInset
 						y: dc y + dc yOffset width: (dc fontStruct textWidth: (String with: Character space))
 						height: spacing ] ].
@@ -657,8 +657,8 @@ AIChatWidget >> drawingAreaExposed: ignored clientData: clientData callData: cal
 		y: (self class baseFontSet proportional normal height * (3 / 2)) rounded;
 		pendingListMarkers: OrderedCollection new;
 		interactableAreas: OrderedCollection new;
-		selectionStream: ((WriteStream on: String new) lineDelimiter: String crlf; yourself).
-	dc pixmap setPalette: (CgIndexedPalette colors: CgIndexedPalette default colors , { Color selectionBackground.
+		selectionStream: (WriteStream on: String new).
+	dc pixmap setPalette: (CgIndexedPalette colors: CgIndexedPalette default colors , { self selectionBackgroundColor.
 		self userMessageBackgroundColor. self pointedToCodeTextBlockColor.
 		self codeElementReferencingClassNameColor. self pointedToCodeElementReferencingClassNameColor.
 		Color lightGray }).
@@ -746,7 +746,7 @@ AIChatWidget >> layOutString: textString dc: dc [
 	^ Array streamContents: [ :lineStream |
 		| x |
 		x := dc x.
-		(textString class crlf split: textString)
+		((textString class withAll: CldtConstants::LineDelimiter) split: textString)
 			do: [ :lineString |
 				lineStream nextPut: (Array streamContents: [ :tabPartStream |
 					(Character tab split: lineString)
@@ -885,6 +885,12 @@ AIChatWidget >> scrolledWindowExposedOrResized: scrolledWindow clientData: clien
 AIChatWidget >> selectedString [
 
 	^ selectedString
+]
+
+{ #category : 'Not categorized' }
+AIChatWidget >> selectionBackgroundColor [
+
+	^ Color selectionBackground
 ]
 
 { #category : 'Not categorized' }

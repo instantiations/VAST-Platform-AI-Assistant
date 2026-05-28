@@ -108,17 +108,18 @@ AIChatWindow >> createWorkRegion [
 		clientData: nil.
 	self addTargetTextWidgetCallbacks: inputWidget.
 
-	buttonWidget :=
-		(self defaultWidgetParent
+	(buttonWidget :=
+		self defaultWidgetParent
 			createPushButton: 'button'
 			argBlock: [:w |
 				w
 					labelString: 'Send';
-					marginWidth: 10;
-					addCallback: XmNactivateCallback
-						receiver: self
-						selector: #pushedButton:clientData:callData:
-						clientData: nil]) manageChild.
+					marginWidth: 10])
+		manageChild;
+		addCallback: XmNactivateCallback
+			receiver: self
+			selector: #pushedButton:clientData:callData:
+			clientData: nil.
 	statusLine := (self newLabelWidget: #statusLineText) manageChild.
 
 	chatWidget setValuesBlock: [:w |

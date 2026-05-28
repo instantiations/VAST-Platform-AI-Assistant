@@ -7,7 +7,8 @@ Class {
 { #category : 'Not categorized' }
 AIAssistantCoreApp class >> loaded [
 
-	AIChatGenerationLog resetCurrent
+	AIFunctionsSet resetCurrent.
+	AIChatGenerationLog resetCurrent.
 ]
 
 { #category : 'Not categorized' }
@@ -15,5 +16,6 @@ AIAssistantCoreApp class >> removing [
 
 	AIAbstractModel reset.
 	AIAbstractModelProvider reset.
+	AIFunctionsSet clearCurrent.
 	AIChatGenerationLog clearCurrent.
 ]

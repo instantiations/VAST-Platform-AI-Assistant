@@ -6,7 +6,7 @@ Extension {
 AIAbstractChatGeneratedContentPart class >> checkJSONObject: jsonObject hasNoOtherAttributesBesides: expectedAttributes [
 
 	^ (jsonObject keys difference: expectedAttributes) ifNotEmpty: [ :otherAttributes |
-		Error signal: ('Cannot instantiate %1 from JSON object with attributes: %2' bindWith: self class name with: (otherAttributes joinUsing: ', ')) ]
+		Error signal: ('Cannot instantiate %1 from JSON object with attributes: %2' bindWith: self class name with: (otherAttributes sorted joinUsing: ', ')) ]
 ]
 
 { #category : 'Not categorized' }

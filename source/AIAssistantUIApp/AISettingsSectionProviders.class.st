@@ -24,8 +24,9 @@ Class {
 AISettingsSectionProviders >> apiKeyChanged: apiKey clientData: clientData callData: callData [
 	"When a provider typeis selected, we can create a new, unregistered provider"
 
-	currentProvider apiKey: apiKey value.
-	self detailsChanged
+	self for: apiKeyInput doCallback: [
+		currentProvider apiKey: apiKey value.
+		self detailsChanged ]
 ]
 
 { #category : 'Private',
@@ -68,16 +69,16 @@ AISettingsSectionProviders >> createProviderDetails: providerDetails [
 	widgetSpacing := 5.
 	buttonWidth := 48.
 
-	providerTypesCombo :=
+	(providerTypesCombo :=
 		providerDetails
 			createComboBox: 'providerTypesCombo'
 			argBlock: [:w |
 				w
-					items: (AIAbstractModelProvider allSubclasses collect: [:e | e apiLabel]);
-					addCallback: XmNsingleSelectionCallback
-						receiver: self
-						selector: #providerTypeChanged:clientData:callData:
-						clientData: nil].
+					items: (AIAbstractModelProvider allSubclasses collect: [:e | e apiLabel])])
+		addCallback: XmNsingleSelectionCallback
+			receiver: self
+			selector: #providerTypeChanged:clientData:callData:
+			clientData: nil.
 	providerTypesLabel :=
 		providerDetails
 			createLabel: 'providerTypesLabel'
@@ -86,15 +87,14 @@ AISettingsSectionProviders >> createProviderDetails: providerDetails [
 					labelString: 'Provider Type:';
 					alignment: XmALIGNMENTEND].
 
-	labelInput :=
+	(labelInput :=
 		providerDetails
 			createText: 'LabelText'
-			argBlock: [:w |
-				w
-					addCallback: XmNvalueChangedCallback
-					receiver: self
-					selector: #labelChanged:clientData:callData:
-					clientData: nil].
+			argBlock: nil)
+		addCallback: XmNvalueChangedCallback
+			receiver: self
+			selector: #labelChanged:clientData:callData:
+			clientData: nil.
 	labelLabel :=
 		providerDetails
 			createLabel: 'LabelLabel'
@@ -103,15 +103,14 @@ AISettingsSectionProviders >> createProviderDetails: providerDetails [
 					labelString: 'Label:';
 					alignment: XmALIGNMENTEND].
 
-	urlInput :=
+	(urlInput :=
 		providerDetails
 			createText: 'UrlHostText'
-			argBlock: [:w |
-				w
-					addCallback: XmNvalueChangedCallback
-					receiver: self
-					selector: #urlChanged:clientData:callData:
-					clientData: nil].
+			argBlock: nil)
+		addCallback: XmNvalueChangedCallback
+			receiver: self
+			selector: #urlChanged:clientData:callData:
+			clientData: nil.
 	urlLabel :=
 		providerDetails
 			createLabel: 'UrlLabel'
@@ -120,15 +119,14 @@ AISettingsSectionProviders >> createProviderDetails: providerDetails [
 					labelString: 'URL:';
 					alignment: XmALIGNMENTEND].
 
-	apiKeyInput :=
+	(apiKeyInput :=
 		providerDetails
 			createText: 'APIKeyText'
-			argBlock: [:w |
-				w
-					addCallback: XmNvalueChangedCallback
-					receiver: self
-					selector: #apiKeyChanged:clientData:callData:
-					clientData: nil].
+			argBlock: nil)
+		addCallback: XmNvalueChangedCallback
+			receiver: self
+			selector: #apiKeyChanged:clientData:callData:
+			clientData: nil.
 	apiKeyLabel :=
 		providerDetails
 			createLabel: 'APIKeyLabel'
@@ -151,39 +149,39 @@ AISettingsSectionProviders >> createProviderDetails: providerDetails [
 			argBlock: [:w | w foregroundColor: Color darkGray].
 	modelList manageChild.
 
-	refreshModelsButton :=
+	(refreshModelsButton :=
 		providerDetails
 			createPushButton: 'refreshModelsButton'
 			argBlock: [:w |
 				w
-					labelString: 'Refresh';
-					addCallback: XmNactivateCallback
-						receiver: self
-						selector: #updateModelsList:clientData:callData:
-						clientData: modelList].
+					labelString: 'Refresh'])
+		addCallback: XmNactivateCallback
+			receiver: self
+			selector: #updateModelsList:clientData:callData:
+			clientData: modelList.
 
-	updateButton :=
+	(updateButton :=
 		providerDetails
 			createPushButton: 'updateProviderButton'
 			argBlock: [:w |
 				w
-					labelString: 'Save';
-					addCallback: XmNactivateCallback
-						receiver: self
-						selector: #updateProviderButton:clientData:callData:
-						clientData: nil].
+					labelString: 'Save'])
+		addCallback: XmNactivateCallback
+			receiver: self
+			selector: #updateProviderButton:clientData:callData:
+			clientData: nil.
 
-	registerButton :=
+	(registerButton :=
 		providerDetails
 			createPushButton: 'registerProviderButton'
 			argBlock: [:w |
 				w
 					labelString: 'Save';
-					sensitive: false;
-					addCallback: XmNactivateCallback
-						receiver: self
-						selector: #registerProviderButton:clientData:callData:
-						clientData: nil].
+					sensitive: false])
+		addCallback: XmNactivateCallback
+			receiver: self
+			selector: #registerProviderButton:clientData:callData:
+			clientData: nil.
 
 	providerTypesCombo
 		setValuesBlock: [:w |
@@ -340,39 +338,39 @@ AISettingsSectionProviders >> createSettingsPane: aForm [
 
 	providerSettings := aForm createForm: 'ProviderSettingsForm' argBlock: nil.
 
-	providerList :=
+	(providerList :=
 		providerSettings
 			createScrolledList: 'ProviderList'
 			argBlock: [:w |
 				w
 					items: self initialProviderList;
-					selectionPolicy: XmSINGLESELECT;
-					addCallback: XmNsingleSelectionCallback
-						receiver: self
-						selector: #providerChanged:clientData:callData:
-						clientData: nil;
-					manageChild].
+					selectionPolicy: XmSINGLESELECT])
+		manageChild;
+		addCallback: XmNsingleSelectionCallback
+			receiver: self
+			selector: #providerChanged:clientData:callData:
+			clientData: nil.
 
-	newButton :=
+	(newButton :=
 		providerSettings
 			createPushButton: 'newProviderButton' "$NON-NLS$"
 			argBlock: [:w |
 				w
-					labelString: '+';
-					addCallback: XmNactivateCallback
-						receiver: self
-						selector: #newProviderButton:clientData:callData:
-						clientData: nil].
-	unregisterButton :=
+					labelString: '+'])
+		addCallback: XmNactivateCallback
+			receiver: self
+			selector: #newProviderButton:clientData:callData:
+			clientData: nil.
+	(unregisterButton :=
 		providerSettings
 			createPushButton: 'unregisterProviderButton' "$NON-NLS$"
 			argBlock: [:w |
 				w
-					labelString: '-';
-					addCallback: XmNactivateCallback
-						receiver: self
-						selector: #unregisterProviderButton:clientData:callData:
-						clientData: nil].
+					labelString: '-'])
+		addCallback: XmNactivateCallback
+			receiver: self
+			selector: #unregisterProviderButton:clientData:callData:
+			clientData: nil.
 	sash :=
 		CwSash
 			createWidget: 'providerSettingsSash' "$NON-NLS$"
@@ -553,8 +551,9 @@ AISettingsSectionProviders >> isRegistered: aProvider [
 AISettingsSectionProviders >> labelChanged: label clientData: clientData callData: callData [
 	"When a provider typeis selected, we can create a new, unregistered provider"
 
-	currentProvider label: label value.
-	self detailsChanged
+	self for: labelInput doCallback: [
+		currentProvider label: label value.
+		self detailsChanged ]
 ]
 
 { #category : 'Actions',
@@ -566,18 +565,6 @@ AISettingsSectionProviders >> newProviderButton: a clientData: clientData callDa
 	newButton sensitive: false.
 	unregisterButton sensitive: false.
 	self providerDetailsClear
-]
-
-{ #category : 'Private',
-  #vaVisibility : 'private' }
-AISettingsSectionProviders >> noCallback: aWidget during: aBlock [
-
-	| callbacks |
-
-	callbacks := aWidget valueChangedCallback.
-	[	aWidget valueChangedCallback: nil.
-		aBlock value: aWidget]
-			ensure: [aWidget valueChangedCallback: callbacks]
 ]
 
 { #category : 'Events',
@@ -811,8 +798,9 @@ AISettingsSectionProviders >> updateProviderButton: a clientData: clientData cal
 AISettingsSectionProviders >> urlChanged: url clientData: clientData callData: callData [
 	"When a provider typeis selected, we can create a new, unregistered provider"
 
-	currentProvider baseUrl: (self validUrl: url value).
-	self detailsChanged
+	self for: urlInput doCallback: [
+		currentProvider baseUrl: (self validUrl: url value).
+		self detailsChanged ]
 ]
 
 { #category : 'Private',

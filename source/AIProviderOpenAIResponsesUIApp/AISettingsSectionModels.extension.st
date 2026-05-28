@@ -22,16 +22,16 @@ AISettingsSectionModels >> createResponsesModelDetailsOn: modelDetailsSpecific [
 				w
 					labelString: 'Reasoning Effort:';
 					alignment: XmALIGNMENTEND].
-	reasoningEffortCombo :=
+	(reasoningEffortCombo :=
 		modelDetailsSpecific
 			createComboBox: 'reasoningEffortCombo'
 			argBlock: [:w |
 				w
-					items: #('') , currentModel reasoningEffortChoices;
-					addCallback: XmNsingleSelectionCallback
-						receiver: self
-						selector: #reasoningEffortChanged:clientData:callData:
-						clientData: nil].
+					items: #('') , currentModel reasoningEffortChoices])
+		addCallback: XmNsingleSelectionCallback
+			receiver: self
+			selector: #reasoningEffortChanged:clientData:callData:
+			clientData: nil.
 
 	reasoningSummaryLabel :=
 		modelDetailsSpecific
@@ -40,16 +40,16 @@ AISettingsSectionModels >> createResponsesModelDetailsOn: modelDetailsSpecific [
 				w
 					labelString: 'Reasoning Summary:';
 					alignment: XmALIGNMENTEND].
-	reasoningSummaryCombo :=
+	(reasoningSummaryCombo :=
 		modelDetailsSpecific
 			createComboBox: 'reasoningSummaryCombo'
 			argBlock: [:w |
 				w
-					items: #('') , currentModel reasoningSummaryChoices;
-					addCallback: XmNsingleSelectionCallback
-						receiver: self
-						selector: #reasoningSummaryChanged:clientData:callData:
-						clientData: nil].
+					items: #('') , currentModel reasoningSummaryChoices])
+		addCallback: XmNsingleSelectionCallback
+			receiver: self
+			selector: #reasoningSummaryChanged:clientData:callData:
+			clientData: nil.
 
 	temperatureLabel :=
 		modelDetailsSpecific
@@ -58,15 +58,14 @@ AISettingsSectionModels >> createResponsesModelDetailsOn: modelDetailsSpecific [
 				w
 					labelString: 'Temperature:';
 					alignment: XmALIGNMENTEND].
-	temperatureInput :=
+	(temperatureInput :=
 		modelDetailsSpecific
 			createText: 'temperatureInput'
-			argBlock: [:w |
-				w
-					addCallback: XmNvalueChangedCallback
-					receiver: self
-					selector: #temperatureChanged:clientData:callData:
-					clientData: nil].
+			argBlock: nil)
+		addCallback: XmNvalueChangedCallback
+			receiver: self
+			selector: #temperatureChanged:clientData:callData:
+			clientData: nil.
 
 	top_pLabel :=
 		modelDetailsSpecific
@@ -75,15 +74,14 @@ AISettingsSectionModels >> createResponsesModelDetailsOn: modelDetailsSpecific [
 				w
 					labelString: 'Top-p:';
 					alignment: XmALIGNMENTEND].
-	top_pInput :=
+	(top_pInput :=
 		modelDetailsSpecific
 			createText: 'top_pInput'
-			argBlock: [:w |
-				w
-					addCallback: XmNvalueChangedCallback
-					receiver: self
-					selector: #top_pChanged:clientData:callData:
-					clientData: nil].
+			argBlock: nil)
+		addCallback: XmNvalueChangedCallback
+			receiver: self
+			selector: #top_pChanged:clientData:callData:
+			clientData: nil.
 
 	reasoningEffortCombo
 		setValuesBlock: [:w |

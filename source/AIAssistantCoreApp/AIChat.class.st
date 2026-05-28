@@ -19,7 +19,7 @@ Class {
 { #category : 'Not categorized' }
 AIChat class >> new [
 
-	^ self systemInstruction: (String crlf join: #(
+	^ self systemInstruction: (CldtConstants::LineDelimiter join: #(
 		'You are an AI assistant that helps the user develop in a VAST Platform Smalltalk environment.'
 		''
 		'Follow these rules:'
