@@ -29,8 +29,8 @@ AIFunctionFindImplementors >> applyFunctionTo: arguments in: context [
 								cm := (methodClass compiledMethodAt: foundSelector).
 								methods add: (
 									includeSource
-										ifTrue: [cm geminiJSON]
-										ifFalse: [cm geminiJSONWithoutSource]).
+										ifTrue: [cm aiJSON]
+										ifFalse: [cm aiJSONWithoutSource]).
 								methods size >= maxResults
 									ifTrue: [
 										^EsOrderedDictionary

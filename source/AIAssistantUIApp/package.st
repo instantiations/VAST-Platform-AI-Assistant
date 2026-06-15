@@ -1,4 +1,4 @@
 Package {
 	#name : 'AIAssistantUIApp',
-	#vaPrerequisites : ['AIAssistantCoreApp','AIAssistantMergeViewApp','StsPowerTools']
+	#vaPrerequisites : ['AIAssistantCoreApp','AIAssistantMergeViewApp','StsCodeAssistApp']
 }

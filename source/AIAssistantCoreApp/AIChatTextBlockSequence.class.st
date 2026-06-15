@@ -11,10 +11,10 @@ Class {
 { #category : 'Not categorized' }
 AIChatTextBlockSequence class >> fromString: string [
 
-	| previousLines encounteredCodeStart lastTopicLine sequenceBlock blocks |
+	| previousLines pendingCodeStartNumberOfTicks lastTopicLine sequenceBlock blocks |
 
 	previousLines := OrderedCollection new.
-	encounteredCodeStart := false.
+	pendingCodeStartNumberOfTicks := nil.
 	lastTopicLine := nil.
 	sequenceBlock := self new.
 	blocks := OrderedCollection with: sequenceBlock.
@@ -31,14 +31,18 @@ AIChatTextBlockSequence class >> fromString: string [
 			previousLines := OrderedCollection new.
 			blocks size - matchedBlocksCount timesRepeat: [
 				blocks removeLast ] ].
-		encounteredCodeStart ifTrue: [
-			(line beginsWithSubCollection: '```') ifTrue: [
-				blocks last addBlock: (AIChatTextBlockCode code: (CldtConstants::LineDelimiter join: previousLines allButFirst)).
+		pendingCodeStartNumberOfTicks ifNotNil: [
+			((line size >= pendingCodeStartNumberOfTicks) and: [
+				((1 to: pendingCodeStartNumberOfTicks) allSatisfy: [ :index | (line at: index) = $` ]) and: [
+					(((pendingCodeStartNumberOfTicks + 1 to: line size) detect: [ :index | (line at: index) ~= $` ] ifNone: [ line size + 1 ]) to: line size)
+						allSatisfy: [ :index | (line at: index) = Character space ] ] ]) ifTrue: [
+				blocks last addBlock: (AIChatTextBlockCode code: (CldtConstants::LineDelimiter join: previousLines allButFirst)
+					infoString: ((previousLines first copyFrom: pendingCodeStartNumberOfTicks + 1 to: previousLines first size) trimSeparators ifEmpty: [ nil ])).
 				previousLines := OrderedCollection new.
-				encounteredCodeStart := false
+				pendingCodeStartNumberOfTicks := nil
 			] ifFalse: [
 				previousLines add: line ]
-		] ifFalse: [
+		] ifNil: [
 			| startedBlock isCodeStart isHeading |
 			((stringLine beginsWithSubCollection: '**') and: [ stringLine endsWithSubCollection: '**' ]) ifTrue: [
 				lastTopicLine := stringLine ].
@@ -50,14 +54,16 @@ AIChatTextBlockSequence class >> fromString: string [
 					blocks last addBlock: startedBlock.
 					blocks add: startedBlock.
 					line := startedBlock lineWithoutStartMarker: line ].
-			isCodeStart := line beginsWithSubCollection: '```'.
+			isCodeStart := (line beginsWithSubCollection: '```') and: [
+				(((4 to: line size) detect: [ :index | (line at: index) ~= $` ] ifNone: [ line size + 1 ]) to: line size)
+					allSatisfy: [ :index | (line at: index) ~= $` ] ].
 			isHeading := line beginsWithSubCollection: '#'.
 			isCodeStart | isHeading ifTrue: [
 				previousLines ifNotEmpty: [
 					blocks last addBlock: (AIChatTextBlockText fromString: (CldtConstants::LineDelimiter join: previousLines)) ].
 				isCodeStart ifTrue: [
 					previousLines := OrderedCollection with: line.
-					encounteredCodeStart := true ].
+					pendingCodeStartNumberOfTicks := (1 to: line size) detect: [ :index | (line at: index + 1 ifAbsent: [ nil ]) ~= $` ] ].
 				isHeading ifTrue: [
 					blocks last addBlock: (AIChatTextBlockHeading fromLine: line).
 					previousLines := OrderedCollection new ].

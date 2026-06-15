@@ -7,6 +7,7 @@ Class {
 		'model',
 		'userMessages',
 		'textSegments',
+		'functionCallPermissionTextSegments',
 		'generator',
 		'generationError',
 		'generationErrorTextSegment',
@@ -90,6 +91,13 @@ AIChat >> filePaths [
 	^ filePaths
 ]
 
+{ #category : 'Not categorized' }
+AIChat >> functionCallPermissionTextSegments: newFunctionCallPermissionTextSegments [
+
+	functionCallPermissionTextSegments := newFunctionCallPermissionTextSegments.
+	self changedTextSegments.
+]
+
 { #category : 'Generation' }
 AIChat >> generationError: newGenerationError [
 
@@ -119,13 +127,14 @@ AIChat >> initializeWithSystemInstruction: initialSystemInstruction model: initi
 	userMessages := initialUserMessages.
 	textSegments := OrderedCollection streamContents: [ :stream |
 		userMessages do: [ :userMessage | stream nextPut: userMessage userText; nextPut: userMessage modelText ] ].
+	functionCallPermissionTextSegments := OrderedCollection new.
 	tokenUsage := AIChatTokenUsage new.
 ]
 
 { #category : 'Generation' }
 AIChat >> isActivelyGenerating [
 
-	^ generator notNil and: [ generator retryDelaySeconds isNil and: [ generationError isNil ] ]
+	^ generator notNil and: [ functionCallPermissionTextSegments isEmpty and: [ generator retryDelaySeconds isNil and: [ generationError isNil ] ] ]
 ]
 
 { #category : 'Not categorized' }
@@ -150,6 +159,15 @@ AIChat >> model [
 AIChat >> model: newModel [
 
 	model := newModel
+]
+
+{ #category : 'Not categorized' }
+AIChat >> removeFunctionCallPermissionTextSegment: functionCallPermissionTextSegment [
+
+	functionCallPermissionTextSegments remove: functionCallPermissionTextSegment.
+	self changedTextSegments.
+	functionCallPermissionTextSegments ifEmpty: [
+		generator functionCallPermissionsSet ]
 ]
 
 { #category : 'Not categorized' }
@@ -180,7 +198,10 @@ AIChat >> sendUserMessage: messageString [
 AIChat >> stopGeneration [
 
 	generator ifNotNil: [
-		generator stopGenerating ]
+		generator stopGenerating.
+		functionCallPermissionTextSegments ifNotEmpty: [
+			self functionCallPermissionTextSegments: OrderedCollection new.
+			generator functionCallPermissionsSet ] ]
 ]
 
 { #category : 'Accessing' }
@@ -204,7 +225,8 @@ AIChat >> textSegments [
 	
 	(segments := OrderedCollection new)
 		add: systemInstructionTextSegment;
-		addAll: textSegments.
+		addAll: textSegments;
+		addAll: functionCallPermissionTextSegments.
 	generationErrorTextSegment ifNotNil: [
 		segments add: generationErrorTextSegment ].
 	(generator ifNotNil: [ generator retryDelaySeconds ]) ifNotNil: [ :seconds |

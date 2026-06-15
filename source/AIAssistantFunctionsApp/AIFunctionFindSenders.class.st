@@ -24,8 +24,8 @@ AIFunctionFindSenders >> applyFunctionTo: arguments in: context [
 						ifTrue: [
 							methods add: (
 								includeSource
-									ifTrue: [method geminiJSON]
-									ifFalse: [method geminiJSONWithoutSource]).
+									ifTrue: [method aiJSON]
+									ifFalse: [method aiJSONWithoutSource]).
 							methods size >= maxResults
 								ifTrue: [
 									^EsOrderedDictionary

@@ -29,25 +29,6 @@ AIAbstractFunction >> applyFunctionTo: arguments in: context [
 	self subclassResponsibility
 ]
 
-{ #category : 'Actions',
- #vaCategories : ['API','Actions'] }
-AIAbstractFunction >> applyTo: arguments in: functionCallContext [
-
-	| parameters |
-
-	parameters := self parameters.
-	arguments keysAndValuesDo: [ :parameterName :argument |
-		| parameter |
-		parameter := parameters detect: [ :someParameter | someParameter name = parameterName ] ifNone: [
-			^ EsOrderedDictionary with: 'error' -> ('The function does not have a parameter "%1"' bindWith: parameterName) ].
-		(parameter validateArgument: argument) ifFalse: [
-			^ EsOrderedDictionary with: 'error' -> ('Invalid argument given for parameter "%1"' bindWith: parameterName) ] ].
-	parameters do: [ :parameter |
-		(parameter isRequired not or: [ arguments includesKey: parameter name ]) ifFalse: [
-			^ EsOrderedDictionary with: 'error' -> ('No argument given for required parameter "%1"' bindWith: parameter name) ] ].
-	^ self applyFunctionTo: arguments in: functionCallContext
-]
-
 { #category : 'System Search',
   #vaVisibility : 'private' }
 AIAbstractFunction >> classNamed: className [
@@ -180,4 +161,22 @@ AIAbstractFunction >> resultLimitFor: aContext withSource: includeSource [
 	"Allow less results when returning full source"
 	includeSource ifTrue: [resultLimit := (resultLimit // 4) ].
 	^resultLimit
+]
+
+{ #category : 'Not categorized' }
+AIAbstractFunction >> validateFunctionCallArguments: arguments [
+
+	| parameters |
+
+	parameters := self parameters.
+	arguments keysAndValuesDo: [ :parameterName :argument |
+		| parameter |
+		parameter := parameters detect: [ :someParameter | someParameter name = parameterName ] ifNone: [
+			^ 'The function does not have a parameter "%1"' bindWith: parameterName ].
+		(parameter validateArgument: argument) ifFalse: [
+			^ 'Invalid argument given for parameter "%1"' bindWith: parameterName ] ].
+	parameters do: [ :parameter |
+		(parameter isRequired not or: [ arguments includesKey: parameter name ]) ifFalse: [
+			^ 'No argument given for required parameter "%1"' bindWith: parameter name ] ].
+	^ nil
 ]

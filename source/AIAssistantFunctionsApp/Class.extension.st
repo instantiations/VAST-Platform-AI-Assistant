@@ -3,7 +3,7 @@ Extension {
 }
 
 { #category : 'Not categorized' }
-Class >> geminiJSON [
+Class >> aiJSON [
 	"Returns the JSON representation of the class definition."
 
 	^ EsOrderedDictionary

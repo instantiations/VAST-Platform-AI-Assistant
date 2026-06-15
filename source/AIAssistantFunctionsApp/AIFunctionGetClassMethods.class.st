@@ -34,8 +34,8 @@ AIFunctionGetClassMethods >> applyFunctionTo: arguments in: context [
 							methodsCount := methodsCount + 1.
 							sideMethods add: (
 								includeSource
-									ifTrue: [ (methodClass compiledMethodAt: selector) geminiJSON ]
-									ifFalse: [(methodClass compiledMethodAt: selector) geminiJSONWithoutSource]).
+									ifTrue: [ (methodClass compiledMethodAt: selector) aiJSON ]
+									ifFalse: [(methodClass compiledMethodAt: selector) aiJSONWithoutSource]).
 							methodsCount >= maxResults
 								ifTrue: [
 									classMethods at: side put: sideMethods.

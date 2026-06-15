@@ -15,21 +15,60 @@ AISettingsSectionFunctions >> closeWindow [
 	^ true
 ]
 
-{ #category : 'Not categorized',
-  #vaVisibility : 'private' }
+{ #category : 'Not categorized' }
 AISettingsSectionFunctions >> createFunctionsRowColumn [
 
 	functionsRowColumn := functionsForm createRowColumn: nil argBlock: nil.
 	functionsSet allFunctions do: [ :function |
-		(functionsRowColumn createToggleButton: nil
+		| isEnabled requiresPermission functionForm toggleButton radioBox |
+
+		isEnabled := functionsSet isFunctionEnabled: function.
+		requiresPermission := functionsSet requiresPermissionToCallFunction: function.
+
+		(functionForm := functionsRowColumn createForm: nil argBlock: nil)
+			manageChild.
+		(toggleButton := functionForm createToggleButton: nil
 			argBlock: [ :w |
-				w set: (functionsSet isFunctionEnabled: function);
+				w set: isEnabled;
 					labelString: function name ])
 			manageChild;
 			addCallback: XmNvalueChangedCallback
 				receiver: self
 				selector: #toggleButtonValueChanged:clientData:callData:
-				clientData: function ].
+				clientData: function.
+		(radioBox := functionForm createRadioBox: nil argBlock: [ :w | 
+			w 
+				packing: XmPACKTIGHT;
+				orientation: XmHORIZONTAL;
+				marginHeight: 0 ])
+			manageChild.
+		(radioBox createToggleButton: nil argBlock: [ :w | w labelString: 'Always Allow'; set: requiresPermission not ])
+			manageChild;
+			addCallback: XmNvalueChangedCallback
+				receiver: self
+				selector: #radioButtonAlwaysValueChanged:clientData:callData:
+				clientData: function.
+		(radioBox createToggleButton: nil argBlock: [ :w | w labelString: 'Ask'; set: requiresPermission ])
+			manageChild;
+			addCallback: XmNvalueChangedCallback
+				receiver: self
+				selector: #radioButtonAskValueChanged:clientData:callData:
+				clientData: function.
+		
+		toggleButton setValuesBlock: [ :w |
+			w topAttachment: XmATTACHFORM;
+				leftAttachment: XmATTACHFORM;
+				rightAttachment: XmATTACHFORM;
+				bottomAttachment: XmATTACHWIDGET;
+				bottomWidget: radioBox;
+				bottomOffset: -3 ].
+		radioBox setValuesBlock: [ :w |
+			w leftAttachment: XmATTACHFORM;
+				leftOffset: 15;
+				rightAttachment: XmATTACHFORM;
+				bottomAttachment: XmATTACHFORM ].
+			
+		radioBox setSensitive: isEnabled ].
 ]
 
 { #category : 'Not categorized',
@@ -90,6 +129,22 @@ AISettingsSectionFunctions >> initialize [
 
 { #category : 'Not categorized',
   #vaVisibility : 'private' }
+AISettingsSectionFunctions >> radioButtonAlwaysValueChanged: radioButton clientData: function callData: callData [
+
+	callData set ifTrue: [
+		functionsSet dontRequirePermissionToCallFunction: function ]
+]
+
+{ #category : 'Not categorized',
+  #vaVisibility : 'private' }
+AISettingsSectionFunctions >> radioButtonAskValueChanged: radioButton clientData: function callData: callData [
+
+	callData set ifTrue: [
+		functionsSet requirePermissionToCallFunction: function ]
+]
+
+{ #category : 'Not categorized',
+  #vaVisibility : 'private' }
 AISettingsSectionFunctions >> release [
 
 	super release.
@@ -135,7 +190,7 @@ AISettingsSectionFunctions >> update: aspect [
 		functionsSet removeDependent: self.
 		functionsSet := AIFunctionsSet current.
 		functionsSet addDependent: self ].
-	(#(current functions) includes: aspect) ifTrue: [
+	(#(current functions functionsRequiringPermission) includes: aspect) ifTrue: [
 		| oldRowColumn |
 		oldRowColumn := functionsRowColumn.
 		self createFunctionsRowColumn.

@@ -3,7 +3,9 @@ Class {
 	#superclass : 'Object',
 	#instVars : [
 		'allFunctions',
-		'disabledFunctions'
+		'disabledFunctions',
+		'permissionRequiredPerFunction',
+		'functionsRequiringPermission'
 	],
 	#classInstVars : [
 		'current'
@@ -49,29 +51,17 @@ AIFunctionsSet >> allFunctions [
 ]
 
 { #category : 'Not categorized' }
-AIFunctionsSet >> applyFunctionCall: functionCall in: functionCallContext [
-
-	| responseJSONObject |
-
-	responseJSONObject := [ self applyFunctionNamed: functionCall name to: functionCall arguments in: functionCallContext ]
-		on: Error do: [ :error | EsOrderedDictionary with: 'error' -> 'Error' ].
-	^ AIChatGeneratedContentPartFunctionResponse id: functionCall id name: functionCall name response: responseJSONObject
-]
-
-{ #category : 'Not categorized' }
-AIFunctionsSet >> applyFunctionNamed: functionName to: arguments in: functionCallContext [
-
-	self functions do: [ :function |
-		function name = functionName ifTrue: [
-			^ function applyTo: arguments in: functionCallContext ] ].
-	^ EsOrderedDictionary with: 'error' -> ('There is no function named "%1"' bindWith: functionName)
-]
-
-{ #category : 'Not categorized' }
 AIFunctionsSet >> disableFunction: function [
 
 	disabledFunctions add: function.
 	self changed: #functions.
+]
+
+{ #category : 'Not categorized' }
+AIFunctionsSet >> dontRequirePermissionToCallFunction: function [
+
+	functionsRequiringPermission remove: function ifAbsent: [ ].
+	self changed: #functionsRequiringPermission.
 ]
 
 { #category : 'Not categorized' }
@@ -88,6 +78,12 @@ AIFunctionsSet >> functionDeclarationsJSON [
 ]
 
 { #category : 'Not categorized' }
+AIFunctionsSet >> functionNamed: functionName ifNone: noneBlock [
+
+	^ self functions detect: [ :function | function name = functionName ] ifNone: noneBlock
+]
+
+{ #category : 'Not categorized' }
 AIFunctionsSet >> functions [
 
 	^ self allFunctions reject: [ :function | disabledFunctions includes: function ]
@@ -100,6 +96,7 @@ AIFunctionsSet >> initialize [
 	(allFunctions := (AIAbstractFunction allSubclasses reject: [ :subclass | subclass isAbstract ]) collect: [ :subclass | subclass new ])
 		sort: [ :function1 :function2 | function1 name < function2 name ].
 	disabledFunctions := Set withAll: (allFunctions select: [ :function | function defaultEnabled not ]).
+	functionsRequiringPermission := Set new.
 ]
 
 { #category : 'Not categorized' }
@@ -120,4 +117,25 @@ AIFunctionsSet >> postCopy [
 	super postCopy.
 	allFunctions := allFunctions copy.
 	disabledFunctions := disabledFunctions copy.
+]
+
+{ #category : 'Not categorized' }
+AIFunctionsSet >> removeFunction: function [
+
+	allFunctions remove: function.
+	disabledFunctions remove: function ifAbsent: [ ].
+	functionsRequiringPermission remove: function ifAbsent: [ ].
+]
+
+{ #category : 'Not categorized' }
+AIFunctionsSet >> requirePermissionToCallFunction: function [
+
+	functionsRequiringPermission add: function.
+	self changed: #functionsRequiringPermission.
+]
+
+{ #category : 'Not categorized' }
+AIFunctionsSet >> requiresPermissionToCallFunction: function [
+
+	^ functionsRequiringPermission includes: function
 ]

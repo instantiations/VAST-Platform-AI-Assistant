@@ -3,16 +3,16 @@ Extension {
 }
 
 { #category : 'Not categorized' }
-CompiledMethod >> geminiJSON [
+CompiledMethod >> aiJSON [
 	"Returns the JSON representation of the method."
 
-	^ self geminiJSONWithoutSource
+	^ self aiJSONWithoutSource
 		add: 'source' -> self sourceString;
 		yourself
 ]
 
 { #category : 'Not categorized' }
-CompiledMethod >> geminiJSONWithoutSource [
+CompiledMethod >> aiJSONWithoutSource [
 	"Returns the JSON representation of the method."
 
 	^ EsOrderedDictionary

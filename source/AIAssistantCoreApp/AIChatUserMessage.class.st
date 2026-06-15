@@ -27,15 +27,6 @@ AIChatUserMessage >> addNewGeneratedContent [
 ]
 
 { #category : 'Not categorized' }
-AIChatUserMessage >> applyFunctionsInLastGeneratedContentUsing: functionsSet inContext: functionCallContext [
-
-	(generatedContents ifEmpty: [ ^ false ]) last addFunctionResponseParts:
-		((generatedContents last functionCallParts ifEmpty: [ ^ false ])
-			collect: [ :part | functionsSet applyFunctionCall: part in: functionCallContext ]).
-	^ true
-]
-
-{ #category : 'Not categorized' }
 AIChatUserMessage >> generatedContents [
 
 	^ generatedContents

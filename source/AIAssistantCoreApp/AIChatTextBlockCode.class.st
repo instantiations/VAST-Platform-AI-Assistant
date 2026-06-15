@@ -3,6 +3,7 @@ Class {
 	#superclass : 'AIAbstractChatTextBlock',
 	#instVars : [
 		'code',
+		'infoString',
 		'isPointedTo'
 	],
 	#category : 'AIAssistantCoreApp'
@@ -11,7 +12,13 @@ Class {
 { #category : 'Instance Creation' }
 AIChatTextBlockCode class >> code: code [
 
-	^ self basicNew initializeWithCode: code
+	^ self code: code infoString: nil
+]
+
+{ #category : 'Instance Creation' }
+AIChatTextBlockCode class >> code: code infoString: infoString [
+
+	^ self basicNew initializeWithCode: code infoString: infoString
 ]
 
 { #category : 'Not categorized' }
@@ -26,11 +33,18 @@ AIChatTextBlockCode >> code [
 	^ code
 ]
 
+{ #category : 'Accessing' }
+AIChatTextBlockCode >> infoString [
+
+	^ infoString
+]
+
 { #category : 'Initialization' }
-AIChatTextBlockCode >> initializeWithCode: initialCode [
+AIChatTextBlockCode >> initializeWithCode: initialCode infoString: initialInfoString [
 
 	self initialize.
 	code := initialCode.
+	infoString := initialInfoString.
 	isPointedTo := false.
 ]
 

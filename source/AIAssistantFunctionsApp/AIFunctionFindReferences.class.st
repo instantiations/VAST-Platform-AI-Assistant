@@ -34,10 +34,10 @@ AIFunctionFindReferences >> applyFunctionTo: arguments in: context [
 								with:
 									'methods' -> (
 										includeSource
-											ifTrue: [methods collect: [:method | method geminiJSON]]
+											ifTrue: [methods collect: [:method | method aiJSON]]
 											ifFalse: [
 												methods collect: [:method |
-													method geminiJSONWithoutSource]])
+													method aiJSONWithoutSource]])
 								with:
 									'warning' -> (
 										'Results exceeded maximum limit of %1. Please retry with a more restricted scope or use another method.'
@@ -46,8 +46,8 @@ AIFunctionFindReferences >> applyFunctionTo: arguments in: context [
 	^EsOrderedDictionary with:
 		'methods' -> (
 			includeSource
-				ifTrue: [methods collect: [:method | method geminiJSON]]
-				ifFalse: [methods collect: [:method | method geminiJSONWithoutSource]])
+				ifTrue: [methods collect: [:method | method aiJSON]]
+				ifFalse: [methods collect: [:method | method aiJSONWithoutSource]])
 ]
 
 { #category : 'Not categorized' }

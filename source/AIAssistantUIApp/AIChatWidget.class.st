@@ -527,6 +527,12 @@ AIChatWidget >> drawTextSegmentError: textSegment dc: dc [
 ]
 
 { #category : 'Not categorized' }
+AIChatWidget >> drawTextSegmentFunctionCallPermission: textSegment dc: dc [
+
+	self drawTextBlocksOfTextSegment: textSegment dc: dc
+]
+
+{ #category : 'Not categorized' }
 AIChatWidget >> drawTextSegmentModelMessage: textSegment dc: dc [
 
 	self drawTextBlocksOfTextSegment: textSegment dc: dc

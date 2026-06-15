@@ -8,7 +8,7 @@ Class {
 AIFunctionGetClassDefinitions >> applyFunctionTo: arguments in: context [
 
 	^ self response: 'definition_per_class'
-		collect: [ :class | class geminiJSON ]
+		collect: [ :class | class aiJSON ]
 		forClassesNamed: (arguments at: 'classes')
 ]
 

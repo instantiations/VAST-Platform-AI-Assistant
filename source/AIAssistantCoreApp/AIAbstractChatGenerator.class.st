@@ -11,6 +11,7 @@ Class {
 		'responseOrError',
 		'retryDelaySeconds',
 		'shouldStop',
+		'functionCallPermissionsSemaphore',
 		'generationErrorHandlerSemaphore',
 		'generationErrorHandler'
 	],
@@ -31,11 +32,64 @@ AIAbstractChatGenerator >> addGeneratedContentParts: contentParts [
 ]
 
 { #category : 'Not categorized' }
+AIAbstractChatGenerator >> applyFunctionsInLastGeneratedContent [
+
+	| generatedContents functionCallParts functions errorMessages functionCallPermissionTextSegments permissions functionCallContext |
+
+	generatedContents := (chat userMessages last generatedContents ifEmpty: [ ^ false ]) last.
+	functionCallParts := generatedContents functionCallParts ifEmpty: [ ^ false ].
+
+	functions := (1 to: functionCallParts size) collect: [ :index |
+		functionsSet functionNamed: (functionCallParts at: index) name ifNone: [ nil ] ].
+	errorMessages := (1 to: functionCallParts size) collect: [ :index |
+		(functions at: index)
+			ifNil: [ 'There is no function named "%1"' bindWith: (functionCallParts at: index) name ]
+			ifNotNil: [ :function | function validateFunctionCallArguments: (functionCallParts at: index) arguments ] ].
+
+	functionCallPermissionTextSegments := OrderedCollection new.
+	permissions := (1 to: functionCallParts size) collect: [ :index |
+		(errorMessages at: index) ifNotNil: [ nil ] ifNil: [
+			| functionCallPermisionTextSegment |
+			(functionsSet requiresPermissionToCallFunction: (functions at: index)) ifFalse: [ true ] ifTrue: [
+				functionCallPermisionTextSegment := (AIChatTextSegmentFunctionCallPermission forFunctionCall: (functionCallParts at: index) block: [ :allowed |
+					permissions at: index put: allowed.
+					chat removeFunctionCallPermissionTextSegment: functionCallPermisionTextSegment ]).
+				functionCallPermissionTextSegments add: functionCallPermisionTextSegment.
+				nil ] ] ].
+
+	functionCallPermissionTextSegments ifNotEmpty: [
+		CwAppContext default syncExecInUI: [
+			chat functionCallPermissionTextSegments: functionCallPermissionTextSegments ].
+		functionCallPermissionsSemaphore wait ].
+
+	functionCallContext := AIFunctionCallContext model: generationModel filePaths: chat filePaths.
+	generatedContents addFunctionResponseParts: ((1 to: functionCallParts size) collect: [ :index |
+		AIChatGeneratedContentPartFunctionResponse id: (functionCallParts at: index) id name: (functionCallParts at: index) name
+			response: ((errorMessages at: index)
+				ifNotNil: [ :errorMessage | EsOrderedDictionary with: 'error' -> errorMessage ]
+				ifNil: [
+					(shouldStop or: [ (permissions at: index) not ]) 
+						ifTrue: [ EsOrderedDictionary with: 'disallowed' -> 'The user did not allow the function call' ]
+						ifFalse: [
+							[ (functions at: index) applyFunctionTo: (functionCallParts at: index) arguments in: functionCallContext ]
+								when: ExError do: [ :signal | signal exitWith: (EsOrderedDictionary with: 'error' -> 'Error') ] ] ]) ]).
+
+	CwAppContext default syncExecInUI: [ chat updateLastModelTextSegment ].
+	^ true
+]
+
+{ #category : 'Not categorized' }
+AIAbstractChatGenerator >> functionCallPermissionsSet [
+
+	functionCallPermissionsSemaphore signal
+]
+
+{ #category : 'Not categorized' }
 AIAbstractChatGenerator >> generate [
 
 	1 to: 100 do: [ :number |
 		self sendRequest.
-		(chat userMessages last applyFunctionsInLastGeneratedContentUsing: functionsSet inContext: (AIFunctionCallContext model: generationModel filePaths: chat filePaths))
+		self applyFunctionsInLastGeneratedContent
 			ifTrue: [ CwAppContext default syncExecInUI: [ chat updateLastModelTextSegment ] ]
 			ifFalse: [ ^ self ].
 		shouldStop
@@ -134,6 +188,7 @@ AIAbstractChatGenerator >> initializeWithChat: initialChat [
 	generationModel := chat model.
 	functionsSet := AIFunctionsSet current copy.
 	shouldStop := false.
+	functionCallPermissionsSemaphore := Semaphore new.
 	generationErrorHandlerSemaphore := Semaphore new.
 ]
 
@@ -224,7 +279,7 @@ AIAbstractChatGenerator >> startGenerating [
 				chat generationError: error ].
 			generationErrorHandlerSemaphore wait.
 			((Dictionary
-				with: #debug -> [ error pass ]
+				with: #debug -> [ Processor activeProcess reportError: error description resumable: false ]
 				with: #retry -> [ error retry ]
 				with: #exit -> [ error exitWith: nil ])
 					at: generationErrorHandler) value ]

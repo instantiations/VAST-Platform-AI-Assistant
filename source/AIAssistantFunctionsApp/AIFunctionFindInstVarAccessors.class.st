@@ -22,7 +22,7 @@ AIFunctionFindInstVarAccessors >> applyFunctionTo: arguments in: context [
 		instVarIndex > 0]
 			whileTrue: [
 				class methodDictionary do: [:method |
-					(method referencesInstVar: instVarIndex) ifTrue: [methods add: method geminiJSON]].
+					(method referencesInstVar: instVarIndex) ifTrue: [methods add: method aiJSON]].
 				"Search superclasses as well"
 				class := class superclass].
 
