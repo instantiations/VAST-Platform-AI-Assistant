@@ -18,6 +18,12 @@ AIFunctionEvaluate >> applyFunctionTo: arguments in: context [
 		error exitWith: (EsOrderedDictionary with: 'error' -> ('The evaluation signaled an error: %1' bindWith: error asString)) ]
 ]
 
+{ #category : 'Accessing' }
+AIFunctionEvaluate >> category [
+
+	^ 'Testing & Debugging'
+]
+
 { #category : 'Not categorized' }
 AIFunctionEvaluate >> defaultEnabled [
 

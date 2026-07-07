@@ -16,6 +16,7 @@ AIAssistantCoreApp class >> removing [
 
 	AIAbstractModel reset.
 	AIAbstractModelProvider reset.
+	AIAbstractMCPServer reset.
 	AIFunctionsSet clearCurrent.
 	AIChatGenerationLog clearCurrent.
 ]

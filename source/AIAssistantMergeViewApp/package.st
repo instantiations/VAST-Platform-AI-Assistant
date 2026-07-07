@@ -1,4 +1,4 @@
 Package {
 	#name : 'AIAssistantMergeViewApp',
-	#vaPrerequisites : ['EtBaseTools']
+	#vaPrerequisites : ['AIAssistantFunctionsApp']
 }

@@ -22,6 +22,12 @@ AIFunctionGetClassHierarchy >> applyFunctionTo: arguments in: context [
 	^ EsOrderedDictionary with: 'hierarchy' -> hierarchy
 ]
 
+{ #category : 'Accessing' }
+AIFunctionGetClassHierarchy >> category [
+
+	^ 'Code Exploration'
+]
+
 { #category : 'Not categorized' }
 AIFunctionGetClassHierarchy >> description [
 

@@ -5,6 +5,13 @@ Class {
 }
 
 { #category : 'Not categorized' }
+AIFunctionParameterTypeBoolean class >> fromJSONSchemaObject: jsonSchemaObject [
+
+	self checkJSONSchemaObject: jsonSchemaObject hasNoOtherAttributesBesides: #('type' 'title' 'description').
+	^ self new
+]
+
+{ #category : 'Not categorized' }
 AIFunctionParameterTypeBoolean class >> typeName [
 
 	^ 'boolean'

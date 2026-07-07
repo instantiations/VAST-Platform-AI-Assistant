@@ -29,6 +29,12 @@ AIAbstractFunction >> applyFunctionTo: arguments in: context [
 	self subclassResponsibility
 ]
 
+{ #category : 'Accessing' }
+AIAbstractFunction >> category [
+
+	^ 'Miscellaneous'
+]
+
 { #category : 'System Search',
   #vaVisibility : 'private' }
 AIAbstractFunction >> classNamed: className [

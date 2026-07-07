@@ -38,6 +38,12 @@ AIFunctionFindSenders >> applyFunctionTo: arguments in: context [
 	^EsOrderedDictionary with: 'methods' -> methods
 ]
 
+{ #category : 'Accessing' }
+AIFunctionFindSenders >> category [
+
+	^ 'Code Exploration'
+]
+
 { #category : 'Not categorized' }
 AIFunctionFindSenders >> description [
 
@@ -61,8 +67,8 @@ AIFunctionFindSenders >> parameters [
 			type: AIFunctionParameterTypeBoolean new
 			description: 'Include full source of implementors. Prefer false unless relevant'.
 		AIFunctionParameterOptional name: 'match_casing'
-			type: (AIFunctionParameterTypeArray itemsType: AIFunctionParameterTypeBoolean new)
-			description: 'Results must match parameter casing. True by default'.
+			type: AIFunctionParameterTypeBoolean new
+			description: 'Specifies if results must strictly match the parameter casing. True by default'.
 		AIFunctionParameterOptional name: 'classes'
 			type: (AIFunctionParameterTypeArray itemsType: AIFunctionParameterTypeString new)
 			description: 'Scope search to provided classes. Use if possible'.

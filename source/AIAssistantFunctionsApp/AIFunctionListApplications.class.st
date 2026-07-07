@@ -10,6 +10,12 @@ AIFunctionListApplications >> applyFunctionTo: arguments in: context [
 	^ EsOrderedDictionary with: 'applications' -> (System loadedSubApplications collect: [ :application | application name ]) sorted
 ]
 
+{ #category : 'Accessing' }
+AIFunctionListApplications >> category [
+
+	^ 'Code Exploration'
+]
+
 { #category : 'Not categorized' }
 AIFunctionListApplications >> description [
 

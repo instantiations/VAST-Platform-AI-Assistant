@@ -89,12 +89,30 @@ AIFunctionsSet >> functions [
 	^ self allFunctions reject: [ :function | disabledFunctions includes: function ]
 ]
 
+{ #category : 'Accessing' }
+AIFunctionsSet >> functionsByCategory [
+
+	| functionsByCategoryUnordered functionsByCategoryOrdered |
+
+	functionsByCategoryUnordered := Dictionary new.
+	self allFunctions do: [ :function |
+		(functionsByCategoryUnordered at: function category ifAbsentPut: [ OrderedCollection new ])
+			add: function ].
+	functionsByCategoryOrdered := EsOrderedDictionary new.
+	functionsByCategoryUnordered keys sorted do: [ :category |
+		functionsByCategoryOrdered at: category put: (functionsByCategoryUnordered at: category) ].
+	^ functionsByCategoryOrdered
+]
+
 { #category : 'Not categorized' }
 AIFunctionsSet >> initialize [
 
 	super initialize.
-	(allFunctions := (AIAbstractFunction allSubclasses reject: [ :subclass | subclass isAbstract ]) collect: [ :subclass | subclass new ])
-		sort: [ :function1 :function2 | function1 name < function2 name ].
+	(allFunctions := OrderedCollection new)
+		addAll: (((AIAbstractFunction allSubclasses reject: [ :subclass | subclass isAbstract ]) collect: [ :subclass | subclass new ])
+			sorted: [ :function1 :function2 | function1 name < function2 name ]).
+	(AIAbstractMCPServer registeredServers sorted: [ :server1 :server2 | server1 name < server2 name ]) do: [ :server |
+		allFunctions addAll: (server functions sorted: [ :function1 :function2 | function1 name < function2 name ]) ].
 	disabledFunctions := Set withAll: (allFunctions select: [ :function | function defaultEnabled not ]).
 	functionsRequiringPermission := Set new.
 ]

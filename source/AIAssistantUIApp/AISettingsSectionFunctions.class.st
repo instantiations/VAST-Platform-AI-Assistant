@@ -18,57 +18,68 @@ AISettingsSectionFunctions >> closeWindow [
 { #category : 'Not categorized' }
 AISettingsSectionFunctions >> createFunctionsRowColumn [
 
+	| isFirstCategory |
+
 	functionsRowColumn := functionsForm createRowColumn: nil argBlock: nil.
-	functionsSet allFunctions do: [ :function |
-		| isEnabled requiresPermission functionForm toggleButton radioBox |
+	isFirstCategory := true.
+	functionsSet functionsByCategory keysAndValuesDo: [ :category :categoryFunctions |
+		(functionsRowColumn createLabel: nil argBlock: [ :w | 
+			w labelString: category; 
+				marginTop: (isFirstCategory ifTrue: [ 0 ] ifFalse: [ 10 ]);
+				fontList: (CwFontList named: ((w parent defaultFont: w) fontStruct logicalFontDescription weight: 'bold'; name)) ])
+					manageChild.
+		categoryFunctions do: [ :function |
+			| isEnabled requiresPermission functionForm toggleButton radioBox |
 
-		isEnabled := functionsSet isFunctionEnabled: function.
-		requiresPermission := functionsSet requiresPermissionToCallFunction: function.
+			isEnabled := functionsSet isFunctionEnabled: function.
+			requiresPermission := functionsSet requiresPermissionToCallFunction: function.
 
-		(functionForm := functionsRowColumn createForm: nil argBlock: nil)
-			manageChild.
-		(toggleButton := functionForm createToggleButton: nil
-			argBlock: [ :w |
-				w set: isEnabled;
-					labelString: function name ])
-			manageChild;
-			addCallback: XmNvalueChangedCallback
-				receiver: self
-				selector: #toggleButtonValueChanged:clientData:callData:
-				clientData: function.
-		(radioBox := functionForm createRadioBox: nil argBlock: [ :w | 
-			w 
-				packing: XmPACKTIGHT;
-				orientation: XmHORIZONTAL;
-				marginHeight: 0 ])
-			manageChild.
-		(radioBox createToggleButton: nil argBlock: [ :w | w labelString: 'Always Allow'; set: requiresPermission not ])
-			manageChild;
-			addCallback: XmNvalueChangedCallback
-				receiver: self
-				selector: #radioButtonAlwaysValueChanged:clientData:callData:
-				clientData: function.
-		(radioBox createToggleButton: nil argBlock: [ :w | w labelString: 'Ask'; set: requiresPermission ])
-			manageChild;
-			addCallback: XmNvalueChangedCallback
-				receiver: self
-				selector: #radioButtonAskValueChanged:clientData:callData:
-				clientData: function.
-		
-		toggleButton setValuesBlock: [ :w |
-			w topAttachment: XmATTACHFORM;
-				leftAttachment: XmATTACHFORM;
-				rightAttachment: XmATTACHFORM;
-				bottomAttachment: XmATTACHWIDGET;
-				bottomWidget: radioBox;
-				bottomOffset: -3 ].
-		radioBox setValuesBlock: [ :w |
-			w leftAttachment: XmATTACHFORM;
-				leftOffset: 15;
-				rightAttachment: XmATTACHFORM;
-				bottomAttachment: XmATTACHFORM ].
+			(functionForm := functionsRowColumn createForm: nil argBlock: nil)
+				manageChild.
+			(toggleButton := functionForm createToggleButton: nil
+				argBlock: [ :w |
+					w set: isEnabled;
+						labelString: function name ])
+				manageChild;
+				addCallback: XmNvalueChangedCallback
+					receiver: self
+					selector: #toggleButtonValueChanged:clientData:callData:
+					clientData: function.
+			(radioBox := functionForm createRadioBox: nil argBlock: [ :w | 
+				w 
+					packing: XmPACKTIGHT;
+					orientation: XmHORIZONTAL;
+					marginHeight: 0 ])
+				manageChild.
+			(radioBox createToggleButton: nil argBlock: [ :w | w labelString: 'Always Allow'; set: requiresPermission not ])
+				manageChild;
+				addCallback: XmNvalueChangedCallback
+					receiver: self
+					selector: #radioButtonAlwaysValueChanged:clientData:callData:
+					clientData: function.
+			(radioBox createToggleButton: nil argBlock: [ :w | w labelString: 'Ask'; set: requiresPermission ])
+				manageChild;
+				addCallback: XmNvalueChangedCallback
+					receiver: self
+					selector: #radioButtonAskValueChanged:clientData:callData:
+					clientData: function.
 			
-		radioBox setSensitive: isEnabled ].
+			toggleButton setValuesBlock: [ :w |
+				w topAttachment: XmATTACHFORM;
+					leftAttachment: XmATTACHFORM;
+					leftOffset: 3;
+					rightAttachment: XmATTACHFORM;
+					bottomAttachment: XmATTACHWIDGET;
+					bottomWidget: radioBox;
+					bottomOffset: -3 ].
+			radioBox setValuesBlock: [ :w |
+				w leftAttachment: XmATTACHFORM;
+					leftOffset: 18;
+					rightAttachment: XmATTACHFORM;
+					bottomAttachment: XmATTACHFORM ].
+				
+			radioBox setSensitive: isEnabled ].
+		isFirstCategory := false ]
 ]
 
 { #category : 'Not categorized',

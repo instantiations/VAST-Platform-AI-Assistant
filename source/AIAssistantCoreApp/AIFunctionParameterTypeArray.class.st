@@ -8,6 +8,13 @@ Class {
 }
 
 { #category : 'Not categorized' }
+AIFunctionParameterTypeArray class >> fromJSONSchemaObject: jsonSchemaObject [
+
+	self checkJSONSchemaObject: jsonSchemaObject hasNoOtherAttributesBesides: #('type' 'title' 'description' 'items').
+	^ AIFunctionParameterTypeArray itemsType: (AIAbstractFunctionParameterType fromJSONSchemaObject: (jsonSchemaObject at: 'items'))
+]
+
+{ #category : 'Not categorized' }
 AIFunctionParameterTypeArray class >> itemsType: itemsType [
 
 	^ self basicNew initializeWithItemsType: itemsType

@@ -12,6 +12,12 @@ AIFunctionGetClassComments >> applyFunctionTo: arguments in: context [
 		forClassesNamed: (arguments at: 'classes')
 ]
 
+{ #category : 'Accessing' }
+AIFunctionGetClassComments >> category [
+
+	^ 'Code Exploration'
+]
+
 { #category : 'Not categorized' }
 AIFunctionGetClassComments >> description [
 

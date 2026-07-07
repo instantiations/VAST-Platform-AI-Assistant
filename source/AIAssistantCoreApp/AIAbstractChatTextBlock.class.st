@@ -15,6 +15,12 @@ AIAbstractChatTextBlock >> isCodeBlock [
 	^ false
 ]
 
+{ #category : 'Accessing' }
+AIAbstractChatTextBlock >> isCodeChangesBlock [
+
+	^ false
+]
+
 { #category : 'Not categorized' }
 AIAbstractChatTextBlock >> isFunctionCallsBlock [
 

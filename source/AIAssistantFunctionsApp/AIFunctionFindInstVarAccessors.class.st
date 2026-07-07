@@ -7,32 +7,34 @@ Class {
 { #category : 'Not categorized' }
 AIFunctionFindInstVarAccessors >> applyFunctionTo: arguments in: context [
 
-	| className instVarName instVarIndex class methods |
+	| className instVarName theClass methods |
 
 	className := arguments at: 'class'.
 	instVarName := arguments at: 'instance_variable'.
 
-	class := self classNamed: className.
-	class ifNil: [^EsOrderedDictionary with: 'error' -> ('Class %1 not found' bindWith: className)].
+	theClass := self classNamed: className.
+	theClass
+		ifNil: [^EsOrderedDictionary with: 'error' -> ('Class %1 not found' bindWith: className)].
 
-	methods := OrderedCollection new.
+	(theClass allInstVarNames includes: instVarName) ifFalse: [
+		^EsOrderedDictionary with: 'error' -> ('Instance variable %1 not found in class %2' bindWith: instVarName with: className)].
 
-	[ "Manually find the index and check methods to avoid using #whichSelectorsAccess:"
-		instVarIndex := class allInstVarNames indexOf: instVarName.
-		instVarIndex > 0]
-			whileTrue: [
-				class methodDictionary do: [:method |
-					(method referencesInstVar: instVarIndex) ifTrue: [methods add: method aiJSON]].
-				"Search superclasses as well"
-				class := class superclass].
+	methods := (theClass allMethodsReferencingInstVarName: instVarName)
+		collect: [:each | each aiJSON].
 
 	^EsOrderedDictionary with: 'methods' -> methods
+]
+
+{ #category : 'Accessing' }
+AIFunctionFindInstVarAccessors >> category [
+
+	^ 'Code Exploration'
 ]
 
 { #category : 'Not categorized' }
 AIFunctionFindInstVarAccessors >> description [
 
-	^ 'Returns methods referencing the provided instance variable. Searches class as well as its superclasses'
+	^ 'Returns methods referencing the provided instance variable. Searches the provided class as well as its superclasses and all (direct and indirect) subclasses.'
 ]
 
 { #category : 'Not categorized' }
@@ -47,7 +49,7 @@ AIFunctionFindInstVarAccessors >> parameters [
 	^ {
 		AIFunctionParameterRequired name: 'class'
 			type: AIFunctionParameterTypeString new
-			description: 'The name a class where instance variable is defined'.
+			description: 'The name of the class where the instance variable is defined or inherited'.
 		AIFunctionParameterRequired name: 'instance_variable'
 			type: AIFunctionParameterTypeString new
 			description: 'The name of the instance variable' }

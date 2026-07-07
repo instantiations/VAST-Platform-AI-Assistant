@@ -5,6 +5,12 @@ Class {
 }
 
 { #category : 'Not categorized' }
+AIDiffMatchPatch class >> patienceDiff: string1 with: string2 [
+
+	^self new patienceDiffLines1: (self new linesFrom: string1) lines2: (self new linesFrom: string2)
+]
+
+{ #category : 'Not categorized' }
 AIDiffMatchPatch >> backtrackTrace: trace text1: text1 text2: text2 [
 	| x y max diffs d k kIndex prevK prevKIndex prevX prevY |
 	x := text1 size.
@@ -159,6 +165,66 @@ AIDiffMatchPatch >> cleanupSemantic: thediffs [
 ]
 
 { #category : 'Not categorized' }
+AIDiffMatchPatch >> cleanupSpaces: diffs [
+
+	| result currentDelete currentInsert inBlock flushBlock |
+
+	result := OrderedCollection new.
+	currentDelete := WriteStream on: String new.
+	currentInsert := WriteStream on: String new.
+	inBlock := false.
+
+	"Helper to flush our accumulated block of edits"
+	flushBlock := [
+		inBlock
+			ifTrue: [
+				currentDelete contents isEmpty
+					ifFalse: [
+						result add: (AIDiffOperation operation: #delete text: currentDelete contents)].
+				currentInsert contents isEmpty
+					ifFalse: [
+						result add: (AIDiffOperation operation: #insert text: currentInsert contents)].
+				currentDelete := WriteStream on: String new.
+				currentInsert := WriteStream on: String new.
+				inBlock := false]].
+
+	1 to: diffs size do: [:i | | diff isGlue char |
+		diff := diffs at: i.
+
+		"Consider an #equal operation as 'glue' if it's exactly 1 separator 
+		 and it is flanked by other edits (not at the very start or end)"
+		isGlue := false.
+		(diff operation == #equal and: [diff text size = 1])
+			ifTrue: [
+				char := diff text at: 1.
+				isGlue := char isSeparator 
+					and: [char ~= Character cr 
+					and: [char ~= Character lf 
+					and: [i > 1 and: [i < diffs size]]]]].
+
+		diff operation == #equal
+			ifTrue: [
+				isGlue
+					ifTrue: [
+						"Add the separator to both sides of the edit block to connect them"
+						inBlock := true.
+						currentDelete nextPutAll: diff text.
+						currentInsert nextPutAll: diff text]
+					ifFalse: [
+						"Not glue, we broke the edit chain. Flush accumulated edits."
+						flushBlock value.
+						result add: diff]]
+			ifFalse: [
+				"It's an edit, keep accumulating"
+				inBlock := true.
+				diff operation == #delete
+					ifTrue: [currentDelete nextPutAll: diff text]
+					ifFalse: [currentInsert nextPutAll: diff text]]].
+	flushBlock value.
+	^result
+]
+
+{ #category : 'Not categorized' }
 AIDiffMatchPatch >> commonPrefixLengthOf: text1 and: text2 [
 	"Returns the length of the common prefix of two strings."
 	| n max |
@@ -236,6 +302,25 @@ AIDiffMatchPatch >> diffMainText1: text1 text2: text2 [
 	
 	diffs := self cleanupMerge: diffs.
 	^self cleanupSemantic: diffs
+]
+
+{ #category : 'Not categorized' }
+AIDiffMatchPatch >> diffWords: text1 with: text2 [
+
+	| words1 words2 diffs |
+
+	words1 := self wordsFrom: text1.
+	words2 := self wordsFrom: text2.
+
+	diffs := self diffMainText1: words1 text2: words2.
+
+	"Convert the Arrays of words back to flat Strings for our renderer"
+	diffs do: [:diff | | flatText |
+		flatText := WriteStream on: String new.
+		diff text do: [:wordStr | flatText nextPutAll: wordStr].
+		diff operation: diff operation text: flatText contents].
+
+	^self cleanupSpaces: diffs
 ]
 
 { #category : 'Not categorized' }
@@ -435,4 +520,34 @@ AIDiffMatchPatch >> uniqueLinesIn: lines1 and: lines2 [
 	].
 	
 	^uniques asArray
+]
+
+{ #category : 'Not categorized' }
+AIDiffMatchPatch >> wordsFrom: aString [
+
+	| tokens start len classOf prevClass |
+
+	tokens := OrderedCollection new.
+	len := aString size.
+	len = 0 ifTrue: [^#()].
+	start := 1.
+
+	classOf := [:c |
+		(c = Character cr or: [c = Character lf])
+			ifTrue: [4]
+			ifFalse: [
+				(c isLetter or: [c isDigit or: [c = $_]])
+					ifTrue: [1]
+					ifFalse: [c isSeparator ifTrue: [2] ifFalse: [3]]]].
+
+	prevClass := classOf value: (aString at: 1).
+	2 to: len do: [:i | | currentClass |
+		currentClass := classOf value: (aString at: i).
+		currentClass = prevClass
+			ifFalse: [
+				tokens add: (aString copyFrom: start to: i - 1).
+				start := i.
+				prevClass := currentClass]].
+	tokens add: (aString copyFrom: start to: len).
+	^tokens asArray
 ]

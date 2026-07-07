@@ -339,6 +339,24 @@ AIChatWidgetDrawingContext >> withLineSpacing: newValue do: block [
 ]
 
 { #category : 'Not categorized' }
+AIChatWidgetDrawingContext >> withRightInset: newValue do: block [
+
+	| oldValue blockValue |
+
+	oldValue := rightInset.
+	rightInset := newValue.
+	blockValue := block value.
+	rightInset := oldValue.
+	^ blockValue
+]
+
+{ #category : 'Not categorized' }
+AIChatWidgetDrawingContext >> withRightInsetIncreasedBy: rightInsetIncrement do: block [
+
+	^ self withRightInset: rightInset + rightInsetIncrement do: block
+]
+
+{ #category : 'Not categorized' }
 AIChatWidgetDrawingContext >> withTextBolded: newValue do: block [
 
 	| oldValue blockValue |

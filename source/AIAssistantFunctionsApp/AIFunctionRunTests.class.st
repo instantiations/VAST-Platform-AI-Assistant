@@ -36,6 +36,12 @@ AIFunctionRunTests >> applyFunctionTo: arguments in: context [
 ]
 
 { #category : 'Accessing' }
+AIFunctionRunTests >> category [
+
+	^ 'Testing & Debugging'
+]
+
+{ #category : 'Accessing' }
 AIFunctionRunTests >> description [
 
 	^ 'Runs a given list of SUnit test classes and returns the test execution results, including the count of tests run, passed, failed, and encountered errors, as well as a list of failing and erroring test selectors.'

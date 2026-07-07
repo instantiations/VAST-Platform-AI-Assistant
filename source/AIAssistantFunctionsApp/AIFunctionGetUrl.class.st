@@ -33,6 +33,12 @@ AIFunctionGetUrl >> applyFunctionTo: arguments in: context [
 		httpClient shutDown ]
 ]
 
+{ #category : 'Accessing' }
+AIFunctionGetUrl >> category [
+
+	^ 'Web Retrieval'
+]
+
 { #category : 'Not categorized' }
 AIFunctionGetUrl >> description [
 

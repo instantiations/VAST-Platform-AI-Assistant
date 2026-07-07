@@ -42,12 +42,8 @@ AIFunctionGetClassMethods >> applyFunctionTo: arguments in: context [
 									resultPerClass at: className put: classMethods.
 									^EsOrderedDictionary
 										with: 'methods_per_side_per_class' -> resultPerClass
-										with:
-											'nonexistent_or_outside_scope_classes' -> classesNotFound
-										with:
-											'warning' -> (
-												'Results exceeded maximum limit of %1. Please retry with a more restricted scope or use another function.'
-													bindWith: maxResults)]].
+										with: 'nonexistent_or_outside_scope_classes' -> classesNotFound
+										with: 'warning' -> ('Results exceeded maximum limit of %1. Please retry with a more restricted scope or use another function.' bindWith: maxResults)]].
 						classMethods at: side put: sideMethods].
 				resultPerClass at: className put: classMethods]
 			ifNil: [classesNotFound add: className]].
@@ -55,6 +51,12 @@ AIFunctionGetClassMethods >> applyFunctionTo: arguments in: context [
 	^EsOrderedDictionary
 		with: 'methods_per_side_per_class' -> resultPerClass
 		with: 'nonexistent_or_outside_scope_classes' -> classesNotFound
+]
+
+{ #category : 'Accessing' }
+AIFunctionGetClassMethods >> category [
+
+	^ 'Code Exploration'
 ]
 
 { #category : 'Not categorized' }
@@ -78,8 +80,7 @@ AIFunctionGetClassMethods >> parameters [
 			description: 'Names of the classes'.
 		AIFunctionParameterRequired name: 'with_source'
 			type: AIFunctionParameterTypeBoolean new
-			description: 'Include full source of methods. Prefer false unless relevant. 
-			Use find_implementors scoped to class instead, if interested in source of a single method'.
+			description: 'Include the full source of methods. Prefer false unless absolutely necessary to minimize payload size. If you need the source of a specific method, use the filters parameter to scope it to a single method.'.
 		AIFunctionParameterOptional name: 'filters'
 			type: (AIFunctionParameterTypeArray itemsType: AIFunctionParameterTypeString new)
 			description: 'Selectors to filter methods by. Can contain wildcards like * (e.g., backgroundCol*, *background). If not set, all methods are returned.'

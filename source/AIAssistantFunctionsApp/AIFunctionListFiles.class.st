@@ -15,6 +15,12 @@ AIFunctionListFiles >> applyFunctionTo: arguments in: context [
 	^ EsOrderedDictionary with: 'files' -> files
 ]
 
+{ #category : 'Accessing' }
+AIFunctionListFiles >> category [
+
+	^ 'File Reading'
+]
+
 { #category : 'Not categorized' }
 AIFunctionListFiles >> description [
 

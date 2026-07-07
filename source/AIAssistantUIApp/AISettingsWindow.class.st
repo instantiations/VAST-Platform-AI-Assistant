@@ -31,7 +31,7 @@ AISettingsWindow >> closeWindow [
   #vaVisibility : 'private' }
 AISettingsWindow >> createSettingPanes: aForm [
 
-	sectionModels := { AISettingsSectionProviders new. AISettingsSectionModels new. AISettingsSectionFunctions new }.
+	sectionModels := { AISettingsSectionProviders new. AISettingsSectionModels new. AISettingsSectionFunctions new. AISettingsSectionMCPServers new }.
 	settingPanes := sectionModels collect: [:each | each createSettingsPane: aForm]
 ]
 
@@ -90,6 +90,12 @@ AISettingsWindow >> includeFileMenu [
 	^ false
 ]
 
+{ #category : 'Accessing' }
+AISettingsWindow >> label [
+
+	^ 'AI Assistant Settings'
+]
+
 { #category : 'Not categorized',
   #vaVisibility : 'private' }
 AISettingsWindow >> restartWindowFromSnapshot: widgetHierarchySnapshot [
@@ -121,5 +127,9 @@ AISettingsWindow >> windowClose: widget clientData: clientData callData: callDat
 
 	super windowClose: widget clientData: clientData callData: callData.
 	callData doit ifTrue: [
+		self shell focusWidget ifNotNil: [ :focusWidget |
+			(focusWidget respondsTo: XmNlosingFocusCallback) ifTrue: [
+				focusWidget callCallbacks: XmNlosingFocusCallback
+					callData: (CwAnyCallbackData new reason: XmCRLOSINGFOCUS; yourself) ] ].
 		sectionModels do: [ :sectionModel | sectionModel release ] ]
 ]

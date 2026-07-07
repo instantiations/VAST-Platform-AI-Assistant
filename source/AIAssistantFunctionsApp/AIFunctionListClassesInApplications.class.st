@@ -25,6 +25,12 @@ AIFunctionListClassesInApplications >> applyFunctionTo: arguments in: context [
 		with: 'nonexistent_or_outside_scope_applications' -> notFoundApplications
 ]
 
+{ #category : 'Accessing' }
+AIFunctionListClassesInApplications >> category [
+
+	^ 'Code Exploration'
+]
+
 { #category : 'Not categorized' }
 AIFunctionListClassesInApplications >> description [
 

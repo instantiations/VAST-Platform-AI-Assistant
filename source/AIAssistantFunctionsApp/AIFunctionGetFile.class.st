@@ -19,6 +19,12 @@ AIFunctionGetFile >> applyFunctionTo: arguments in: context [
 		EsOrderedDictionary with: 'lines' -> lines with: 'line_count' -> lines size ]
 ]
 
+{ #category : 'Accessing' }
+AIFunctionGetFile >> category [
+
+	^ 'File Reading'
+]
+
 { #category : 'Not categorized' }
 AIFunctionGetFile >> description [
 

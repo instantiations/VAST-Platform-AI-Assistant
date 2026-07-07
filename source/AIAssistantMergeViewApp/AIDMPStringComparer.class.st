@@ -23,10 +23,7 @@ AIDMPStringComparer >> compare [
 	| lineDiffs index1 index2 leftLine rightLine prevLeftLine prevRightLine gapDeleteStart
 	  gapInsertStart |
 
-	lineDiffs :=
-		AIDiffMatchPatch new
-			patienceDiffLines1: (AIDiffMatchPatch new linesFrom: string1)
-			lines2: (AIDiffMatchPatch new linesFrom: string2).
+	lineDiffs := AIDiffMatchPatch patienceDiff: string1 with: string2.
 
 	equalRuns := OrderedCollection new.
 	unEqualRuns := OrderedCollection new.
@@ -76,12 +73,12 @@ AIDMPStringComparer >> compare [
 								(rightPaddings at: (prevRightLine max: 0) ifAbsent: [0]) +
 									(leftDelta - rightDelta)].
 
-				(leftDelta > 0 or: [rightDelta > 0])
+				(index1 > gapDeleteStart or: [index2 > gapInsertStart])
 					ifTrue: [| dStr iStr intraDiffs dIndex iIndex |
 						dStr := string1 copyFrom: gapDeleteStart to: index1 - 1.
 						iStr := string2 copyFrom: gapInsertStart to: index2 - 1.
 
-						intraDiffs := AIDiffMatchPatch new diffMainText1: dStr text2: iStr.
+						intraDiffs := AIDiffMatchPatch new diffWords: dStr with: iStr.
 
 						dIndex := gapDeleteStart.
 						iIndex := gapInsertStart.
@@ -151,12 +148,12 @@ AIDMPStringComparer >> compare [
 						(rightPaddings at: (prevRightLine max: 0) ifAbsent: [0]) +
 							(leftDelta - rightDelta)].
 
-		(leftDelta > 0 or: [rightDelta > 0])
+		(index1 > gapDeleteStart or: [index2 > gapInsertStart])
 			ifTrue: [| dStr iStr intraDiffs dIndex iIndex |
 				dStr := string1 copyFrom: gapDeleteStart to: index1 - 1.
 				iStr := string2 copyFrom: gapInsertStart to: index2 - 1.
 
-				intraDiffs := AIDiffMatchPatch new diffMainText1: dStr text2: iStr.
+				intraDiffs := AIDiffMatchPatch new diffWords: dStr with: iStr.
 
 				dIndex := gapDeleteStart.
 				iIndex := gapInsertStart.

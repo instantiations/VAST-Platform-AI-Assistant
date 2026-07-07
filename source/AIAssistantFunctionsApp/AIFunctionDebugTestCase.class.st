@@ -1,63 +1,70 @@
 Class {
 	#name : 'AIFunctionDebugTestCase',
-	#superclass : 'AIAbstractFunction',
+	#superclass : 'AIAbstractStackIterationFunction',
 	#category : 'AIAssistantFunctionsApp'
 }
 
 { #category : 'Actions' }
 AIFunctionDebugTestCase >> applyFunctionTo: arguments in: context [
+
 	| className selector testClass testCase process semaphore frames errorMsg errorClass |
-	
+
 	className := arguments at: 'class_name'.
 	selector := arguments at: 'selector'.
-	
-	testClass := Smalltalk at: className asSymbol ifAbsent: [ nil ].
-	(testClass isNil or: [ (testClass inheritsFrom: TestCase) not ]) ifTrue: [
-		^ EsOrderedDictionary with: 'error' -> 'Invalid test class provided.'
-	].
+
+	testClass := self classNamed: className.
+	(testClass isNil or: [(testClass inheritsFrom: TestCase) not])
+		ifTrue: [^EsOrderedDictionary with: 'error' -> 'Invalid test class provided.'].
 
 	testCase := testClass selector: selector asSymbol.
-
 	semaphore := Semaphore new.
 
 	"Run the test in a separate process so we can easily suspend it on error to capture the stack"
-	process := [
-		[ testCase runCase. semaphore signal ] 
-			on: TestResult failure, TestResult error, Halt 
-			do: [ :ex | 
-				errorMsg := ex description.
-				errorClass := ex class name.
-				semaphore signal.
-				Processor activeProcess suspend.
-			].
-	] fork.
+	process :=
+		[
+			[
+				testCase runCase.
+				semaphore signal]
+					on: TestResult failure , TestResult error , Halt
+					do: [:ex |
+						errorMsg := ex description.
+						errorClass := ex class name.
+						semaphore signal.
+						Processor activeProcess suspend]]
+							fork.
 
 	"Wait until the test finishes or an exception is caught"
 	semaphore wait.
-	
+
 	"Wait for the process to actually suspend if it failed"
-	[ process isSuspended or: [ process isDead ] ] whileFalse: [ (Delay forMilliseconds: 10) wait ].
-	
+	[process isSuspended or: [process isDead]] whileFalse: [(Delay forMilliseconds: 10) wait].
+
 	"Collect the preserved stack frames exactly as a Debugger Session does"
-	frames := process isSuspended 
-		ifTrue: [ process allFrames collect: [ :frame | frame printString ] ] 
-		ifFalse: [ #() ].
-		
+	frames :=
+		process isSuspended
+			ifTrue: [self stackFramesJSONFor: process arguments: arguments ]
+			ifFalse: [#()].
+
 	process terminate.
 
 	errorMsg ifNil: [
-		^ EsOrderedDictionary new
+		^EsOrderedDictionary new
 			at: 'status' put: 'passed';
 			at: 'message' put: 'Test passed successfully.';
-			yourself
-	].
+			yourself].
 
-	^ EsOrderedDictionary new
+	^EsOrderedDictionary new
 		at: 'process_name' put: (className , '>>' , selector);
 		at: 'error_message' put: errorMsg;
 		at: 'exception_class' put: errorClass;
 		at: 'stack_trace' put: frames;
 		yourself
+]
+
+{ #category : 'Accessing' }
+AIFunctionDebugTestCase >> category [
+
+	^ 'Testing & Debugging'
 ]
 
 { #category : 'Accessing' }
@@ -75,11 +82,13 @@ AIFunctionDebugTestCase >> name [
 { #category : 'Accessing' }
 AIFunctionDebugTestCase >> parameters [
 
-	^ {
-		AIFunctionParameterRequired name: 'class_name'
+	^{
+		AIFunctionParameterRequired
+			name: 'class_name'
 			type: AIFunctionParameterTypeString new
 			description: 'Name of the test class'.
-		AIFunctionParameterRequired name: 'selector'
+		AIFunctionParameterRequired
+			name: 'selector'
 			type: AIFunctionParameterTypeString new
-			description: 'Name of the test selector/method' }
+			description: 'Name of the test selector/method' } , super parameters
 ]

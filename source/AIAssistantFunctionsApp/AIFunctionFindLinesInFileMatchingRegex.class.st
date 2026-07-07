@@ -38,6 +38,12 @@ AIFunctionFindLinesInFileMatchingRegex >> applyFunctionTo: arguments in: context
 		EsOrderedDictionary with: 'matches' -> matches ]
 ]
 
+{ #category : 'Accessing' }
+AIFunctionFindLinesInFileMatchingRegex >> category [
+
+	^ 'File Reading'
+]
+
 { #category : 'Not categorized' }
 AIFunctionFindLinesInFileMatchingRegex >> description [
 
@@ -63,7 +69,7 @@ AIFunctionFindLinesInFileMatchingRegex >> parameters [
 				'colons have special meaning and need to be escaped to match literally').
 		AIFunctionParameterOptional name: 'ignore_case'
 			type: AIFunctionParameterTypeBoolean new
-			description: 'Whether to match the regular expression case-insensitivly or not, defaults to false'.
+			description: 'Whether to match the regular expression case-insensitively or not, defaults to false'.
 		AIFunctionParameterOptional name: 'start'
 			type: AIFunctionParameterTypeInteger new
 			description: 'The line number of the line to start matching at, defaults to 1'.

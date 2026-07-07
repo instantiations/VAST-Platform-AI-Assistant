@@ -1,0 +1,11 @@
+# Auto-detect text files and perform LF normalization
+* text=auto
+
+# Define specific text files
+*.st text
+*.md text
+
+# Explicitly mark binary files to prevent normalization or text diffs
+*.png binary
+*.jpg binary
+*.gif binary

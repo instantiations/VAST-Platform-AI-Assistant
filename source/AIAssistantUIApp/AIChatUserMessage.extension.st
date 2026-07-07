@@ -11,5 +11,7 @@ AIChatUserMessage >> storeOn: stream [
 	message storeOn: stream.
 	stream nextPutAll: ' generatedContents: '.
 	generatedContents storeOn: stream.
+	stream nextPutAll: ' codeChanges: '.
+	codeChanges storeOn: stream.
 	stream nextPut: $).
 ]

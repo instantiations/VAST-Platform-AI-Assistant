@@ -3,21 +3,22 @@ Class {
 	#superclass : 'Object',
 	#instVars : [
 		'model',
-		'filePaths'
+		'filePaths',
+		'codeChanges'
 	],
 	#category : 'AIAssistantCoreApp'
 }
 
 { #category : 'Not categorized' }
-AIFunctionCallContext class >> filePaths: filePaths [
+AIFunctionCallContext class >> model: model filePaths: filePaths codeChanges: codeChanges [
 
-	^ self basicNew initializeWithFilePaths: filePaths
+	^ self basicNew initializeWith: model filePaths: filePaths codeChanges: codeChanges
 ]
 
-{ #category : 'Not categorized' }
-AIFunctionCallContext class >> model: aModel filePaths: filePaths [
+{ #category : 'Accessing' }
+AIFunctionCallContext >> addRefactoryChange: change [
 
-	^ self basicNew initialize: aModel withFilePaths: filePaths
+	codeChanges add: change
 ]
 
 { #category : 'Accessing' }
@@ -26,21 +27,13 @@ AIFunctionCallContext >> filePaths [
 	^ filePaths
 ]
 
-{ #category : 'Initialization',
-  #vaVisibility : 'private' }
-AIFunctionCallContext >> initialize: aModel withFilePaths: initialFilePaths [
+{ #category : 'Initialization' }
+AIFunctionCallContext >> initializeWith: initialModel filePaths: initialFilePaths codeChanges: initialCodeChanges [
 
 	self initialize.
-	model := aModel.
+	model := initialModel.
 	filePaths := initialFilePaths.
-]
-
-{ #category : 'Initialization',
-  #vaVisibility : 'private' }
-AIFunctionCallContext >> initializeWithFilePaths: initialFilePaths [
-
-	self initialize.
-	filePaths := initialFilePaths.
+	codeChanges := initialCodeChanges.
 ]
 
 { #category : 'Accessing' }

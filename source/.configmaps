@@ -1,81 +1,35 @@
 [
 	{
-		#conditions : [
-			{
-				#condition : 'true',
-				#requiredMaps : [
-					{
-						#name : 'z.ST: JSON Support',
-						#versionName : 'V 14.1.0  [580]',
-						#ts : 3930819163
-					},
-					{
-						#name : 'z.ST: Regex',
-						#versionName : 'V 14.1.0  [580]',
-						#ts : 3930819165
-					},
-					{
-						#name : 'z.ST: Server Smalltalk (SST) - HTTP',
-						#versionName : 'V 14.1.0  [580]',
-						#ts : 3930819166
-					},
-					{
-						#name : 'z.ST: SUnit',
-						#versionName : 'V 14.1.0  [580]',
-						#ts : 3930819170
-					}
-				]
-			}
-		],
-		#ts : 3958987805,
-		#comment : '',
 		#formatVersion : '1.1',
-		#applications : OrderedCollection [
+		#name : 'VAST AI Assistant (VAST 15.0)',
+		#versionName : '1.3.0',
+		#ts : 3960781205,
+		#applications : [
 			{
-				#name : 'AIAssistantCoreApp',
-				#versionName : '1.275',
-				#ts : 3958985105
+				#name : 'AIAssistantCoreApp'
 			},
 			{
-				#name : 'AIAssistantFunctionsApp',
-				#versionName : '1.273',
-				#ts : 3958471223
+				#name : 'AIAssistantFunctionsApp'
 			},
 			{
-				#name : 'AIAssistantMergeViewApp',
-				#versionName : '1.235',
-				#ts : 3954999602
+				#name : 'AIAssistantMergeViewApp'
 			},
 			{
-				#name : 'AIAssistantUIApp',
-				#versionName : '1.274',
-				#ts : 3958476304
+				#name : 'AIAssistantUIApp'
 			},
 			{
-				#name : 'AIProviderGeminiApp',
-				#versionName : '1.255',
-				#ts : 3956129721
+				#name : 'AIProviderGeminiApp'
 			},
 			{
-				#name : 'AIProviderGeminiUIApp',
-				#versionName : '1.239',
-				#ts : 3955003202
+				#name : 'AIProviderGeminiUIApp'
 			},
 			{
-				#name : 'AIProviderOpenAIResponsesApp',
-				#versionName : '1.242',
-				#ts : 3955345231
+				#name : 'AIProviderOpenAIResponsesApp'
 			},
 			{
-				#name : 'AIProviderOpenAIResponsesUIApp',
-				#versionName : '1.256',
-				#ts : 3956216129
+				#name : 'AIProviderOpenAIResponsesUIApp'
 			}
 		],
-		#name : 'VAST AI Assistant (VAST 14.1)',
-		#versionName : '1.275'
-	},
-	{
 		#conditions : [
 			{
 				#condition : 'true',
@@ -99,56 +53,78 @@
 						#name : 'z.ST: SUnit',
 						#versionName : 'V 15.0.0  [593]',
 						#ts : 3947181478
+					},
+					{
+						#name : 'z.ST: Refactoring Browser',
+						#versionName : 'V 15.0.0  [593]',
+						#ts : 3947181472
 					}
 				]
 			}
-		],
-		#ts : 3958987814,
-		#comment : '',
+		]
+	},
+	{
 		#formatVersion : '1.1',
-		#applications : OrderedCollection [
+		#name : 'VAST AI Assistant (VAST 14.1)',
+		#versionName : '1.3.0',
+		#ts : 3960781205,
+		#applications : [
 			{
-				#name : 'AIAssistantCoreApp',
-				#versionName : '1.275',
-				#ts : 3958985105
+				#name : 'AIAssistantCoreApp'
 			},
 			{
-				#name : 'AIAssistantFunctionsApp',
-				#versionName : '1.273',
-				#ts : 3958471223
+				#name : 'AIAssistantFunctionsApp'
 			},
 			{
-				#name : 'AIAssistantMergeViewApp',
-				#versionName : '1.235',
-				#ts : 3954999602
+				#name : 'AIAssistantMergeViewApp'
 			},
 			{
-				#name : 'AIAssistantUIApp',
-				#versionName : '1.274',
-				#ts : 3958476304
+				#name : 'AIAssistantUIApp'
 			},
 			{
-				#name : 'AIProviderGeminiApp',
-				#versionName : '1.255',
-				#ts : 3956129721
+				#name : 'AIProviderGeminiApp'
 			},
 			{
-				#name : 'AIProviderGeminiUIApp',
-				#versionName : '1.239',
-				#ts : 3955003202
+				#name : 'AIProviderGeminiUIApp'
 			},
 			{
-				#name : 'AIProviderOpenAIResponsesApp',
-				#versionName : '1.242',
-				#ts : 3955345231
+				#name : 'AIProviderOpenAIResponsesApp'
 			},
 			{
-				#name : 'AIProviderOpenAIResponsesUIApp',
-				#versionName : '1.256',
-				#ts : 3956216129
+				#name : 'AIProviderOpenAIResponsesUIApp'
 			}
 		],
-		#name : 'VAST AI Assistant (VAST 15.0)',
-		#versionName : '1.275'
+		#conditions : [
+			{
+				#condition : 'true',
+				#requiredMaps : [
+					{
+						#name : 'z.ST: JSON Support',
+						#versionName : 'V 14.1.0  [580]',
+						#ts : 3930819163
+					},
+					{
+						#name : 'z.ST: Regex',
+						#versionName : 'V 14.1.0  [580]',
+						#ts : 3930819165
+					},
+					{
+						#name : 'z.ST: Server Smalltalk (SST) - HTTP',
+						#versionName : 'V 14.1.0  [580]',
+						#ts : 3930819166
+					},
+					{
+						#name : 'z.ST: SUnit',
+						#versionName : 'V 14.1.0  [580]',
+						#ts : 3930819170
+					},
+					{
+						#name : 'z.ST: Refactoring Browser',
+						#versionName : 'V 14.1.0  [580]',
+						#ts : 3930819165
+					}
+				]
+			}
+		]
 	}
 ]

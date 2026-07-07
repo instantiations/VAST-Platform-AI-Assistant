@@ -28,6 +28,19 @@ AIChatWindow class >> desiredWindowSize [
 	^self windowRatio * (700 @ 600)
 ]
 
+{ #category : 'ET-Internal',
+  #vaVisibility : 'private' }
+AIChatWindow class >> fileNameFromPathString: aString [
+
+	| theFileNameAndExtension indexOfExtension |
+
+	theFileNameAndExtension := aString abrSimpleFilename.
+	indexOfExtension := theFileNameAndExtension lastIndexOf: $..
+	^indexOfExtension > 0
+		ifTrue: [theFileNameAndExtension copyFrom: 1 to: (indexOfExtension - 1)]
+		ifFalse: [theFileNameAndExtension]
+]
+
 { #category : 'Instance Creation' }
 AIChatWindow class >> filePathString: filePathString chat: chat [
 
@@ -37,17 +50,71 @@ AIChatWindow class >> filePathString: filePathString chat: chat [
 { #category : 'Instance Creation' }
 AIChatWindow class >> fromFile: pathString [
 
-	| fileStream |
+	| fileStream chat |
 
 	fileStream := CfsReadFileStream open: pathString.
-	^ [ self filePathString: pathString chat: (Compiler evaluate: fileStream contents) ]
-		ensure: [ fileStream close ]
+	^ [ 
+		chat := Compiler evaluate: fileStream contents.
+		(chat isKindOf: CompilerError) ifTrue: [
+			(CwMessagePrompter confirm: 'A compiler error occurred while reading the file. Would you like to open a workspace to investigate the issue?') ifTrue: [
+				| ws |
+				ws := StsWorkspace new.
+				ws label: 'Compiler Error in ' , pathString.
+				ws open.
+				ws textWidget setString: fileStream contents.
+				ws compilerError: chat
+			].
+			^ nil ].
+		chat title: (self fileNameFromPathString: pathString).
+		self filePathString: pathString chat: chat
+	] ensure: [ fileStream close ]
 ]
 
 { #category : 'Instance Creation' }
 AIChatWindow class >> new [
 
 	^ self chat: AIChat new
+]
+
+{ #category : 'Operations' }
+AIChatWindow >> acceptNewUserMessage: aString [
+	"Send aString as a user message in the chat of this window. 
+	 Return true if the user message can be sent, false when the chat is busy generating."
+
+	chat isGenerating
+		ifTrue: [^false]
+		ifFalse: [
+			self sendUserMessage: aString.
+			^true]
+]
+
+{ #category : 'Private',
+  #vaVisibility : 'private' }
+AIChatWindow >> asValidWindowsFileName: aString [
+	"Answer a copy of the receiver with any invalid charcters for Windows or Unix platforms converted to $_ .
+	 
+	 In addition, since the filesystem interface does not support UnicodeString yet, filter all characters beyond codepoint 256"
+
+	^(aString collect: [:e |
+		(e codePoint > 255 or: [CfsNTFSPath isIllegalCharacter: e]) ifTrue: [$_] ifFalse: [e]])
+			asReducedString
+]
+
+{ #category : 'User Interface' }
+AIChatWindow >> chatIsAvailableForUserMessage [
+	"Returns true if this is a visible window and has a chat that is not actively generating."
+	
+	^self shell notNil
+		and: [self shell isDestroyed not 
+			and: [chat notNil 
+				and: [chat isGenerating not]]]
+]
+
+{ #category : 'Private',
+  #vaVisibility : 'private' }
+AIChatWindow >> chatTitle [
+
+	^chat ifNotNil: [chat title]
 ]
 
 { #category : 'Private',
@@ -200,11 +267,14 @@ AIChatWindow >> keyPressedInInputWidget: widget clientData: clientData callData:
 				self sendUserMessage]
 ]
 
-{ #category : 'User Interface',
-  #vaVisibility : 'private' }
+{ #category : 'User Interface' }
 AIChatWindow >> label [
 
-	^ 'AI Assistant'
+	| baseLabel |
+
+	baseLabel := 'AI Assistant'.
+	self chatTitle ifNotNil: [:chatTitle | baseLabel := baseLabel , ' - ' , chatTitle].
+	^baseLabel
 ]
 
 { #category : 'Operations',
@@ -229,7 +299,7 @@ AIChatWindow >> menuActionChatOpen [
 	(CwFileSelectionPrompter new
 			fileExtension: '.gc';
 			prompt) ifNotNil: [ :selectedPathString |
-				(self class fromFile: selectedPathString) open ].
+				(self class fromFile: selectedPathString) ifNotNil:[:w | w open]].
 ]
 
 { #category : 'Operations',
@@ -244,11 +314,18 @@ AIChatWindow >> menuActionChatSave [
   #vaVisibility : 'private' }
 AIChatWindow >> menuActionChatSaveAs [
 
-	filePathString :=
+	| prompter |
+
+	prompter :=
 		CwFileSelectionPrompter new
 			accessType: XmSAVE;
-			fileExtension: '.gc';
-			prompt.
+			fileExtension: '.gc'.
+
+	self chatTitle ifNotNil: [:chatTitle | | defaultFileName |
+		defaultFileName := (self asValidWindowsFileName: chatTitle) , '.gc'.
+		prompter fileName: defaultFileName].
+
+	filePathString := prompter prompt.
 	filePathString ifNotNil: [:selectedPathString | self saveToFile: selectedPathString]
 ]
 
@@ -486,10 +563,17 @@ AIChatWindow >> saveToFile: pathString [
 AIChatWindow >> sendUserMessage [
 
 	inputWidget value ifNotEmpty: [
-		chatWidget scrollToNextUserMessage.
-		chat sendUserMessage: inputWidget value.
-		self updateInput ].
+		self sendUserMessage: inputWidget value ].
 	inputWidget value: ''.
+]
+
+{ #category : 'Private',
+  #vaVisibility : 'private' }
+AIChatWindow >> sendUserMessage: aString [
+
+	chatWidget scrollToNextUserMessage.
+	chat sendUserMessage: aString.
+	self updateInput
 ]
 
 { #category : 'User Interface',
@@ -514,6 +598,7 @@ AIChatWindow >> targetTextWidget: widget [
 AIChatWindow >> update: aParameter [
 
 	aParameter = #textSegments ifTrue: [self updateStatusLine].
+	aParameter = #title ifTrue: [self shell notNil ifTrue: [ self updateLabel ] ].
 	aParameter = #generating ifTrue: [self updateInput].
 	aParameter = #registeredModelsChanged ifTrue: [self registeredModelsChanged].
 	super update: aParameter

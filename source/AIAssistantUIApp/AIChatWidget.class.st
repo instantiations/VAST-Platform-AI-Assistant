@@ -144,10 +144,12 @@ AIChatWidget >> drawBottomBackground: dc [
 { #category : 'Not categorized' }
 AIChatWidget >> drawLeafTextBlock: textBlock dc: dc [
 
+	| drawnAreas |
+
 	dc fontSet: (textBlock isHeadingBlock ifTrue: [ self class headingFontSets at: (textBlock level min: self class headingFontSets size) ] ifFalse: [ self class baseFontSet ]).
 	dc ascent: dc fontSet proportional normal ascent.
 	dc descent: dc fontSet proportional normal descent.
-	dc withTextMonospaced: false do: [
+	^ dc withTextMonospaced: false do: [
 		dc withTextBolded: textBlock isHeadingBlock do: [
 			dc withTextItalicized: false do: [
 				| startY |
@@ -155,9 +157,10 @@ AIChatWidget >> drawLeafTextBlock: textBlock dc: dc [
 				startY := dc y.
 				dc withLeftInsetIncreasedBy: (textBlock isCodeBlock ifTrue: [ dc leftInsetCodeBlockIncrement ] ifFalse: [ 0 ]) do: [
 					dc x: dc leftInset.
-					self drawTextElementOfTextBlock: textBlock dc: dc ].
+					drawnAreas := self drawTextElementOfTextBlock: textBlock dc: dc ].
 				textBlock isCodeBlock ifTrue: [
-					self drawMarkerTextBlockCode: textBlock startY: startY dc: dc ] ] ] ]
+					self drawMarkerTextBlockCode: textBlock startY: startY dc: dc ].
+				drawnAreas ] ] ]
 ]
 
 { #category : 'Not categorized' }
@@ -281,6 +284,25 @@ AIChatWidget >> drawTextBlockCode: textBlock dc: dc [
 
 	dc withLineSpacing: (self class baseFontSet proportional normal height * (25 / 1000)) rounded do: [
 		self drawLeafTextBlock: textBlock dc: dc ]
+]
+
+{ #category : 'Not categorized' }
+AIChatWidget >> drawTextBlockCodeChanges: codeChanges dc: dc [
+
+	| outerStartY markerRectangle padding drawnAreas maxEndX |
+
+	outerStartY := dc y.
+	padding := (self class baseFontSet proportional normal height * (35 / 100)) rounded.
+	dc y: dc y + padding.
+	dc withLeftInsetIncreasedBy: padding do: [
+		dc withRightInsetIncreasedBy: padding do: [
+			drawnAreas := self drawLeafTextBlock: codeChanges dc: dc ] ].
+	dc y: dc y + padding.
+	maxEndX := drawnAreas ifEmpty: [ dc leftInset ] ifNotEmpty: [
+		drawnAreas inject: drawnAreas first right into: [ :max :drawnArea | max max: drawnArea right ] ].
+	dc gc setForeground: (dc pixmap getPalette nearestPixelValue: Color lightGray).
+	markerRectangle := Rectangle origin: dc leftInset @ outerStartY corner: ((maxEndX + padding) min: drawingArea width - dc rightInset) @ dc y.
+	dc pixmap drawRectangles: dc gc rectangles: { markerRectangle translateBy: 0 @ dc yOffset }.
 ]
 
 { #category : 'Not categorized' }
@@ -469,17 +491,18 @@ AIChatWidget >> drawTextElementLink: textElement dc: dc [
 { #category : 'Not categorized' }
 AIChatWidget >> drawTextElementOfTextBlock: textBlock dc: dc [
 
-	| textElement |
+	| textElement drawnAreas |
 
 	textElement := textBlock textElement.
 	self drawMiddleBackground: dc.
 	self drawPendingListMarkers: dc.
-	self drawTextElement: textElement dc: dc.
+	drawnAreas := self drawTextElement: textElement dc: dc.
 	selectionEndPoint ifNotNil: [
 		(dc x >= dc selectionStartX and: [ dc x < dc selectionEndX ]) ifTrue: [
 			dc selectionStream newLine ] ].
 	dc y: dc y + dc ascent + dc descent + dc lineSpacing.
 	self updateSelectionStartEndX: dc.
+	^ drawnAreas
 ]
 
 { #category : 'Not categorized' }
@@ -528,6 +551,12 @@ AIChatWidget >> drawTextSegmentError: textSegment dc: dc [
 
 { #category : 'Not categorized' }
 AIChatWidget >> drawTextSegmentFunctionCallPermission: textSegment dc: dc [
+
+	self drawTextBlocksOfTextSegment: textSegment dc: dc
+]
+
+{ #category : 'Not categorized' }
+AIChatWidget >> drawTextSegmentModelCodeChanges: textSegment dc: dc [
 
 	self drawTextBlocksOfTextSegment: textSegment dc: dc
 ]

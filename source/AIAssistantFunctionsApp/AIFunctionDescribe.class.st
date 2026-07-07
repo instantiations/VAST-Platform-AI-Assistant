@@ -14,6 +14,12 @@ AIFunctionDescribe >> applyFunctionTo: arguments in: context [
 	^self describeGlobal: global
 ]
 
+{ #category : 'Accessing' }
+AIFunctionDescribe >> category [
+
+	^ 'Code Exploration'
+]
+
 { #category : 'Not categorized' }
 AIFunctionDescribe >> describeApplication: anApplicationAssoc [
 
@@ -29,6 +35,7 @@ AIFunctionDescribe >> describeClass: aClassAssoc [
 	^EsOrderedDictionary new
 		at: 'class' put: aClassAssoc key asString;
 		at: 'super' put: (aClassAssoc value superclass ifNotNil: [ :superclass | superclass name asString ]);
+		at: 'pool_dictionaries' put: aClassAssoc value sharedPoolNames;
 		at: 'application' put: aClassAssoc value controller name asString;
 		yourself
 ]
@@ -120,5 +127,5 @@ AIFunctionDescribe >> parameters [
 	^ {
 		AIFunctionParameterRequired name: 'entity'
 			type: AIFunctionParameterTypeString new
-			description: 'Entity to describe - Case insentive' }
+			description: 'Entity to describe - Case insensitive.' }
 ]

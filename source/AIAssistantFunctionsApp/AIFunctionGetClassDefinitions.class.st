@@ -12,6 +12,12 @@ AIFunctionGetClassDefinitions >> applyFunctionTo: arguments in: context [
 		forClassesNamed: (arguments at: 'classes')
 ]
 
+{ #category : 'Accessing' }
+AIFunctionGetClassDefinitions >> category [
+
+	^ 'Code Exploration'
+]
+
 { #category : 'Not categorized' }
 AIFunctionGetClassDefinitions >> description [
 

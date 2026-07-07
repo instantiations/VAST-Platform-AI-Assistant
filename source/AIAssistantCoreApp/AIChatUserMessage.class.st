@@ -3,7 +3,8 @@ Class {
 	#superclass : 'Object',
 	#instVars : [
 		'message',
-		'generatedContents'
+		'generatedContents',
+		'codeChanges'
 	],
 	#category : 'AIAssistantCoreApp'
 }
@@ -17,13 +18,32 @@ AIChatUserMessage class >> message: message [
 { #category : 'Not categorized' }
 AIChatUserMessage class >> message: message generatedContents: generatedContents [
 
-	^ self basicNew initializeWithMessage: message generatedContents: generatedContents
+	^ self message: message generatedContents: generatedContents codeChanges: OrderedCollection new
+]
+
+{ #category : 'Not categorized' }
+AIChatUserMessage class >> message: message generatedContents: generatedContents codeChanges: codeChanges [
+
+	^ self basicNew initializeWithMessage: message generatedContents: generatedContents codeChanges: codeChanges
 ]
 
 { #category : 'Not categorized' }
 AIChatUserMessage >> addNewGeneratedContent [
 
 	generatedContents add: AIChatGeneratedContent new
+]
+
+{ #category : 'Accessing' }
+AIChatUserMessage >> codeChanges [
+
+	^ codeChanges
+]
+
+{ #category : 'Not categorized' }
+AIChatUserMessage >> codeChangesText [
+
+	^ codeChanges ifEmpty: [ nil ] ifNotEmpty: [
+		AIChatTextSegmentModelCodeChanges changes: codeChanges ]
 ]
 
 { #category : 'Not categorized' }
@@ -33,11 +53,12 @@ AIChatUserMessage >> generatedContents [
 ]
 
 { #category : 'Not categorized' }
-AIChatUserMessage >> initializeWithMessage: initialMessage generatedContents: initialGeneratedContents [
+AIChatUserMessage >> initializeWithMessage: initialMessage generatedContents: initialGeneratedContents codeChanges: changes [
 
 	super initialize.
 	message := initialMessage.
 	generatedContents := initialGeneratedContents.
+	codeChanges := changes
 ]
 
 { #category : 'Not categorized' }

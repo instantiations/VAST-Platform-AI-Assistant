@@ -50,6 +50,12 @@ AIFunctionFindReferences >> applyFunctionTo: arguments in: context [
 				ifFalse: [methods collect: [:method | method aiJSONWithoutSource]])
 ]
 
+{ #category : 'Accessing' }
+AIFunctionFindReferences >> category [
+
+	^ 'Code Exploration'
+]
+
 { #category : 'Not categorized' }
 AIFunctionFindReferences >> description [
 

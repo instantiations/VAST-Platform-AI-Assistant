@@ -1,4 +1,4 @@
 Package {
 	#name : 'AIAssistantFunctionsApp',
-	#vaPrerequisites : ['AIAssistantCoreApp','RegexCoreApp','StsPowerTools','SUnit']
+	#vaPrerequisites : ['AIAssistantCoreApp','RBChangeObjectsApp','RegexCoreApp','StsPowerTools','SUnit']
 }
