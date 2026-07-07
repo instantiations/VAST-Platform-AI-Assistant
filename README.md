@@ -14,30 +14,36 @@ The VAST Platform AI Assistant can be used with different Large Language Models 
 
 ### Prerequisites
 
-* [VAST Platform](https://www.instantiations.com/vast-platform/) version 14.1 or later.
+* [VAST Platform](https://www.instantiations.com/vast-platform/) version 14.1 or 15.0.
 * OpenSSL libraries installed and [configured in VAST](https://www.instantiations.com/vast-support/documentation/FAQ/index.html#page/FAQ/va09002.html).
 
 ### Install and Load
 
+#### First time installation
+
 * Clone, or [download a ZIP archive](https://github.com/instantiations/VAST-Platform-AI-Assistant/archive/refs/heads/main.zip) of, this repository.
 * In VAST, load [Tonel](https://www.instantiations.com/vast-support/documentation/1410/#page/sg/tonel/tnl01-index.519.01.html) support: from the System Transcript window, use the menu item *Tools › Load/Unload Features* and load the ‘ST: Tonel Support’ feature.
 * From the Configuration Maps Browser, use the menu item *Names › Import › Load Configuration Maps from Tonel Repository* and select the root directory of the local clone or extracted archive of the repository.
-* In the window that opens, add and load the config map for the AI Assistant that corresponds to your version of VAST, either ‘VAST AI Assistant (VAST 14.1)’ or ‘VAST AI Assistant (VAST 15.0)’.
+* In the window that opens, add and load the config map for the AI Assistant that corresponds to your version of VAST, either `VAST AI Assistant (VAST 14.1)` or `VAST AI Assistant (VAST 15.0)`.
 * Once loaded, open *AI Assistant* from the System Transcript window’s *Tools* menu. Follow the next section to add your configuration.
 
+#### Previous versions installed or in your ENVY Library
+
+Due to a reorganization of applications and classes, some components cannot be loaded using the default settings through the UI menu.
+
+You can load the configuration map by following these steps:
+
+1. Unload the `VAST AI Assistant (VAST 15.0)` or `VAST AI Assistant (VAST 14.1)` configuration map from the Configuration Maps Browser.
+2. Load the configuration map by evaluating the following script in Workspace:
+
+```smalltalk
+| loader |
+loader := TonelLoader readFromPath: (CfsPath named: 'Z:\Common\Development\Repositories\VAST-Platform-AI-Assistant').
+loader doNotUseBaseEditions; useSpecifiedVersion: '1.3.0'.
+loader loadConfigurationMapNamed: 'VAST AI Assistant (VAST 15.0)' "or VAST AI Assistant (VAST 14.1)"
+```
+
 ### Configure
-
-* From the AI Assistant window, select **Options › Settings** to open the configuration panel. Note that at least one provider and one model must be configured to use the assistant.
-* Under **Providers**, select your provider and enter its API key. If your preferred provider is not listed, click **+** to add its connection details (e.g., for local LLMs or custom OpenAI-compatible gateways).
-* Under **Models**, add the models you wish to use. The assistant will automatically populate the available options for each active provider.
-* Under **MCP Servers**, connect external Model Context Protocol (MCP) servers to dynamically extend the assistant's capabilities with custom tools.
-* Under **Functions**, define the security policies (`Allow`, `Disallow`, or `Ask`) for executing sensitive tools on your system.
-* If multiple models are configured, you can switch between them at any time via the **Options › Model** menu in the main window.
-* You are now ready to begin collaborating with the assistant to analyze code, generate implementations, and automate your VAST development workflow.
-
-<p align="center">
-<img src="./docs/images/Tools-Control.png" width=500>
-</p>
 
 #### Configuring a Proxy (optional)
 
