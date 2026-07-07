@@ -140,7 +140,7 @@ New and expanded capabilities include:
 
 The [Model Context Protocol (MCP)](https://modelcontextprotocol.io) is an open standard that enables developers to build secure, bidirectional connections between AI models and data sources or tools.
 
-The VAST Platform AI Assistant supports connecting to external MCP servers using the HTTP with Server-Sent Events (SSE) transport protocol. By integrating external MCP servers, you can dynamically extend the assistant's capabilities with custom tools tailored to your environment, databases, APIs, or local services.
+The VAST Platform AI Assistant supports connecting to external MCP servers using the Streamable HTTP transport protocol. By integrating external MCP servers, you can dynamically extend the assistant's capabilities with custom tools tailored to your environment, databases, APIs, or local services.
 
 ### Configuration
 
@@ -150,7 +150,7 @@ To register a new MCP server:
 2. Select **MCP Servers** in the sidebar.
 3. Click the **`+`** button at the bottom of the server list to add a new server entry.
 4. Enter the **Name** for the server (e.g., `Sample MCP Server`) and its **URL** (the MCP Streaming endpoint, e.g., `http://localhost:3000/mcp`).
-5. The assistant will establish a connection to the server, discover its tools, and automatically register them.
+5. Select **Functions** in the sidebar and press the **Reset** button, the assistant will establish a connection to the server, discover its functions and add them to the list of functions.
 
 <p align="center">
 <img src="./docs/images/MCP-Setup.png" alt="MCP Server Configuration Settings" width="600">
