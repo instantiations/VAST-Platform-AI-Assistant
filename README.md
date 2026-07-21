@@ -54,6 +54,15 @@ loader loadConfigurationMapNamed: 'VAST AI Assistant (VAST 15.0)' "or VAST AI As
   	proxyUrl: 'https://proxy.local:8080' sstAsUrl
   ```
 
+  If the proxy URL uses the ‘http’ rather than ‘https’ scheme, you need to set the proxy differently to allow for tunneling:
+
+  ```smalltalk
+  SstHttpClient    
+  	initializeTransportScheme: 'httpsl'
+  	forHttpsTunnelThrough: 'proxy.local:8080' "specify host and port only"
+  	proxyAuth: nil
+  ```
+
 ## Features Overview
 
 The AI Assistant allows you to interact with multiple AI models directly from your VAST platform IDE. The AI model is connected to your development image and has access to all source code. In addition, you can supply additional information to the model by adding files to the conversation. This can be useful to, for example, share stack dumps with the AI when trying to analyze the origin of walkbacks.
