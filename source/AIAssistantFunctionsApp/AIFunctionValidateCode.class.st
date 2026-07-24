@@ -4,15 +4,14 @@ Class {
 	#category : 'AIAssistantFunctionsApp'
 }
 
-{ #category : 'Not categorized' }
+{ #category : 'Actions' }
 AIFunctionValidateCode >> applyFunctionTo: arguments in: context [
-
-	| code |
-
-	code := arguments at: 'code'.
-	^ (self isMethodCode: code)
-		ifTrue: [ self validate: code from: (code indexOf: $>) + 2 forEvaluation: false context: context ]
-		ifFalse: [ self validate: code from: 1 forEvaluation: true context: context ]
+	| isClassSide |
+	
+	isClassSide := self isClassSideParametervalue: (arguments at: 'side' ifAbsent: [ 'instance' ]).
+	isClassSide ifNil:[ ^EsOrderedDictionary with: 'error' -> ('Invalid value for parameter ''side'': %1' bindWith: (arguments at: 'side')) ].
+	
+	^  self validate: (arguments at: 'code') forEvaluation: true context: context targetClassName: (arguments at: 'class' ifAbsent: [nil]) isClassSide: isClassSide
 ]
 
 { #category : 'Accessing' }
@@ -21,39 +20,29 @@ AIFunctionValidateCode >> category [
 	^ 'Testing & Debugging'
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIFunctionValidateCode >> description [
 
-	^ 'Validates syntax and checks for sent selectors with no known implementors.'
+	^ 'Validates syntax and checks for sent selectors with no known implementors of a Smalltalk expression/script. Do not use this to validate full method definitions. The method modification tools (add_method, change_method) automatically perform their own validation.'
 ]
 
-{ #category : 'Not categorized' }
-AIFunctionValidateCode >> isMethodCode: aString [
-
-	| line |
-	aString isEmpty ifTrue: [^nil].
-	line := aString lines first.
-	^self methodMatcher matches: line
-]
-
-{ #category : 'Not categorized',
-  #vaVisibility : 'private' }
-AIFunctionValidateCode >> methodMatcher [
-
-	^'^(\w+)\s*(class)?\s*>>\s*(.+)$' asRegex
-]
-
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIFunctionValidateCode >> name [
 
 	^ 'validate_code'
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIFunctionValidateCode >> parameters [
 
 	^ {
 		AIFunctionParameterRequired name: 'code'
 			type: AIFunctionParameterTypeString new
-			description: 'The VAST Smalltalk code' }
+			description: 'The VAST Smalltalk code'.
+		AIFunctionParameterOptional name: 'class'
+			type: AIFunctionParameterTypeString new
+			description: 'The name of the class the code is intended for, used to resolve instance and class variables.'.
+		AIFunctionParameterOptional name: 'side'
+			type: AIFunctionParameterTypeString new
+			description: '''instance'' for an instance method/expression, ''class'' for a class method/expression. Defaults to ''instance''.' }
 ]

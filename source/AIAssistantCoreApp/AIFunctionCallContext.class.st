@@ -22,6 +22,13 @@ AIFunctionCallContext >> addRefactoryChange: change [
 ]
 
 { #category : 'Accessing' }
+AIFunctionCallContext >> codeChanges [
+
+	^codeChanges
+	
+]
+
+{ #category : 'Accessing' }
 AIFunctionCallContext >> filePaths [
 
 	^ filePaths

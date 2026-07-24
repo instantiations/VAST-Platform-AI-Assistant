@@ -7,6 +7,7 @@ AIAddMethodChange >> displayInMergeBrowser: aBrowser [
 	| origSource newSource |
 	origSource := self originalMethodSourceWithCategoriesFor: self selector.
 	newSource := self formattedSource: self source withCategories: self protocols.
+	newSource := EmTextCompatibilityFilter sourceFilter filter: newSource.
 	aBrowser updateDiffViewLeft: origSource right: newSource.
 ]
 

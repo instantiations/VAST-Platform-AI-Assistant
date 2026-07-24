@@ -49,7 +49,7 @@ AIMCPServerToolFunction >> initializeWithServer: initialServer toolName: initial
 { #category : 'Not categorized' }
 AIMCPServerToolFunction >> name [
 
-	^ 'mcp_%1:%2' bindWith: self server name with: self toolName
+	^ '%1:%2' bindWith: self server functionNamePrefix with: self toolName
 ]
 
 { #category : 'Not categorized' }

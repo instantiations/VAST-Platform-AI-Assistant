@@ -36,6 +36,14 @@ AIRefactoryChangesBrowser class >> openOn: aCollectionOfRefactoryChanges [
 
 { #category : 'Internal',
   #vaVisibility : 'private' }
+AIRefactoryChangesBrowser >> actualClass [
+	"Answers the class of the selected method. Nil if no method was selectd"
+
+	^selectedChange ifNotNil: [selectedChange changeClass]
+]
+
+{ #category : 'Internal',
+  #vaVisibility : 'private' }
 AIRefactoryChangesBrowser >> alignEditors [
 	"Inject empty annotations based on the padding calculated by the comparer, with a light grey background."
 	comparer ifNil: [^self].
@@ -113,6 +121,15 @@ AIRefactoryChangesBrowser >> browseHierarchy [
 			((self browser: #classes) on: selectedClass) 
 				owningImage: self owningImage;  
 				open]]
+]
+
+{ #category : 'Internal',
+  #vaVisibility : 'private' }
+AIRefactoryChangesBrowser >> caProvideContextFor: aTextWidget [
+	
+	| contextClass |
+	contextClass := System globalNamespace classAt: #StsCodeAssistBrowserContext ifAbsent: [^nil].
+	^contextClass on: self
 ]
 
 { #category : 'Actions' }
@@ -518,6 +535,16 @@ AIRefactoryChangesBrowser >> highlightAllDifferences [
 
 { #category : 'Internal',
   #vaVisibility : 'private' }
+AIRefactoryChangesBrowser >> implementors [
+	"Browse the implementors of the selected method name."
+
+	selectedChange ifNotNil: [
+		selectedChange isMethodChange
+			ifTrue: [self owningImage allMethodsNamed: selectedChange selector]]
+]
+
+{ #category : 'Internal',
+  #vaVisibility : 'private' }
 AIRefactoryChangesBrowser >> includeEditMenu [
 	^ false
 ]
@@ -540,20 +567,35 @@ AIRefactoryChangesBrowser >> indicatorRange: startChar to: endChar on: editor [
 	].
 ]
 
-{ #category : 'Initialization',
-  #vaVisibility : 'private' }
+{ #category : 'Initialization' }
 AIRefactoryChangesBrowser >> initializeAfterRealize [
 	"The widgets are now fully created. Populate them with initial data."
 
+	| spt |
 	super initializeAfterRealize.
 
 	"Apply Smalltalk syntax highlighting first"
 	leftEditor lexerSmalltalk.
 	rightEditor lexerSmalltalk.
 	
+	"Configure word characters so double-clicking selects keywords properly"
+	leftEditor stsConfigureWordCharacters.
+	rightEditor stsConfigureWordCharacters.
+	
 	"Ensure horizontal scroll width adjusts to the longest visible line"
 	leftEditor setScrollWidthTracking: 1.
 	rightEditor setScrollWidthTracking: 1.
+
+	"Inject code assist"
+	spt := Smalltalk classAt: #StsPowerTools ifAbsent: [nil].
+	(spt notNil and: [spt enabled]) ifTrue: [
+		leftEditor notNil ifTrue: [
+			(self stsRequestCodeAssistOn: leftEditor contextProvider: self)
+				ifNotNil: [:codeAssist | codeAssist connect]].
+		rightEditor notNil ifTrue: [
+			(self stsRequestCodeAssistOn: rightEditor contextProvider: self)
+				ifNotNil: [:codeAssist | codeAssist connect]].
+	].
 
 	self showEmptyEditors
 ]
@@ -594,6 +636,27 @@ AIRefactoryChangesBrowser >> initializeWithChanges: aCollection [
 	changes := OrderedCollection withAll: aCollection.
 	showOnlyLastChanges := true.
 	self initializeVisibleChanges.
+]
+
+{ #category : 'Internal',
+  #vaVisibility : 'private' }
+AIRefactoryChangesBrowser >> isMethodSelected [
+	
+	^self isOneMethodSelected
+]
+
+{ #category : 'Internal',
+  #vaVisibility : 'private' }
+AIRefactoryChangesBrowser >> isOneClassSelected [
+
+	^self actualClass notNil
+]
+
+{ #category : 'Internal',
+  #vaVisibility : 'private' }
+AIRefactoryChangesBrowser >> isOneMethodSelected [
+
+	^selectedChange notNil and: [selectedChange isMethodChange]
 ]
 
 { #category : 'Internal',
@@ -833,6 +896,36 @@ AIRefactoryChangesBrowser >> scNotification: aWidget clientData: anObject callDa
 			isScrolling := false]
 ]
 
+{ #category : 'Internal',
+  #vaVisibility : 'private' }
+AIRefactoryChangesBrowser >> selectedClass [
+
+	^self actualClass
+]
+
+{ #category : 'Internal',
+  #vaVisibility : 'private' }
+AIRefactoryChangesBrowser >> selectedClasses [
+
+	^self actualClass ifNotNil: [:c | Array with: c] ifNil: [#()]
+]
+
+{ #category : 'Internal',
+  #vaVisibility : 'private' }
+AIRefactoryChangesBrowser >> selectedMethod [
+	
+	^(self isOneMethodSelected and: [self actualClass notNil])
+		ifTrue: [self actualClass compiledMethodAt: selectedChange selector ifAbsent: [nil]]
+		ifFalse: [nil]
+]
+
+{ #category : 'Internal',
+  #vaVisibility : 'private' }
+AIRefactoryChangesBrowser >> selectedMethods [
+
+	^self selectedMethod ifNotNil: [:m | Array with: m] ifNil: [#()]
+]
+
 { #category : 'Initialization',
   #vaVisibility : 'private' }
 AIRefactoryChangesBrowser >> setupIndicatorsFor: anEditor [
@@ -928,44 +1021,55 @@ AIRefactoryChangesBrowser >> stsDefaultToolBar [
 		yourself
 ]
 
-{ #category : 'Internal' }
+{ #category : 'Internal',
+  #vaVisibility : 'private' }
+AIRefactoryChangesBrowser >> stsIsShowingParseTreeFriendlyText [
+
+	^true
+]
+
+{ #category : 'Internal',
+  #vaVisibility : 'private' }
 AIRefactoryChangesBrowser >> stsItemColorBlockFor: widgetName [
-	widgetName == #applications ifTrue: [
-		^[:app | (StsApplicationManager stsCacheEntriesFor: app) value]
-	].
-	
+
+	widgetName == #applications
+		ifTrue: [^[:app | (StsApplicationManager stsCacheEntriesFor: app) value]].
+
 	widgetName == #classNames
 		ifTrue: [
 			^[:clName | | colorUnreleasedClasses cl |
 				cl := Smalltalk at: (self baseClassNameFor: clName) asSymbol ifAbsent: [nil].
 				(StsPowerTools useItemColors
 					and: [(colorUnreleasedClasses := StsPowerTools colorUnreleasedClasses) notNil])
-					ifTrue: [
-						cl isNil 
-							ifTrue: [
-								selectedApplication isScratch
-									ifTrue: [StsPowerTools colorScratchClasses]
-									ifFalse: [colorUnreleasedClasses]
-							]
-							ifFalse: [
-								(EtTools managerInterface isClassReleased: cl in: selectedApplication)
-									ifTrue: [nil]
-									ifFalse: [
-										selectedApplication isScratch
-											ifTrue: [StsPowerTools colorScratchClasses]
+						ifTrue: [
+							cl isNil
+								ifTrue: [
+									selectedApplication isScratch
+										ifTrue: [StsPowerTools colorScratchClasses]
+										ifFalse: [colorUnreleasedClasses]]
+								ifFalse: [
+									(EtTools managerInterface
+										isClassReleased: cl
+										in: selectedApplication)
+											ifTrue: [nil]
 											ifFalse: [
-												(cl isEditionIn: selectedApplication)
-													ifTrue: [colorUnreleasedClasses]
-													ifFalse: [StsPowerTools colorUnreleasedClassVersions]]]]]
-					ifFalse: [nil]]].
-					
+												selectedApplication isScratch
+													ifTrue: [StsPowerTools colorScratchClasses]
+													ifFalse: [
+														(cl isEditionIn: selectedApplication)
+															ifTrue: [colorUnreleasedClasses]
+															ifFalse: [
+																StsPowerTools
+																	colorUnreleasedClassVersions]]]]]
+						ifFalse: [nil]]].
+
 	widgetName == #changesForClass
 		ifTrue: [
 			^[:change |
 				((change isKindOf: RemoveClassChange) or: [change isKindOf: RemoveMethodChange])
 					ifTrue: [Color red]
 					ifFalse: [Color darkGreen]]].
-					
+
 	^super stsItemColorBlockFor: widgetName
 ]
 

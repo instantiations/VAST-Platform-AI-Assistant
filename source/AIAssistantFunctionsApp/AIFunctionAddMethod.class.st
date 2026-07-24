@@ -19,6 +19,8 @@ AIFunctionAddMethod >> applyFunctionTo: arguments in: context [
 	| className source appName app isClassSide categories isPrivate change validationResult |
 	
 	className := arguments at: 'class'.	
+	(self checkClassName: className) ifNotNil: [:errorResult | ^ errorResult ].
+		
 	isClassSide := self isClassSideParametervalue: (arguments at: 'side' ifAbsent: [ 'instance' ]).
 	isClassSide ifNil:[ ^EsOrderedDictionary with: 'error' -> ('Invalid value for parameter ''side'': %1' bindWith: (arguments at: 'side')) ].
 	source := (arguments at: 'source') asSBString ifNil:[ ^EsOrderedDictionary with: 'error' -> ('Invalid characters in source. Only extended ASCII allowed.' ) ]. 
@@ -26,7 +28,7 @@ AIFunctionAddMethod >> applyFunctionTo: arguments in: context [
 	isPrivate := arguments at: 'is_private' ifAbsent: [ false ].
 	appName := arguments at: 'application' ifAbsent: [ nil ].
 	
-	validationResult := self validate: source from: 1 forEvaluation: false context: context.
+	validationResult := self validate: source forEvaluation: false context: context targetClassName: className isClassSide: isClassSide.
 	(validationResult includesKey: 'error') ifTrue: [ ^ validationResult ].
 	
 	appName
@@ -40,9 +42,9 @@ AIFunctionAddMethod >> applyFunctionTo: arguments in: context [
 	change := AIAddMethodChange compile: source inClassNamed: className asSymbol protocols: (categories ifNil: [ #() ]) application: app isPrivate: isPrivate isClassSide: isClassSide.
 	
 	categories ifNil: [
-		| methodClass existingMethod |
+		| methodClass |
 		methodClass := change changeClass.
-		methodClass ifNotNil: [
+		methodClass ifNotNil: [ | existingMethod |
 			existingMethod := methodClass compiledMethodAt: change selector ifAbsent: [nil].
 			existingMethod ifNotNil: [
 				change protocols: (methodClass categoriesFor: change selector)]]].

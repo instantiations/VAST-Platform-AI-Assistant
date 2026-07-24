@@ -8,6 +8,7 @@ AIAddClassChange >> displayInMergeBrowser: aBrowser [
 	cls := self changeClass.
 	leftString := (cls ifNil: [''] ifNotNil: [cls definitionString]).
 	rightString := self definition.
+	rightString := EmTextCompatibilityFilter sourceFilter filter: rightString.
 	aBrowser updateDiffViewLeft: leftString right: rightString
 ]
 
