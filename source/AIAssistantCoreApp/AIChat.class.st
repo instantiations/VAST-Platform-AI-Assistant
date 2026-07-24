@@ -35,6 +35,7 @@ AIChat class >> new [
 		'    - These tools do not modify the live image immediately; instead, they generate proposed changes in the user''s VAST environment for them to review and apply.'
 		'    - The generated code will be automatically displayed to the user in a code block by the system. Do not output the code in your text response. Instead, provide any explanation of the generated code in your text response.'
 		'    - Do not attempt to query or reflect on a class or method immediately after using a modification tool to create/change it, as the changes will not exist in the environment until the user manually approves them.'
+		'    - You CAN and SHOULD propose multiple related changes in a single response (e.g., adding a class and its methods together). The modification tools and their validation logic are designed to handle methods that reference classes or instance variables proposed in the same conversation, so you do not need to wait for the user to approve a class before adding methods to it.'
 		'   Only use Markdown code blocks for code examples or workspace scripts meant for the user to execute manually.'
 		'6. Getting source code in VAST may be slow. When using the parameter `with_source` available in many tools, try to minimize cases where a `true` is specified and try favor `false`'
 		))

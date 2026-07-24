@@ -1,4 +1,4 @@
 Package {
 	#name : 'AIAssistantCoreApp',
-	#vaPrerequisites : ['CommonWidgets','NeoJSONCoreApp','SstHttpCommunications']
+	#vaPrerequisites : ['CommonWidgets','EsUUIDApp','NeoJSONCoreApp','SstHttpCommunications']
 }

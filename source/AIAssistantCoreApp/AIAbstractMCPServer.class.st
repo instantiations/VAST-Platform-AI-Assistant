@@ -45,6 +45,15 @@ AIAbstractMCPServer >> call: methodName with: methodArguments [
 ]
 
 { #category : 'Not categorized' }
+AIAbstractMCPServer >> functionNamePrefix [
+
+	^ String streamContents: [ :stream |
+		stream nextPutAll: 'mcp_'.
+		self name do: [ :character |
+			stream nextPut: (character isAlphaNumeric ifTrue: [ character asLowercase ] ifFalse: [ $_ ]) ] ]
+]
+
+{ #category : 'Not categorized' }
 AIAbstractMCPServer >> functions [
 
 	^ (self tools collect: [ :tool | AIMCPServerToolFunction server: self toolName: (tool at: 'name') ])

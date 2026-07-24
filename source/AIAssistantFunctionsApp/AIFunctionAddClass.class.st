@@ -4,7 +4,8 @@ Class {
 	#category : 'AIAssistantFunctionsApp'
 }
 
-{ #category : 'Internal' }
+{ #category : 'Internal',
+  #vaVisibility : 'private' }
 AIFunctionAddClass >> applicationParameterDefinition [
 
 	^	AIFunctionParameterOptional name: 'application'
@@ -15,8 +16,7 @@ AIFunctionAddClass >> applicationParameterDefinition [
 { #category : 'Actions' }
 AIFunctionAddClass >> applyFunctionTo: arguments in: context [
 
-	| superclassName className instVars classInstVars classVars pools appName app type keyword
-	  definition change validationResult |
+	| superclassName className instVars classInstVars classVars pools appName app type definition change |
 
 	superclassName := arguments at: 'superclass'.
 	className := arguments at: 'class_name'.
@@ -27,15 +27,92 @@ AIFunctionAddClass >> applyFunctionTo: arguments in: context [
 	type := arguments at: 'class_type' ifAbsent: ['normal'].
 	appName := arguments at: 'application' ifAbsent: [self defaultApplicationNameForClassName: className].
 
+	(self checkClassName: className) ifNotNil: [:errorResult | ^errorResult].
+	(self checkClassType: type) ifNotNil: [:errorResult | ^ errorResult ].
+	(self checkSuperclass: superclassName context: context) ifNotNil: [:errorResult | ^errorResult].
+
+	(#('variableByte' 'variableWord' 'variableLong') includes: type)
+		ifTrue: [
+			instVars isEmpty
+				ifFalse: [ ^EsOrderedDictionary with: 'error' -> ('Instance variables are not supported for class type %1' bindWith: type)]].
+
 	app := self applicationNamed: appName.
 	app ifNil: [^EsOrderedDictionary with: 'error' -> ('Application %1 not found' bindWith: appName)].
 
-	keyword := self classCreationKeywordFor: type.
-
 	definition :=
-		(String streamContents: [:stream |
+		(self
+			definitionStringFor: className
+			type: type
+			superclass: superclassName
+			instVars: instVars
+			classInstVars: classInstVars
+			classVars: classVars
+			pools: pools)
+				asSBString.
+	definition ifNil: [
+		^EsOrderedDictionary with: 'error' -> ('Invalid characters in definition. Only extended ASCII allowed.')].
+
+	change := AIAddClassChange definition: definition application: app.
+	change validateDefinition ifNotNil:[ :string | ^ EsOrderedDictionary with: 'error' -> string ].
+	
+	context addRefactoryChange: change.
+	^EsOrderedDictionary with: 'result' -> 'Successfully created change'
+]
+
+{ #category : 'Accessing' }
+AIFunctionAddClass >> category [
+
+	^ 'Code Modification'
+]
+
+{ #category : 'Internal',
+  #vaVisibility : 'private' }
+AIFunctionAddClass >> checkClassType: type [
+
+	(#('normal' 'variable' 'variableByte' 'variableWord' 'variableLong') includes: type)
+		ifFalse: [^EsOrderedDictionary with: 'error' -> ('Invalid class type %1. Should be one of: normal, variable, variableByte, variableWord, variableLong.' bindWith: type)].
+	^nil
+]
+
+{ #category : 'accessing' }
+AIFunctionAddClass >> checkSuperclass: superclassName context: context [
+
+	superclassName = 'nil' ifTrue: [ ^ nil ].
+
+	(self classNamed: superclassName) ifNotNil: [ ^ nil ].
+	(context notNil and: [ context proposedClasses includes: superclassName ]) ifTrue: [ ^ nil ].
+	
+	^ EsOrderedDictionary with: 'error' -> ('Unknown superclass: %1' bindWith: superclassName)
+]
+
+{ #category : 'Internal',
+  #vaVisibility : 'private' }
+AIFunctionAddClass >> classCreationKeywordFor: type [
+
+	type = 'normal' ifTrue:[ ^ 'subclass:' ].
+	type = 'variable' ifTrue: [ ^ 'variableSubclass:'].
+	type = 'variableByte' ifTrue: [ ^ 'variableByteSubclass:'].
+	type = 'variableWord' ifTrue: [ ^ 'variableWordSubclass:'].
+	type = 'variableLong' ifTrue: [ ^ 'variableLongSubclass:'].
+	Error signal: 'Invalid class creation keyword'
+]
+
+{ #category : 'Internal',
+  #vaVisibility : 'private' }
+AIFunctionAddClass >> defaultApplicationNameForClassName: className [
+
+	^  System defaultApplication name
+]
+
+{ #category : 'Internal',
+  #vaVisibility : 'private' }
+AIFunctionAddClass >> definitionStringFor: className type: type superclass: superclassName instVars: instVars classInstVars: classInstVars classVars: classVars pools: pools [
+
+	| keyword |
+	
+	keyword := self classCreationKeywordFor: type.
+	^	(String streamContents: [:stream |
 			stream
-				cr;
 				nextPutAll: superclassName;
 				space;
 				nextPutAll: keyword;
@@ -65,40 +142,6 @@ AIFunctionAddClass >> applyFunctionTo: arguments in: context [
 				nextPutAll: '    poolDictionaries: '''.
 			pools do: [:each | stream nextPutAll: each; space].
 			stream nextPutAll: ''''])
-				asSBString.
-	definition ifNil:[ ^EsOrderedDictionary with: 'error' -> ('Invalid characters in definition. Only extended ASCII allowed.' ) ]. 
-	validationResult := self validate: definition from: 1 forEvaluation: true context: context.
-	(validationResult includesKey: 'error') ifTrue: [^validationResult].
-
-	change := AIAddClassChange definition: definition application: app.
-	context addRefactoryChange: change.
-
-	^EsOrderedDictionary
-		with: 'result' -> 'Successfully created change'
-]
-
-{ #category : 'Accessing' }
-AIFunctionAddClass >> category [
-
-	^ 'Code Modification'
-]
-
-{ #category : 'Internal',
-  #vaVisibility : 'private' }
-AIFunctionAddClass >> classCreationKeywordFor: type [
-
-	type = 'normal' ifTrue:[ ^ 'subclass:' ].
-	type = 'variable' ifTrue: [ ^ 'variableSubclass:'].
-	type = 'variableByte' ifTrue: [ ^ 'variableByteSubclass:'].
-	type = 'variableWord' ifTrue: [ ^ 'variableWordSubclass:'].
-	type = 'variableLong' ifTrue: [ ^ 'variableLongSubclass:']
-]
-
-{ #category : 'Internal',
-  #vaVisibility : 'private' }
-AIFunctionAddClass >> defaultApplicationNameForClassName: className [
-
-	^  System defaultApplication name
 ]
 
 { #category : 'Accessing' }

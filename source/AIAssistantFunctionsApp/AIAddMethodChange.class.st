@@ -16,6 +16,12 @@ AIAddMethodChange class >> compile: source inClassNamed: classNameSymbol protoco
 		isClassSide: isClassSide
 ]
 
+{ #category : 'accessing' }
+AIAddMethodChange >> application: anApplication [
+
+	application := anApplication
+]
+
 { #category : 'initialize-release' }
 AIAddMethodChange >> application: anApplication className: aClassName protocols: aProtocolCollection source: aString isPrivate: aBoolean isClassSide: isClassSide [
 
