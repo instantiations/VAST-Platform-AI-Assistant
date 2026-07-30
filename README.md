@@ -45,6 +45,18 @@ loader loadConfigurationMapNamed: 'VAST AI Assistant (VAST 15.0)' "or VAST AI As
 
 ### Configure
 
+* From the AI Assistant window, select **Options › Settings** to open the configuration panel. Note that at least one provider and one model must be configured to use the assistant.
+* Under **Providers**, select your provider and enter its API key. If your preferred provider is not listed, click **+** to add its connection details (e.g., for local LLMs or custom OpenAI-compatible gateways).
+* Under **Models**, add the models you wish to use. The assistant will automatically populate the available options for each active provider.
+* Under **MCP Servers**, connect external Model Context Protocol (MCP) servers to dynamically extend the assistant's capabilities with custom tools.
+* Under **Functions**, define the security policies (`Allow`, `Disallow`, or `Ask`) for executing sensitive tools on your system.
+* If multiple models are configured, you can switch between them at any time via the **Options › Model** menu in the main window.
+* You are now ready to begin collaborating with the assistant to analyze code, generate implementations, and automate your VAST development workflow.
+
+<p align="center">
+<img src="./docs/images/Tools-Control.png" width=500>
+</p>
+
 #### Configuring a Proxy (optional)
 
 * If you need to use an HTTP proxy, evaluate the following in a workspace with the correct URL for the proxy to set it in the global configuration for the ‘httpsl’ transport. See the class SstHttpConfiguration for methods for setting credentials for the proxy or a list of excepted domains, and the [section on ‘Configuring an HTTP Client to Use a Proxy’](https://www.instantiations.com/vast-support/documentation/1500/ss/sst89s.html) in the documentation for further details.
@@ -52,15 +64,6 @@ loader loadConfigurationMapNamed: 'VAST AI Assistant (VAST 15.0)' "or VAST AI As
   ```smalltalk
   (SstTransport configurationForIdentifier: 'httpsl')
   	proxyUrl: 'https://proxy.local:8080' sstAsUrl
-  ```
-
-  If the proxy URL uses the ‘http’ rather than ‘https’ scheme, you need to set the proxy differently to allow for tunneling:
-
-  ```smalltalk
-  SstHttpClient    
-  	initializeTransportScheme: 'httpsl'
-  	forHttpsTunnelThrough: 'proxy.local:8080' "specify host and port only"
-  	proxyAuth: nil
   ```
 
 ## Features Overview
