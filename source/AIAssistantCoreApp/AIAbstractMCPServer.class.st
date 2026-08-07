@@ -12,6 +12,24 @@ Class {
 }
 
 { #category : 'Not categorized' }
+AIAbstractMCPServer class >> label [
+
+	self subclassResponsibility
+]
+
+{ #category : 'Not categorized' }
+AIAbstractMCPServer class >> name: serverName [
+
+	self subclassResponsibility
+]
+
+{ #category : 'Not categorized' }
+AIAbstractMCPServer class >> new [
+
+	^ self name: nil
+]
+
+{ #category : 'Not categorized' }
 AIAbstractMCPServer class >> registerServer: server [
 
 	self registeredServers add: server.
@@ -25,6 +43,14 @@ AIAbstractMCPServer class >> registeredServers [
 ]
 
 { #category : 'Not categorized' }
+AIAbstractMCPServer class >> replaceServer: oldServer by: newServer [
+
+	self registeredServers at: (self registeredServers indexOf: oldServer) put: newServer.
+	oldServer removed.
+	self changed: #registeredServers.
+]
+
+{ #category : 'Not categorized' }
 AIAbstractMCPServer class >> reset [
 
 	RegisteredServers := nil.
@@ -32,9 +58,18 @@ AIAbstractMCPServer class >> reset [
 ]
 
 { #category : 'Not categorized' }
+AIAbstractMCPServer class >> startUp [
+
+	self registeredServers do: [ :server |
+		server isStdio ifTrue: [
+			server terminateStderrReaderProcess ] ]
+]
+
+{ #category : 'Not categorized' }
 AIAbstractMCPServer class >> unregisterServer: server [
 
 	self registeredServers remove: server.
+	server removed.
 	self changed: #registeredServers.
 ]
 
@@ -77,6 +112,18 @@ AIAbstractMCPServer >> initializeWithName: initialName [
 ]
 
 { #category : 'Not categorized' }
+AIAbstractMCPServer >> isStdio [
+
+	^ false
+]
+
+{ #category : 'Not categorized' }
+AIAbstractMCPServer >> isStreamableHTTP [
+
+	^ false
+]
+
+{ #category : 'Not categorized' }
 AIAbstractMCPServer >> jsonRPCObjectCalling: methodName id: id with: methodArguments [
 
 	| jsonRPCObject |
@@ -101,6 +148,12 @@ AIAbstractMCPServer >> name: newName [
 
 	name := newName.
 	self changed: #name.
+]
+
+{ #category : 'Not categorized' }
+AIAbstractMCPServer >> removed [
+
+	"Default: do nothing"
 ]
 
 { #category : 'Not categorized' }

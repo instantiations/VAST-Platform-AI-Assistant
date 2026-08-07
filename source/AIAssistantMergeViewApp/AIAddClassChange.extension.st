@@ -18,6 +18,13 @@ AIAddClassChange >> entityRepresentationKey [
 	^ className
 ]
 
+{ #category : 'AI Extensions' }
+AIAddClassChange >> executeWithController: aController [
+
+	controller := aController.
+	[ ^self execute ] ensure: [ controller := nil ]
+]
+
 { #category : 'accessing' }
 AIAddClassChange >> listviewDisplayString [
 

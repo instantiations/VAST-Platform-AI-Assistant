@@ -4,7 +4,7 @@ Class {
 	#category : 'AIAssistantTestsApp'
 }
 
-{ #category : 'Testing' }
+{ #category : 'Tests' }
 AIFunctionValidateCodeTest >> testClassSideCanAccessClassVariables [
 	| args result |
 	args := Dictionary new.
@@ -15,7 +15,7 @@ AIFunctionValidateCodeTest >> testClassSideCanAccessClassVariables [
 	self assert: (result includesKey: 'valid').
 ]
 
-{ #category : 'Testing' }
+{ #category : 'Tests' }
 AIFunctionValidateCodeTest >> testClassSideCannotAccessInstanceVariables [
 	| args result |
 	args := Dictionary new.
@@ -27,7 +27,7 @@ AIFunctionValidateCodeTest >> testClassSideCannotAccessInstanceVariables [
 	self assert: (result at: 'error') equals: 'References unknown variables, classes or globals: ''key'''.
 ]
 
-{ #category : 'Testing' }
+{ #category : 'Tests' }
 AIFunctionValidateCodeTest >> testExistingClassStateIsValid [
 	"Test references to existing instance variables of the target class.
 	Association has #key and #value instance variables."
@@ -40,7 +40,7 @@ AIFunctionValidateCodeTest >> testExistingClassStateIsValid [
 	self assert: (result at: 'valid').
 ]
 
-{ #category : 'Testing' }
+{ #category : 'Tests' }
 AIFunctionValidateCodeTest >> testExistingGlobalIsValid [
 	| args result |
 	args := Dictionary new.
@@ -50,7 +50,7 @@ AIFunctionValidateCodeTest >> testExistingGlobalIsValid [
 	self assert: (result at: 'valid').
 ]
 
-{ #category : 'Testing' }
+{ #category : 'Tests' }
 AIFunctionValidateCodeTest >> testExistingPoolDictionaryVariableIsValid [
 	| args result |
 	args := Dictionary new.
@@ -63,7 +63,29 @@ AIFunctionValidateCodeTest >> testExistingPoolDictionaryVariableIsValid [
 	self assert: (result at: 'valid').
 ]
 
-{ #category : 'Testing' }
+{ #category : 'Tests' }
+AIFunctionValidateCodeTest >> testInvalidCodeWithPoolDictionaryReferenceIsFlagged [
+	| args result |
+	args := Dictionary new.
+	args at: 'class' put: 'AIFunctionValidateCodeTest'.
+	args at: 'code' put: '^ CldtConstants::SomeUndefinedVarThatDoesNotExist'.
+	result := self applyFunction: AIFunctionValidateCode withArguments: args.
+	self assert: (result includesKey: 'error').
+	self assert: (result at: 'error') equals: 'References unknown variables, classes or globals: ''CldtConstants::SomeUndefinedVarThatDoesNotExist'''.
+]
+
+{ #category : 'Tests' }
+AIFunctionValidateCodeTest >> testInvalidCodeWithUnknownPoolDictionaryIsFlagged [
+	| args result |
+	args := Dictionary new.
+	args at: 'class' put: 'AIFunctionValidateCodeTest'.
+	args at: 'code' put: '^ SomeUndefinedPool::SomeUndefinedVar'.
+	result := self applyFunction: AIFunctionValidateCode withArguments: args.
+	self assert: (result includesKey: 'error').
+	self assert: (result at: 'error') equals: 'References unknown variables, classes or globals: ''SomeUndefinedPool::SomeUndefinedVar'''.
+]
+
+{ #category : 'Tests' }
 AIFunctionValidateCodeTest >> testInvalidMessageSendIsFlagged [
 	| args result |
 	args := Dictionary new.
@@ -73,7 +95,7 @@ AIFunctionValidateCodeTest >> testInvalidMessageSendIsFlagged [
 	self assert: (result at: 'error') equals: 'Sends selectors that have no implementors: #someNonExistentMessageSendWhichNobodyImplements'.
 ]
 
-{ #category : 'Testing' }
+{ #category : 'Tests' }
 AIFunctionValidateCodeTest >> testInvalidReferenceIsFlagged [
 	| classChange context args result |
 	classChange := AIAddClassChange
@@ -91,7 +113,18 @@ AIFunctionValidateCodeTest >> testInvalidReferenceIsFlagged [
 	self assert: (result at: 'error') equals: 'References unknown variables, classes or globals: ''SomeNonExistentVariable'''.
 ]
 
-{ #category : 'Testing' }
+{ #category : 'Tests' }
+AIFunctionValidateCodeTest >> testInvalidReferenceToGlobalNotActingAsPoolDictionaryIsFlagged [
+	| args result |
+	args := Dictionary new.
+	args at: 'class' put: 'AIFunctionValidateCodeTest'.
+	args at: 'code' put: '^ Transcript::LineDelimiter'.
+	result := self applyFunction: AIFunctionValidateCode withArguments: args.
+	self assert: (result includesKey: 'error').
+	self assert: (result at: 'error') equals: 'References unknown variables, classes or globals: ''Transcript::LineDelimiter'''
+]
+
+{ #category : 'Tests' }
 AIFunctionValidateCodeTest >> testInvalidReferenceToProposedClassInstVarOnInstanceSide [
 	| classChange context args result |
 	classChange := AIAddClassChange
@@ -111,7 +144,7 @@ AIFunctionValidateCodeTest >> testInvalidReferenceToProposedClassInstVarOnInstan
 	self assert: (result at: 'error') equals: 'References unknown variables, classes or globals: ''newClassInstVar'''.
 ]
 
-{ #category : 'Testing' }
+{ #category : 'Tests' }
 AIFunctionValidateCodeTest >> testProposedMessageSendIsValid [
 	| methodChange context args result |
 	methodChange := AIAddMethodChange 
@@ -129,7 +162,7 @@ AIFunctionValidateCodeTest >> testProposedMessageSendIsValid [
 	self assert: (result at: 'valid').
 ]
 
-{ #category : 'Testing' }
+{ #category : 'Tests' }
 AIFunctionValidateCodeTest >> testPseudoVariableThisContextIsFlagged [
 	| args result |
 	args := Dictionary new.
@@ -139,7 +172,7 @@ AIFunctionValidateCodeTest >> testPseudoVariableThisContextIsFlagged [
 	self assert: (result at: 'error') equals: 'References unknown variables, classes or globals: ''thisContext'''.
 ]
 
-{ #category : 'Testing' }
+{ #category : 'Tests' }
 AIFunctionValidateCodeTest >> testPseudoVariablesAndLocalsAreValid [
 	| args result |
 	args := Dictionary new.
@@ -153,7 +186,7 @@ AIFunctionValidateCodeTest >> testPseudoVariablesAndLocalsAreValid [
 	self assert: (result at: 'valid').
 ]
 
-{ #category : 'Testing' }
+{ #category : 'Tests' }
 AIFunctionValidateCodeTest >> testSyntaxErrorIsFlagged [
 	| args result |
 	args := Dictionary new.
@@ -165,7 +198,18 @@ AIFunctionValidateCodeTest >> testSyntaxErrorIsFlagged [
 	self assert: ('Syntax error in given code at position *: "|" expected' match: (result at: 'error')).
 ]
 
-{ #category : 'Testing' }
+{ #category : 'Tests' }
+AIFunctionValidateCodeTest >> testValidCodeWithPoolDictionaryReference [
+	| args result |
+	args := Dictionary new.
+	args at: 'class' put: 'AIFunctionValidateCodeTest'.
+	args at: 'code' put: '^ CwConstants::XmALIGNMENTCENTER'.
+	result := self applyFunction: AIFunctionValidateCode withArguments: args.
+	self assert: (result includesKey: 'valid').
+	self assert: (result at: 'valid').
+]
+
+{ #category : 'Tests' }
 AIFunctionValidateCodeTest >> testValidMessageSend [
 	| args result |
 	args := Dictionary new.
@@ -175,7 +219,7 @@ AIFunctionValidateCodeTest >> testValidMessageSend [
 	self assert: (result at: 'valid').
 ]
 
-{ #category : 'Testing' }
+{ #category : 'Tests' }
 AIFunctionValidateCodeTest >> testValidReferenceToExistingClassInstVar [
 
 	| context args result |
@@ -192,7 +236,7 @@ AIFunctionValidateCodeTest >> testValidReferenceToExistingClassInstVar [
 	self assert: (result at: 'valid').
 ]
 
-{ #category : 'Testing' }
+{ #category : 'Tests' }
 AIFunctionValidateCodeTest >> testValidReferenceToProposedClass [
 	| classChange context args result |
 	classChange := AIAddClassChange
@@ -209,7 +253,7 @@ AIFunctionValidateCodeTest >> testValidReferenceToProposedClass [
 	self assert: (result at: 'valid').
 ]
 
-{ #category : 'Testing' }
+{ #category : 'Tests' }
 AIFunctionValidateCodeTest >> testValidReferenceToProposedClassInstVar [
 	| classChange context args result |
 	classChange := AIAddClassChange
@@ -229,7 +273,7 @@ AIFunctionValidateCodeTest >> testValidReferenceToProposedClassInstVar [
 	self assert: (result at: 'valid').
 ]
 
-{ #category : 'Testing' }
+{ #category : 'Tests' }
 AIFunctionValidateCodeTest >> testValidReferenceToProposedClassVar [
 	| classChange context args result |
 	classChange := AIAddClassChange
@@ -247,7 +291,7 @@ AIFunctionValidateCodeTest >> testValidReferenceToProposedClassVar [
 	self assert: (result at: 'valid').
 ]
 
-{ #category : 'Testing' }
+{ #category : 'Tests' }
 AIFunctionValidateCodeTest >> testValidReferenceToProposedInstVar [
 	| classChange context args result |
 	classChange := AIAddClassChange
@@ -265,20 +309,32 @@ AIFunctionValidateCodeTest >> testValidReferenceToProposedInstVar [
 	self assert: (result at: 'valid').
 ]
 
-{ #category : 'Testing' }
+{ #category : 'Tests' }
 AIFunctionValidateCodeTest >> testValidReferenceToProposedPoolVar [
 	| classChange context args result |
 	classChange := AIAddClassChange
 		definition: 'Object subclass: #AITestDummyClass
 			instanceVariableNames: ''''
 			classVariableNames: ''''
-			poolDictionaries: ''CldtConstants'' '
+			poolDictionaries: ''SwapperConstants'' '
 		application: nil.
 	context := self contextWithChange: classChange.
 	args := Dictionary new.
 	args at: 'class' put: 'AITestDummyClass'.
-	args at: 'code' put: '^ LineDelimiter'.
+	args at: 'code' put: '^ InvalidFileHandle'.
 	result := self applyFunction: AIFunctionValidateCode withArguments: args inContext: context.
+	self assert: (result includesKey: 'valid').
+	self assert: (result at: 'valid').
+]
+
+{ #category : 'Tests' }
+AIFunctionValidateCodeTest >> testWorkspaceDefaultPoolDictionaryVariableIsValid [
+	| args result |
+	args := Dictionary new.
+	"When no class is given, it's evaluated as a workspace script.
+	 CwConstants is one of the default EtWindow pools."
+	args at: 'code' put: '^ XmALIGNMENTCENTER'.
+	result := self applyFunction: AIFunctionValidateCode withArguments: args.
 	self assert: (result includesKey: 'valid').
 	self assert: (result at: 'valid').
 ]

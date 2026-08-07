@@ -59,7 +59,7 @@ AIChatTest >> test [
 
 	self class testModels do: [ :model |
 		| chat |
-		chat := AIChat systemInstruction: 'You are an AI assistant' model: model.
+		chat := AITestChat systemInstruction: 'You are an AI assistant' model: model.
 		chat sendUserMessage: 'Hi!'.
 		self waitForChatGeneration: chat.
 		self assert: chat userMessages size equals: 1.

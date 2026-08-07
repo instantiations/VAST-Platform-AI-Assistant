@@ -4,19 +4,19 @@ Class {
 	#category : 'AIAssistantTestsApp'
 }
 
-{ #category : 'accessing' }
+{ #category : 'Helpers' }
 AIFunctionTestCase >> applyFunction: functionClass withArguments: args [
 
 	^ self applyFunction: functionClass withArguments: args inContext: self emptyContext
 ]
 
-{ #category : 'accessing' }
+{ #category : 'Helpers' }
 AIFunctionTestCase >> applyFunction: functionClass withArguments: args inContext: context [
 
 	^ functionClass new applyFunctionTo: args in: context
 ]
 
-{ #category : 'accessing' }
+{ #category : 'Helpers' }
 AIFunctionTestCase >> contextWithChange: aChange [
 
 	^ AIFunctionCallContext new
@@ -25,7 +25,7 @@ AIFunctionTestCase >> contextWithChange: aChange [
 		codeChanges: (OrderedCollection with: aChange)
 ]
 
-{ #category : 'accessing' }
+{ #category : 'Helpers' }
 AIFunctionTestCase >> emptyContext [
 
 	^ AIFunctionCallContext model: nil filePaths: #() codeChanges: OrderedCollection new

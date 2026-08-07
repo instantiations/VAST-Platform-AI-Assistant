@@ -174,7 +174,7 @@ AIAbstractModelProvider >> basicGetModels [
 	stream :=
 		AIPeekableStream on: (
 			AICharacterGraphemeStream on: (AIUTF8DecodingStream on: byteContents readStream)).
-	^(NeoJSONReader on: stream) next
+	^(AIJSONReader on: stream) next
 ]
 
 { #category : 'Initialization' }

@@ -7,7 +7,14 @@ Class {
 		'serverList',
 		'addServerButton',
 		'removeServerButton',
+		'transportComboBox',
 		'nameInput',
+		'stdioForm',
+		'commandInput',
+		'serverStatusLabel',
+		'serverStderrText',
+		'displayedStderrLines',
+		'streamableHTTPForm',
 		'urlInput',
 		'serverListSelectionPending',
 		'pendingServerNameUpdate'
@@ -19,9 +26,9 @@ Class {
   #vaVisibility : 'private' }
 AISettingsSectionMCPServers >> addServerButtonPressed: widget clientData: clientData callData: callData [
 
-	selectedServer := AIMCPServerStreamableHTTP new.
+	selectedServer := AIMCPServerStdio new.
 	AIAbstractMCPServer registerServer: selectedServer.
-	self updateInputs.
+	self updateInputs; updateServerStatus; setServerStderrText.
 ]
 
 { #category : 'Not categorized' }
@@ -32,14 +39,34 @@ AISettingsSectionMCPServers >> closeWindow [
 
 { #category : 'Not categorized',
   #vaVisibility : 'private' }
+AISettingsSectionMCPServers >> commandInputLosingFocusOrActivated: widget clientData: clientData callData: callData [
+	
+	self for: commandInput doCallback: [
+		| newCommand |
+		newCommand := commandInput value ifEmpty: [ nil ].
+		selectedServer command = newCommand ifFalse: [
+			selectedServer command: newCommand; resetTools ] ]
+]
+
+{ #category : 'Not categorized',
+  #vaVisibility : 'private' }
 AISettingsSectionMCPServers >> createServerDetails: form [
 
-	| inputOffset labelOffset rightMargin widgetSpacing nameLabel urlLabel |
+	| inputOffset labelOffset rightMargin widgetSpacing transportLabel nameLabel commandLabel urlLabel |
 
-	inputOffset := 60.
+	inputOffset := 80.
 	labelOffset := 4.
 	rightMargin := 10.
 	widgetSpacing := 5.
+
+	(transportLabel := form createLabel: nil argBlock: [ :w | w labelString: 'Transport:'; alignment: XmALIGNMENTEND ])
+		manageChild.
+	(transportComboBox := form createComboBox: nil argBlock: [ :w | w items: { AIMCPServerStdio label. AIMCPServerStreamableHTTP label } ])
+		manageChild;
+		addCallback: XmNsingleSelectionCallback
+			receiver: self
+			selector: #transportChanged:clientData:callData:
+			clientData: nil.
 
 	(nameLabel := form createLabel: nil argBlock: [ :w | w labelString: 'Name:'; alignment: XmALIGNMENTEND ])
 		manageChild.
@@ -54,9 +81,28 @@ AISettingsSectionMCPServers >> createServerDetails: form [
 			selector: #nameInputLosingFocusOrActivated:clientData:callData:
 			clientData: nil.
 
-	(urlLabel := form createLabel: nil argBlock: [ :w | w labelString: 'URL:'; alignment: XmALIGNMENTEND ])
+	stdioForm := form createForm: nil argBlock: nil.
+	(commandLabel := stdioForm createLabel: nil argBlock: [ :w | w labelString: 'Command:'; alignment: XmALIGNMENTEND ])
 		manageChild.
-	(urlInput := form createText: nil argBlock: nil)
+	(commandInput := stdioForm createText: nil argBlock: nil)
+		manageChild;
+		addCallback: XmNlosingFocusCallback
+			receiver: self
+			selector: #commandInputLosingFocusOrActivated:clientData:callData:
+			clientData: nil;
+		addCallback: XmNactivateCallback
+			receiver: self
+			selector: #commandInputLosingFocusOrActivated:clientData:callData:
+			clientData: nil.
+	(serverStatusLabel := stdioForm createLabel: nil argBlock: [ :w | w labelType: XmICON ])
+		manageChild.
+	(serverStderrText := stdioForm createScrolledText: 'serverOutput' argBlock: [ :w | w editMode: XmMULTILINEEDIT; wordWrap: true; setEditable: false ])
+		manageChild.
+
+	streamableHTTPForm := form createForm: nil argBlock: nil.
+	(urlLabel := streamableHTTPForm createLabel: nil argBlock: [ :w | w labelString: 'URL:'; alignment: XmALIGNMENTEND ])
+		manageChild.
+	(urlInput := streamableHTTPForm createText: nil argBlock: nil)
 		manageChild;
 		addCallback: XmNlosingFocusCallback
 			receiver: self
@@ -66,6 +112,25 @@ AISettingsSectionMCPServers >> createServerDetails: form [
 			receiver: self
 			selector: #urlInputLosingFocusOrActivated:clientData:callData:
 			clientData: nil.
+
+	transportLabel setValuesBlock: [ :w |
+		w
+			topAttachment: XmATTACHOPPOSITEWIDGET;
+			topWidget: transportComboBox;
+			rightAttachment: XmATTACHWIDGET;
+			rightWidget: transportComboBox;
+			rightOffset: labelOffset;
+			bottomAttachment: XmATTACHOPPOSITEWIDGET;
+			bottomWidget: transportComboBox;
+			bottomOffset: 2 ].
+	transportComboBox setValuesBlock: [:w |
+		w
+			leftAttachment: XmATTACHFORM;
+			leftOffset: inputOffset;
+			topAttachment: XmATTACHFORM;
+			topOffset: widgetSpacing;
+			rightAttachment: XmATTACHFORM;
+			rightOffset: rightMargin ].
 
 	nameLabel setValuesBlock: [ :w |
 		w
@@ -81,10 +146,64 @@ AISettingsSectionMCPServers >> createServerDetails: form [
 		w
 			leftAttachment: XmATTACHFORM;
 			leftOffset: inputOffset;
-			topAttachment: XmATTACHFORM;
+			topAttachment: XmATTACHWIDGET;
+			topWidget: transportComboBox;
 			topOffset: widgetSpacing;
 			rightAttachment: XmATTACHFORM;
 			rightOffset: rightMargin ].
+
+	stdioForm setValuesBlock: [ :w |
+		w
+			topAttachment: XmATTACHWIDGET;
+			topWidget: nameInput;
+			topOffset: widgetSpacing;
+			rightAttachment: XmATTACHFORM;
+			leftAttachment: XmATTACHFORM;
+			bottomAttachment: XmATTACHFORM ].
+
+	commandLabel setValuesBlock: [ :w |
+		w
+			topAttachment: XmATTACHOPPOSITEWIDGET;
+			topWidget: commandInput;
+			rightAttachment: XmATTACHWIDGET;
+			rightWidget: commandInput;
+			rightOffset: labelOffset;
+			bottomAttachment: XmATTACHOPPOSITEWIDGET;
+			bottomWidget: commandInput;
+			bottomOffset: 2 ].
+	commandInput setValuesBlock: [ :w |
+		w
+			leftAttachment: XmATTACHWIDGET;
+			leftOffset: inputOffset;
+			rightAttachment: XmATTACHWIDGET;
+			rightWidget: serverStatusLabel;
+			rightOffset: 2;
+			topAttachment: XmATTACHFORM ].
+
+	serverStatusLabel setValuesBlock: [ :w |
+		w
+			rightAttachment: XmATTACHFORM;
+			rightOffset: rightMargin;
+			topOffset: 5 ].
+
+	serverStderrText parent setValuesBlock: [ :w |
+		w
+			leftAttachment: XmATTACHFORM;
+			leftOffset: inputOffset;
+			topAttachment: XmATTACHWIDGET;
+			topWidget: commandInput;
+			rightAttachment: XmATTACHFORM;
+			rightOffset: rightMargin;
+			bottomAttachment: XmATTACHFORM ].
+
+	streamableHTTPForm setValuesBlock: [ :w |
+		w
+			topAttachment: XmATTACHWIDGET;
+			topWidget: nameInput;
+			topOffset: widgetSpacing;
+			rightAttachment: XmATTACHFORM;
+			leftAttachment: XmATTACHFORM;
+			bottomAttachment: XmATTACHFORM ].
 
 	urlLabel setValuesBlock: [ :w |
 		w
@@ -100,9 +219,7 @@ AISettingsSectionMCPServers >> createServerDetails: form [
 		w
 			leftAttachment: XmATTACHWIDGET;
 			leftOffset: inputOffset;
-			topAttachment: XmATTACHWIDGET;
-			topWidget: nameInput;
-			topOffset: widgetSpacing;
+			topAttachment: XmATTACHFORM;
 			rightAttachment: XmATTACHFORM;
 			rightOffset: rightMargin ].
 ]
@@ -192,7 +309,7 @@ AISettingsSectionMCPServers >> createSettingsPane: settingsForm [
 
 	self updateServers.
 	displayedServers
-		ifEmpty: [ self updateInputs ]
+		ifEmpty: [ self updateInputs; updateServerStatus; setServerStderrText ]
 		ifNotEmpty: [ serverList selectPos: 1 notify: true ].
 
 	^ form
@@ -287,6 +404,33 @@ AISettingsSectionMCPServers >> serverListSelectionChanged: widget clientData: cl
 		pendingServerNameUpdate := nil
 	] ifNil: [
 		self updateInputs ].
+	self updateServerStatus; setServerStderrText.
+]
+
+{ #category : 'Not categorized',
+  #vaVisibility : 'private' }
+AISettingsSectionMCPServers >> setServerStderrText [
+
+	displayedStderrLines := (selectedServer notNil and: [ selectedServer isStdio ]) ifTrue: [ selectedServer stderrLines ] ifFalse: [ #() ].
+	serverStderrText value: (String streamContents: [ :stream |
+		displayedStderrLines do: [ :line |
+			line value do: [ :character |
+				stream nextPut: (character isAscii ifTrue: [ character ] ifFalse: [ $? ]) ].
+			stream nextPutAll: CldtConstants::LineDelimiter ] ]).
+]
+
+{ #category : 'Not categorized',
+  #vaVisibility : 'private' }
+AISettingsSectionMCPServers >> transportChanged: widget clientData: clientData callData: callData [
+
+	(transportComboBox getString = AIMCPServerStdio label) = selectedServer isStdio ifFalse: [
+		| oldServer newServerClass |
+		oldServer := selectedServer.
+		newServerClass := (transportComboBox getString = AIMCPServerStdio label) ifTrue: [ AIMCPServerStdio ] ifFalse: [ AIMCPServerStreamableHTTP ].
+		(selectedServer := newServerClass new)
+			name: oldServer name.
+		self updateInputs; updateServerStatus; setServerStderrText.
+		AIAbstractMCPServer replaceServer: oldServer by: selectedServer ]
 ]
 
 { #category : 'Not categorized',
@@ -298,8 +442,12 @@ AISettingsSectionMCPServers >> update: aspect [
 	aspect = #name ifTrue: [
 		self updateServers.
 		self updateInputs ].
-	aspect = #url ifTrue: [
+	(#(command url) includes: aspect) ifTrue: [
 		self updateInputs ].
+	aspect = #isRunning ifTrue: [
+		self updateServerStatus ].
+	aspect = #stderrLines ifTrue: [
+		self updateServerStderrText ].
 	super update: aspect
 ]
 
@@ -307,19 +455,67 @@ AISettingsSectionMCPServers >> update: aspect [
   #vaVisibility : 'private' }
 AISettingsSectionMCPServers >> updateInputs [
 
-	| newNameInputValue newUrlInputValue |
+	| newTransportValue newNameInputValue newCommandInputValue newUrlInputValue |
 	
+	newTransportValue := selectedServer ifNotNil: [ selectedServer isStdio ifTrue: [ AIMCPServerStdio label ] ifFalse: [ AIMCPServerStreamableHTTP label ] ] ifNil: [ '' ].
 	newNameInputValue := (selectedServer ifNotNil: [ selectedServer name ]) ifNil: [ '' ].
-	newUrlInputValue := (selectedServer ifNotNil: [ selectedServer url ]) ifNil: [ '' ] ifNotNil: [ :url | url asString ].
+	newCommandInputValue := (selectedServer ifNotNil: [ selectedServer isStdio ifTrue: [ selectedServer command ] ]) ifNil: [ '' ].
+	newUrlInputValue := (selectedServer ifNotNil: [ selectedServer isStreamableHTTP ifTrue: [ selectedServer url ] ]) ifNil: [ '' ] ifNotNil: [ :url | url asString ].
 	
+	transportComboBox value = newTransportValue ifFalse: [
+		self noCallback: transportComboBox during: [ :w | w setString: newTransportValue ] ].
 	nameInput value = newNameInputValue ifFalse: [
 		self noCallback: nameInput during: [ :w | w setString: newNameInputValue ] ].
+	commandInput value = newCommandInputValue ifFalse: [
+		self noCallback: commandInput during: [ :w | w setString: newCommandInputValue ] ].
 	urlInput value = newUrlInputValue ifFalse: [
 		self noCallback: urlInput during: [ :w | w setString: newUrlInputValue ] ].
 
+	transportComboBox setSensitive: (selectedServer notNil and: [ newCommandInputValue isEmpty & newUrlInputValue isEmpty ]).
 	nameInput setSensitive: selectedServer notNil.
+	commandInput setSensitive: selectedServer notNil.
 	urlInput setSensitive: selectedServer notNil.
+	((selectedServer isNil or: [ selectedServer isStdio ]) ifTrue: [ streamableHTTPForm ] ifFalse: [ stdioForm ]) unmanageChild.
+	((selectedServer isNil or: [ selectedServer isStdio ]) ifTrue: [ stdioForm ] ifFalse: [ streamableHTTPForm ]) manageChild.
 	removeServerButton setSensitive: selectedServer notNil.
+]
+
+{ #category : 'Not categorized',
+  #vaVisibility : 'private' }
+AISettingsSectionMCPServers >> updateServerStatus [
+
+	serverStatusLabel labelIcon: ((selectedServer notNil and: [ selectedServer isStdio ])
+		ifTrue: [
+			selectedServer isRunning
+				ifTrue: [ SUnitBrowser greenBallIcon ]
+				ifFalse: [
+					selectedServer hasExitError
+						ifTrue: [ SUnitBrowser redBallIcon ]
+						ifFalse: [ SUnitBrowser grayBallIcon ] ] ]
+		ifFalse: [ CgIcon unspecifiedIcon ])
+]
+
+{ #category : 'Not categorized',
+  #vaVisibility : 'private' }
+AISettingsSectionMCPServers >> updateServerStderrText [
+
+	| stderrLines linesRemoved linesAdded charactersRemoved |
+
+	(selectedServer notNil and: [ selectedServer isStdio ]) ifFalse: [ ^ self ].
+	
+	stderrLines := selectedServer stderrLines.
+	linesRemoved := displayedStderrLines ifEmpty: [ 0 ] ifNotEmpty: [ (stderrLines first key min: displayedStderrLines last key + 1) - displayedStderrLines first key ].
+	linesAdded := stderrLines ifEmpty: [ 0 ] ifNotEmpty: [ stderrLines last key - (stderrLines first key - 1 max: (displayedStderrLines ifEmpty: [ 0 ] ifNotEmpty: [ displayedStderrLines last key ])) ].
+	
+	charactersRemoved := (displayedStderrLines copyFrom: 1 to: linesRemoved) inject: 0 into: [ :total :line | total + line value size + CldtConstants::LineDelimiter size ].
+	serverStderrText replace: 0 toPos: charactersRemoved value: ''.
+	serverStderrText replace: serverStderrText getLastPosition toPos: serverStderrText getLastPosition value: (String streamContents: [ :stream |
+		(stderrLines copyFrom: stderrLines size - linesAdded + 1 to: stderrLines size) do: [ :line |
+			line value do: [ :character |
+				stream nextPut: (character isAscii ifTrue: [ character ] ifFalse: [ $? ]) ].
+			stream nextPutAll: CldtConstants::LineDelimiter ] ]).
+	
+	displayedStderrLines := stderrLines.
 ]
 
 { #category : 'Not categorized',
@@ -348,7 +544,7 @@ AISettingsSectionMCPServers >> updateServers [
 		] ifFalse: [ 
 			selectedServer := nil.
 			serverList deselectAllItems.
-			self updateInputs ] ].
+			self updateInputs; updateServerStatus; setServerStderrText ] ].
 ]
 
 { #category : 'Not categorized',

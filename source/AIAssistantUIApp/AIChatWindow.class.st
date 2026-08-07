@@ -242,6 +242,13 @@ AIChatWindow >> initializeAfterRealize [
 	inputWidget setInputFocus.
 ]
 
+{ #category : 'ET-Internal',
+  #vaVisibility : 'private' }
+AIChatWindow >> initializeUndoManagers [
+	
+	"No undo manager to initialize."
+]
+
 { #category : 'Initialization',
   #vaVisibility : 'private' }
 AIChatWindow >> initializeWithFilePathString: initialFilePathString chat: initialChat [
@@ -576,6 +583,14 @@ AIChatWindow >> sendUserMessage: aString [
 	self updateInput
 ]
 
+{ #category : 'Private',
+  #vaVisibility : 'private' }
+AIChatWindow >> snapshotTextWidget [
+	"Overridden because the return value of #widgetForTextMenu is not a text widget."
+
+	^nil
+]
+
 { #category : 'User Interface',
   #vaVisibility : 'private' }
 AIChatWindow >> statusLineText [
@@ -584,13 +599,6 @@ AIChatWindow >> statusLineText [
 
 	chat model isNil ifFalse: [max := chat model contextWindowSize].
 	^chat tokenUsage printString , ' / ' , (max ifNil: ['?'] ifNotNil: [max printString])
-]
-
-{ #category : 'Private',
-  #vaVisibility : 'private' }
-AIChatWindow >> targetTextWidget: widget [
-
-	super targetTextWidget: (widget ifNil: [ AIChatWidgetTargetTextWidgetAdapter for: chatWidget ])
 ]
 
 { #category : 'Events',
@@ -639,6 +647,13 @@ AIChatWindow >> updateStatusLine [
 	"Private - Update the status line."
 
 	^ statusLine labelString: self statusLineText
+]
+
+{ #category : 'Private',
+  #vaVisibility : 'private' }
+AIChatWindow >> widgetForTextMenu [
+
+	^ chatWidget ifNotNil: [ AIChatWidgetTargetTextWidgetAdapter for: chatWidget ]
 ]
 
 { #category : 'Initialization',

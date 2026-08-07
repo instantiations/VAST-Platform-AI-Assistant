@@ -4,6 +4,31 @@ Class {
 	#category : 'AIAssistantTestsApp'
 }
 
+{ #category : 'Test subjects',
+  #vaVisibility : 'private' }
+AIFunctionAddMethodTest >> dummyPrivateMethod [
+	^ 1
+]
+
+{ #category : 'Test subjects' }
+AIFunctionAddMethodTest >> dummyPublicMethod [
+	^ 1
+]
+
+{ #category : 'Tests' }
+AIFunctionAddMethodTest >> testAddMethodFailsIfMethodExists [
+
+	| args result context |
+	args := Dictionary new.
+	args at: 'class' put: 'AIFunctionAddMethodTest'.
+	args at: 'source' put: 'dummyPrivateMethod ^2'.
+	args at: 'application' put: 'AIAssistantTestsApp'.
+	context := self emptyContext.
+	result := self applyFunction: AIFunctionAddMethod withArguments: args inContext: context.
+	self assert: (result includesKey: 'error').
+	self assert: (result at: 'error') equals: 'Method already exists. Use change_method instead.'.
+]
+
 { #category : 'Tests' }
 AIFunctionAddMethodTest >> testInvalidClassName [
 
@@ -79,7 +104,7 @@ AIFunctionAddMethodTest >> testUnknownVariableInMethodIsFlagged [
 	self assert: (result at: 'error') equals: 'References unknown variables, classes or globals: ''SomeNonExistentVariableWhichNobodyDefines'''.
 ]
 
-{ #category : 'Testing' }
+{ #category : 'Tests' }
 AIFunctionAddMethodTest >> testValidClassSideMethod [
 	| args result context change |
 	args := Dictionary new.
@@ -139,4 +164,24 @@ AIFunctionAddMethodTest >> testValidReferenceToProposedClassInstVar [
 	result := self applyFunction: AIFunctionAddMethod withArguments: args inContext: context.
 	self deny: (result includesKey: 'error').
 	self assert: (result includesKey: 'result').
+]
+
+{ #category : 'Tests' }
+AIFunctionAddMethodTest >> testValidReferenceToProposedPoolVar [
+	| classChange context args result |
+	classChange := AIAddClassChange
+		definition: 'Object subclass: #AITestDummyClass
+			instanceVariableNames: ''''
+			classVariableNames: ''''
+			poolDictionaries: ''SwapperConstants'' '
+		application: nil.
+	context := self contextWithChange: classChange.
+	args := Dictionary new.
+	args at: 'class' put: 'AITestDummyClass'.
+	args at: 'source' put: 'testMethod ^ InvalidFileHandle'.
+	args at: 'application' put: 'AIAssistantTestsApp'.
+	result := self applyFunction: AIFunctionAddMethod withArguments: args inContext: context.
+	self assert: (result includesKey: 'result').
+	self assert: (result at: 'result') equals: 'Successfully created change'.
+	self deny: (result includesKey: 'error')
 ]

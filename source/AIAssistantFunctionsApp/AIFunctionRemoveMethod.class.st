@@ -21,7 +21,7 @@ AIFunctionRemoveMethod >> applyFunctionTo: arguments in: context [
 	selector := (arguments at: 'selector') asSymbol.
 	(behavior includesSelector: selector) ifFalse:[ ^EsOrderedDictionary with: 'error' -> ('%1 does not implement selector %2.' bindWith: behavior name with: selector)].
 	
-	change := RemoveMethodChange remove: selector from: behavior.
+	change := AIRemoveMethodChange remove: selector from: behavior application: (behavior compiledMethodAt: selector) application.
 	context addRefactoryChange: change.
 
 	^EsOrderedDictionary

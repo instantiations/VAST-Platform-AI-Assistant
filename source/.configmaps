@@ -2,8 +2,8 @@
 	{
 		#formatVersion : '1.1',
 		#name : 'VAST AI Assistant (VAST 15.0)',
-		#versionName : '1.4.0',
-		#ts : 3960781205,
+		#versionName : '1.5.0',
+		#ts : 3963568500,
 		#applications : [
 			{
 				#name : 'AIAssistantCoreApp'
@@ -66,8 +66,8 @@
 	{
 		#formatVersion : '1.1',
 		#name : 'VAST AI Assistant (VAST 14.1)',
-		#versionName : '1.4.0',
-		#ts : 3960781205,
+		#versionName : '1.5.0',
+		#ts : 3963568500,
 		#applications : [
 			{
 				#name : 'AIAssistantCoreApp'

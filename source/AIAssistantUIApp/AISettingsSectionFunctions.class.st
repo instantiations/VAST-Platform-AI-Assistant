@@ -167,7 +167,14 @@ AISettingsSectionFunctions >> release [
   #vaVisibility : 'private' }
 AISettingsSectionFunctions >> resetButtonPressed: resetButton clientData: clientData callData: callData [
 
-	AIFunctionsSet resetCurrent
+	resetButton setSensitive: false.
+	[
+		[
+			AIFunctionsSet resetCurrent
+		] ensure: [
+			CwAppContext default syncExecInUI: [
+				resetButton setSensitive: true ] ]
+	] fork
 ]
 
 { #category : 'Not categorized',

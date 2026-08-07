@@ -104,7 +104,7 @@ AIFunctionChangeClassTest >> testNonExistentClass [
 	self assert: (result at: 'error') equals: 'Class AIFunctionNonExistentClassSample not found'
 ]
 
-{ #category : 'accessing' }
+{ #category : 'Tests' }
 AIFunctionChangeClassTest >> testSubclassOfProposedClass [
 
 	| args result context classChange |

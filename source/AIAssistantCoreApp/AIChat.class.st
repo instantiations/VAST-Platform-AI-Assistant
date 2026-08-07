@@ -15,13 +15,30 @@ Class {
 		'tokenUsage',
 		'title'
 	],
+	#classVars : [
+		'CustomSystemInstruction',
+		'UseCustomSystemInstruction'
+	],
 	#category : 'AIAssistantCoreApp'
 }
 
 { #category : 'Not categorized' }
-AIChat class >> new [
+AIChat class >> customSystemInstruction [
 
-	^ self systemInstruction: (CldtConstants::LineDelimiter join: #(
+	^ CustomSystemInstruction ifNil: [ CustomSystemInstruction := self defaultSystemInstruction ]
+]
+
+{ #category : 'Not categorized' }
+AIChat class >> customSystemInstruction: systemInstruction [
+
+	CustomSystemInstruction := systemInstruction.
+	self changed: #customSystemInstruction.
+]
+
+{ #category : 'Not categorized' }
+AIChat class >> defaultSystemInstruction [
+
+	^ CldtConstants::LineDelimiter join: #(
 		'You are an AI assistant that helps the user develop in a VAST Platform Smalltalk environment.'
 		''
 		'Follow these rules:'
@@ -38,7 +55,13 @@ AIChat class >> new [
 		'    - You CAN and SHOULD propose multiple related changes in a single response (e.g., adding a class and its methods together). The modification tools and their validation logic are designed to handle methods that reference classes or instance variables proposed in the same conversation, so you do not need to wait for the user to approve a class before adding methods to it.'
 		'   Only use Markdown code blocks for code examples or workspace scripts meant for the user to execute manually.'
 		'6. Getting source code in VAST may be slow. When using the parameter `with_source` available in many tools, try to minimize cases where a `true` is specified and try favor `false`'
-		))
+		)
+]
+
+{ #category : 'Not categorized' }
+AIChat class >> new [
+
+	^ self systemInstruction: (self useCustomSystemInstruction ifTrue: [ self customSystemInstruction ] ifFalse: [ self defaultSystemInstruction ])
 ]
 
 { #category : 'Not categorized' }
@@ -63,6 +86,19 @@ AIChat class >> systemInstruction: systemInstruction model: model filePaths: fil
 AIChat class >> systemInstruction: systemInstruction model: model userMessages: userMessages [
 
 	^ self systemInstruction: systemInstruction model: model filePaths: OrderedCollection new userMessages: userMessages
+]
+
+{ #category : 'Not categorized' }
+AIChat class >> useCustomSystemInstruction [
+
+	^ UseCustomSystemInstruction ifNil: [ UseCustomSystemInstruction := false ]
+]
+
+{ #category : 'Not categorized' }
+AIChat class >> useCustomSystemInstruction: boolean [
+
+	UseCustomSystemInstruction := boolean.
+	self changed: #useCustomSystemInstruction.
 ]
 
 { #category : 'Generation' }
@@ -137,7 +173,7 @@ Return ONLY the Title text. No preambles, no quotes, no markdown.'.
 				generatedText := '' join: ((generatedParts select: [ :part | part isText and: [ part isThought not ] ]) collect: [ :part | part string ]).
 				generatedText ifNotEmpty: [
 					generatedText := generatedText copyReplaceAll: 'Title: ' with: ''.
-					title := generatedText trimBlanks.
+					title := generatedText trimSeparators.
 					CwAppContext default syncExecInUI: [ self changed: #title ] ].
 			].
 		] on: Error do: [ :error | "Ignore background generation errors" error return: nil ].

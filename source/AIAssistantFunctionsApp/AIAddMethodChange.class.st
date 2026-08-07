@@ -1,6 +1,9 @@
 Class {
 	#name : 'AIAddMethodChange',
 	#superclass : 'AddMethodChange',
+	#instVars : [
+		'controller'
+	],
 	#category : 'AIAssistantFunctionsApp'
 }
 
@@ -34,17 +37,35 @@ AIAddMethodChange >> application: anApplication className: aClassName protocols:
 ]
 
 { #category : 'accessing' }
+AIAddMethodChange >> controller [
+	^controller
+]
+
+{ #category : 'accessing' }
 AIAddMethodChange >> isMethodChange [
 	^true
+]
+
+{ #category : 'accessing' }
+AIAddMethodChange >> isPrivate [
+	^ isPrivate
+]
+
+{ #category : 'accessing' }
+AIAddMethodChange >> isPrivate: aBoolean [
+
+	isPrivate := aBoolean
 ]
 
 { #category : 'private',
   #vaVisibility : 'private' }
 AIAddMethodChange >> primitiveExecute [
 
-	| method possibleTargetApps |
+	| method possibleTargetApps compileResult |
 
-	super primitiveExecute.
+	compileResult := super primitiveExecute.
+	compileResult isNil ifTrue: [^self].
+
 	self changeClass categoriesFor: self selector are: self protocols.
 	
 	method := self changeClass compiledMethodAt: self selector.

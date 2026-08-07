@@ -2,7 +2,8 @@ Class {
 	#name : 'AIAddClassChange',
 	#superclass : 'AddClassChange',
 	#instVars : [
-		'patchedClassInstanceVariableNames'
+		'patchedClassInstanceVariableNames',
+		'controller'
 	],
 	#category : 'AIAssistantFunctionsApp'
 }
@@ -20,6 +21,11 @@ AIAddClassChange >> classInstanceVariableNames [
 
 	patchedClassInstanceVariableNames isNil ifTrue: [self fillOutDefinition].
 	^patchedClassInstanceVariableNames
+]
+
+{ #category : 'AI Extensions' }
+AIAddClassChange >> controller [
+	^controller
 ]
 
 { #category : 'accessing' }
@@ -61,13 +67,14 @@ AIAddClassChange >> parseDefinitionError [
 	patchedClassInstanceVariableNames := #()
 ]
 
-{ #category : 'private',
-  #vaVisibility : 'private' }
+{ #category : 'private' }
 AIAddClassChange >> primitiveExecute [
 
-	| class oldApp possibleTargetApps |
+	| class oldApp possibleTargetApps compileResult |
 
-	super primitiveExecute.
+	compileResult := super primitiveExecute.
+	compileResult isNil ifTrue: [^self].
+
 	class := Smalltalk classAt: self changeClassName asSymbol.
 
 	oldApp := class controller.

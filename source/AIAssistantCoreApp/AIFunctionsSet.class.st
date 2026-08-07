@@ -28,8 +28,9 @@ AIFunctionsSet class >> current [
 { #category : 'Not categorized' }
 AIFunctionsSet class >> current: newFunctionsSet [
 
-	current := newFunctionsSet.
-	self changed: #current.
+	CwAppContext default syncExecInUI: [
+		current := newFunctionsSet.
+		self changed: #current ]
 ]
 
 { #category : 'Not categorized' }

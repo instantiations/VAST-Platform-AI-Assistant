@@ -2,7 +2,7 @@ Extension {
 	#name : 'AIAbstractFunction'
 }
 
-{ #category : 'Internal',
+{ #category : 'Validation',
   #vaVisibility : 'private' }
 AIAbstractFunction >> checkClassName: className [
 
@@ -20,11 +20,21 @@ AIAbstractFunction >> isClassSideParametervalue: side [
 	^ nil
 ]
 
-{ #category : 'Internal',
+{ #category : 'Validation',
+  #vaVisibility : 'private' }
+AIAbstractFunction >> isExistingPoolVariable: varName inPool: poolName [
+
+	| pool |
+
+	pool := Smalltalk poolDictionaryAt: poolName asSymbol ifAbsent: [^false].
+	^(pool includesKey: varName asSymbol) or: [pool includesKey: varName asString]
+]
+
+{ #category : 'Validation',
   #vaVisibility : 'private' }
 AIAbstractFunction >> isVariable: varName resolvableWithLocals: localVariableNames proposedClasses: proposedClasses proposedVariables: proposedVariables targetClassName: targetClassName isClassSide: isClassSide [
 
-	| proposedInstVars proposedClassVars proposedPoolNames |
+	| proposedInstVars proposedClassVars proposedImportedPools |
 
 	(#('self' 'super' 'true' 'false' 'nil') includes: varName) ifTrue: [ ^ true ].
 	(localVariableNames includes: varName) ifTrue: [ ^ true ].
@@ -35,12 +45,12 @@ AIAbstractFunction >> isVariable: varName resolvableWithLocals: localVariableNam
 	
 	proposedInstVars := proposedVariables at: 1.
 	proposedClassVars := proposedVariables at: 2.
-	proposedPoolNames := proposedVariables at: 3.
+	proposedImportedPools := proposedVariables at: 3.
 	
 	(proposedInstVars includes: varName) ifTrue: [ ^ true ].
 	(proposedClassVars includes: varName) ifTrue: [ ^ true ].
 	
-	proposedPoolNames do: [:poolName |
+	proposedImportedPools do: [:poolName |
 		(Smalltalk at: poolName asSymbol ifAbsent: [nil])
 			ifNotNil: [:pool |
 				((pool includesKey: varName asSymbol)
@@ -50,7 +60,8 @@ AIAbstractFunction >> isVariable: varName resolvableWithLocals: localVariableNam
 	^ false
 ]
 
-{ #category : 'Internal' }
+{ #category : 'Validation',
+  #vaVisibility : 'private' }
 AIAbstractFunction >> isVariable: varName visibleInTargetClass: targetClassName isClassSide: isClassSide [
 
 	targetClassName ifNotNil: [
@@ -68,7 +79,7 @@ AIAbstractFunction >> isVariable: varName visibleInTargetClass: targetClassName 
 	^ false
 ]
 
-{ #category : 'Internal',
+{ #category : 'Validation',
   #vaVisibility : 'private' }
 AIAbstractFunction >> proposedVariablesFrom: context forClass: targetClassName isClassSide: isClassSide [
 	"Returns the triple { instanceVariables . classVariables . poolDictionaryNames } for the last proposed class definition for the class named @targetClassName in the context."
@@ -77,6 +88,12 @@ AIAbstractFunction >> proposedVariablesFrom: context forClass: targetClassName i
 	proposedInstVars := Set new.
 	proposedClassVars := Set new.
 	proposedPoolNames := Set new	.
+	
+	targetClassName ifNil: [
+		"A nil target class means we are validating code for a workspace snippet. 
+		 Only return the default evaluation pools available, all the rest is empty anyway."
+		proposedPoolNames addAll: StsWorkspace defaultEvaluationPools.
+		^ { proposedInstVars. proposedClassVars. proposedPoolNames } ].
 
 	context ifNotNil: [ | lastClassChange |
 		lastClassChange := (context codeChanges select: [:change | change aiIsClassChangeForClassNamed: targetClassName]) ifEmpty: [nil] ifNotEmpty:[:classChanges | classChanges last].
@@ -99,7 +116,7 @@ AIAbstractFunction >> regexMatcherForArgumentsIn: functionArguments onSyntaxErro
 		do: [ :error | errorBlock value: (EsOrderedDictionary with: 'error' -> ('Syntax error in regular expression at position %1: %2' bindWith: error position with: error messageText)) ]
 ]
 
-{ #category : 'Internal',
+{ #category : 'Validation',
   #vaVisibility : 'private' }
 AIAbstractFunction >> undefinedVariablesIn: methodParseNode context: context targetClassName: targetClassName isClassSide: isClassSide [
 
@@ -113,21 +130,30 @@ AIAbstractFunction >> undefinedVariablesIn: methodParseNode context: context tar
 	methodParseNode allNodesDo: [:node |
 		node isVariable
 			ifTrue: [
-				| varName |
-				varName := node contents asString.
-				(self 
-					isVariable: varName 
-					resolvableWithLocals: localVariableNames 
-					proposedClasses: proposedClasses 
-					proposedVariables: proposedVariables 
-					targetClassName: targetClassName 
-					isClassSide: isClassSide) 
-						ifFalse: [ undefinedVariables add: varName ] ] ].
+				node contents isString
+					ifTrue: [
+						| varName |
+						varName := node contents.
+						(self 
+							isVariable: varName 
+							resolvableWithLocals: localVariableNames 
+							proposedClasses: proposedClasses 
+							proposedVariables: proposedVariables 
+							targetClassName: targetClassName 
+							isClassSide: isClassSide) 
+								ifFalse: [ undefinedVariables add: varName ] ]
+					ifFalse: [
+						"Explicit pool reference"
+						| poolName varName |
+						poolName := node contents first asString.
+						varName := node contents last asString.
+						(self isExistingPoolVariable: varName inPool: poolName)
+							ifFalse: [ undefinedVariables add: (poolName, '::', varName) ] ] ] ].
 
 	^ undefinedVariables
 ]
 
-{ #category : 'Internal',
+{ #category : 'Validation',
   #vaVisibility : 'private' }
 AIAbstractFunction >> validate: code forEvaluation: forEvaluation context: context targetClassName: targetClassName isClassSide: isClassSide [
 
@@ -148,7 +174,7 @@ AIAbstractFunction >> validate: code forEvaluation: forEvaluation context: conte
 	^EsOrderedDictionary with: 'valid' -> true
 ]
 
-{ #category : 'Internal',
+{ #category : 'Validation',
   #vaVisibility : 'private' }
 AIAbstractFunction >> validateMessagesSentIn: methodParseNode context: context [
 
@@ -168,7 +194,7 @@ AIAbstractFunction >> validateMessagesSentIn: methodParseNode context: context [
 				'error' -> ('Sends selectors that have no implementors: ' , ((selectors sorted collect: [:selector | selector printString]) joinUsing: ', '))]
 ]
 
-{ #category : 'Internal',
+{ #category : 'Validation',
   #vaVisibility : 'private' }
 AIAbstractFunction >> validateVariableReferencesIn: methodParseNode context: context targetClassName: targetClassName isClassSide: isClassSide [
 

@@ -26,7 +26,7 @@ AIJSONArrayStream >> initializeWithStream: initialStream [
 
 	self initialize.
 	stream := initialStream.
-	(jsonReader := NeoJSONReader on: stream)
+	(jsonReader := AIJSONReader on: stream)
 		mapClass: EsOrderedDictionary.
 	jsonReader consumeWhitespace.
 	(jsonReader matchChar: $[) ifFalse: [ Error signal: 'Stream did not begin with opening bracket' ].

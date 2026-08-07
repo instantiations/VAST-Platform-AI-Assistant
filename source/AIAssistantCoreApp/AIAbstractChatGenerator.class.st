@@ -112,7 +112,7 @@ AIAbstractChatGenerator >> handleError [
 			ifTrue: [| responseErrorObject |
 				responseErrorObject :=
 					responseOrError errorObject contents asUnicodeString
-						ifNotEmpty: [:contentsString | self parseErrorResponseMessage: (NeoJSONReader fromString: contentsString) ]
+						ifNotEmpty: [:contentsString | self parseErrorResponseMessage: (AIJSONReader fromString: contentsString) ]
 						ifEmpty: [nil].
 				AIChatGenerationLog current addEntry: (
 					AIChatGenerationLogEntryAPIError

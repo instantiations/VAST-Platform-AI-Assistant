@@ -17,7 +17,8 @@ Class {
 		'selectedClassname',
 		'selectedChange',
 		'textMenu2',
-		'changesListWidget'
+		'changesListWidget',
+		'hasCompilerError'
 	],
 	#pools : [
 		'ScintillaConstants'
@@ -191,8 +192,37 @@ AIRefactoryChangesBrowser >> classnameSelected: selectedItem [
 		ifFalse: [changesListWidget deselectAllItems]
 ]
 
-{ #category : 'Internal',
-  #vaVisibility : 'private' }
+{ #category : 'accessing' }
+AIRefactoryChangesBrowser >> compilerError: error [
+	| errorPos source categoryComment prefix filteredPrefix |
+	
+	hasCompilerError := true.
+	
+	rightEditor == nil ifTrue: [^nil].
+	
+	source := (selectedChange respondsTo: #source) 
+		ifTrue: [ selectedChange source ] 
+		ifFalse: [ '' ].
+		
+	categoryComment := selectedChange isMethodChange
+		ifTrue: [ | dummy | 
+			dummy := selectedChange formattedSource: 'a' withCategories: selectedChange protocols.
+			dummy copyFrom: 1 to: dummy size - 1 ] 
+		ifFalse: [ '' ].
+		
+	prefix := categoryComment , (source copyFrom: 1 to: (((error startPosition - 1) min: source size) max: 0)).
+	filteredPrefix := EmTextCompatibilityFilter sourceFilter endOfLineSequence: String cr; filter: prefix.	
+	errorPos := filteredPrefix size.
+	
+	rightEditor setReadonly: false.
+	rightEditor
+		setInputFocus;
+		insertAndShow: errorPos value: error message;
+		setSelection: errorPos @ (errorPos + error message size).
+	rightEditor setReadonly: true
+]
+
+{ #category : 'Internal' }
 AIRefactoryChangesBrowser >> createDiffRegionUnder: aTopWidget [
 	| sash mergeButton cancelButton discardButton showOnlyLastChangesCheckbox topAttachment |
 	sash := self newSash: XmVERTICAL.
@@ -201,12 +231,6 @@ AIRefactoryChangesBrowser >> createDiffRegionUnder: aTopWidget [
 		createWidget: 'leftEditor'
 		parent: self defaultWidgetParent
 		argBlock: [:w | self stsSetFontListFor: w]) manageChild.
-	leftEditor usePopup: false.
-	leftEditor
-		addCallback: XmNnotificationCallback
-		receiver: self
-		selector: #scNotification:clientData:callData:
-		clientData: nil.
 	leftEditor menu: self textMenu owner: self.
 	self addTargetTextWidgetCallbacks: leftEditor.
 
@@ -214,12 +238,6 @@ AIRefactoryChangesBrowser >> createDiffRegionUnder: aTopWidget [
 		createWidget: 'rightEditor'
 		parent: self defaultWidgetParent
 		argBlock: [:w | self stsSetFontListFor: w]) manageChild.
-	rightEditor usePopup: false.
-	rightEditor
-		addCallback: XmNnotificationCallback
-		receiver: self
-		selector: #scNotification:clientData:callData:
-		clientData: nil.
 	rightEditor menu: self textMenu2 owner: self.
 	self addTargetTextWidgetCallbacks: rightEditor.
 
@@ -578,9 +596,9 @@ AIRefactoryChangesBrowser >> initializeAfterRealize [
 	leftEditor lexerSmalltalk.
 	rightEditor lexerSmalltalk.
 	
-	"Configure word characters so double-clicking selects keywords properly"
-	leftEditor stsConfigureWordCharacters.
-	rightEditor stsConfigureWordCharacters.
+	"Configure Scintilla editors exactly like standard code editors do"
+	leftEditor stsConfigureAfterCreationFor: self grabFocus: false.
+	rightEditor stsConfigureAfterCreationFor: self grabFocus: false.
 	
 	"Ensure horizontal scroll width adjusts to the longest visible line"
 	leftEditor setScrollWidthTracking: 1.
@@ -678,13 +696,15 @@ AIRefactoryChangesBrowser >> markerRange: startChar to: endChar on: editor marke
 { #category : 'Actions' }
 AIRefactoryChangesBrowser >> merge [
 
-	[selectedChange execute]
+	hasCompilerError := false.
+
+	[selectedChange executeWithController: self]
 		on: Error
 		do: [:ex |
 			self owningImage message: 'Error applying change: ' , ex description.
 			^self].
 
-	self discard
+	hasCompilerError ifFalse: [self discard]
 ]
 
 { #category : 'Internal',

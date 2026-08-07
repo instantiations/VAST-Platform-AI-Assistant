@@ -21,29 +21,27 @@ AIFunctionLibraryENVYTest >> setUp [
 	appOne :=
 		(Application allSubclasses
 			detect: [:each | each isApplication and: [each shadows size = 1]]
-			ifNone: [Application allSubclasses first])
-				name
-					asString.
+			ifNone: [ nil ]) ifNotNil: [ :application | application name asString ].
 	mapOne := (EmConfigurationMap configurationMapNames
 		detect: [:each | (EmConfigurationMap editionsFor: each) size = 1]
-		ifNone: [EmConfigurationMap configurationMapNames first]).
+		ifNone: [ nil ]).
 
 	"Several Editions"
 	appSeveral :=
 		(Application allSubclasses
-			detect: [:each | each isApplication and: [each shadows size > 1]]
-			ifNone: [Application allSubclasses first])
-				name
-					asString.
+			detect: [:each | each isApplication and: [each shadows size > 5]]
+			ifNone: [ nil ]) ifNotNil: [ :application | application name asString ].
 	mapSeveral := (EmConfigurationMap configurationMapNames
 		detect: [:each | (EmConfigurationMap editionsFor: each) size > 1]
-		ifNone: [EmConfigurationMap configurationMapNames first])
+		ifNone: [ nil ])
 ]
 
 { #category : 'Not categorized' }
 AIFunctionLibraryENVYTest >> testApplicationEditionsOne [
 
 	| result |
+
+	appOne ifNil: [ self skip ].
 
 	result :=
 		AIFunctionLibraryGetApplicationEditions new
@@ -58,13 +56,15 @@ AIFunctionLibraryENVYTest >> testApplicationEditionsSeveral [
 
 	| result |
 
+	appSeveral ifNil: [ self skip ].
+
 	result :=
 		AIFunctionLibraryGetApplicationEditions new
 			applyFunctionTo: (EsOrderedDictionary with: 'application' -> appSeveral)
 			in: nil.
 	self assert: (result includesKey: 'editions').
 
-	(result at: 'editions') size = 1 ifFalse: [self assert: ((result at: 'editions') size > 5)]
+	self assert: (result at: 'editions') size > 5.
 ]
 
 { #category : 'Not categorized' }
@@ -83,6 +83,9 @@ AIFunctionLibraryENVYTest >> testApplicationEditionsZero [
 AIFunctionLibraryENVYTest >> testCompareApplicationEditionsOne [
 	"Comparing a 1-edition application effectively to itself, expecting no differences"
 	| result shadowId |
+
+	appOne ifNil: [ self skip ].
+
 	shadowId := (Smalltalk at: appOne asSymbol) shadows first versionName ifNil: [ (Smalltalk at: appOne asSymbol) shadows first timeStamp printString ].
 	result := AIFunctionLibraryCompareApplicationEditions new applyFunctionTo: (EsOrderedDictionary 
 		with: 'application' -> appOne 
@@ -98,6 +101,8 @@ AIFunctionLibraryENVYTest >> testCompareApplicationEditionsSeveral [
 	"Comparing an older version vs a newer version of the several-editions application"
 
 	| result shadows id1 id2 |
+
+	appSeveral ifNil: [ self skip ].
 
 	shadows := (Smalltalk at: appSeveral asSymbol) shadows.
 	id1 := shadows last versionName ifNil: [shadows last timeStamp printString].
@@ -130,6 +135,8 @@ AIFunctionLibraryENVYTest >> testConfigurationMapEditionsOne [
 
 	| result |
 
+	mapOne ifNil: [ self skip ].
+
 	result :=
 		AIFunctionLibraryGetConfigurationMapEditions new
 			applyFunctionTo: (EsOrderedDictionary with: 'configuration_map' -> mapOne)
@@ -143,12 +150,14 @@ AIFunctionLibraryENVYTest >> testConfigurationMapEditionsSeveral [
 
 	| result |
 
+	mapSeveral ifNil: [ self skip ].
+
 	result :=
 		AIFunctionLibraryGetConfigurationMapEditions new
 			applyFunctionTo: (EsOrderedDictionary with: 'configuration_map' -> mapSeveral)
 			in: nil.
 	self assert: (result includesKey: 'editions').
-	(result at: 'editions') size = 1 ifFalse: [self assert: ((result at: 'editions') size > 1)]
+	self assert: (result at: 'editions') size > 1.
 ]
 
 { #category : 'Not categorized' }
@@ -184,6 +193,8 @@ AIFunctionLibraryENVYTest >> testMethodSourceOne [
 AIFunctionLibraryENVYTest >> testMethodSourceZero [
 
 	| result |
+
+	appOne ifNil: [ self skip ].
 
 	result :=
 		AIFunctionLibraryGetMethodSourceInEdition new

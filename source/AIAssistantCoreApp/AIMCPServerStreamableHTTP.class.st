@@ -9,6 +9,18 @@ Class {
 }
 
 { #category : 'Not categorized' }
+AIMCPServerStreamableHTTP class >> label [
+
+	^ 'Streamable HTTP'
+]
+
+{ #category : 'Not categorized' }
+AIMCPServerStreamableHTTP class >> name: serverName [
+
+	^ self name: serverName url: nil
+]
+
+{ #category : 'Not categorized' }
 AIMCPServerStreamableHTTP class >> name: serverName url: url [
 
 	^ self basicNew initializeWithName: serverName url: url
@@ -40,13 +52,13 @@ AIMCPServerStreamableHTTP >> call: methodName id: id with: methodArguments do: b
 				| characterStream |
 				characterStream := AIPeekableStream on: (AICharacterGraphemeStream on: (AIUTF8DecodingStream on: responseOrError contents asByteArray readStream)).
 				(responseOrError header contentType = 'application/json'
-					ifTrue: [ (NeoJSONReader on: characterStream) next ]
+					ifTrue: [ (AIJSONReader on: characterStream) next ]
 					ifFalse: [
 						| serverSentEventsStream json |
 						serverSentEventsStream := AIPeekableStream on: (AIServerSentEventsStream on: characterStream).
 						serverSentEventsStream peek data ifEmpty: [
 							serverSentEventsStream next ].
-						json := NeoJSONReader fromString: serverSentEventsStream next data.
+						json := AIJSONReader fromString: serverSentEventsStream next data.
 						serverSentEventsStream atEnd ifFalse: [
 							Error signal: 'Server-sent events stream unexpectedly not at end' ].
 						json ])
@@ -78,6 +90,12 @@ AIMCPServerStreamableHTTP >> initializeWithName: initialName url: initialURL [
 
 	self initializeWithName: initialName.
 	url := initialURL.
+]
+
+{ #category : 'Not categorized' }
+AIMCPServerStreamableHTTP >> isStreamableHTTP [
+
+	^ true
 ]
 
 { #category : 'Not categorized' }

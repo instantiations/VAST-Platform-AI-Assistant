@@ -48,7 +48,7 @@ AIChatGeneratorOpenAIResponsesAPI >> parseResponse: responseObject [
 		item := responseObject at: 'item'.
 		(item at: 'type') = 'function_call' ifTrue: [
 			| arguments |
-			arguments := (NeoJSONReader on: (item at: 'arguments') readStream) mapClass: EsOrderedDictionary; next.
+			arguments := (AIJSONReader on: (item at: 'arguments') readStream) mapClass: EsOrderedDictionary; next.
 			^ { AIChatGeneratedContentPartFunctionCall id: (item at: 'call_id') name: (item at: 'name') arguments: arguments thoughtSignature: nil } ] ].
 
 	^ #()

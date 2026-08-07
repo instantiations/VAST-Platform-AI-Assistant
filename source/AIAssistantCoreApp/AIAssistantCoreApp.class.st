@@ -20,3 +20,9 @@ AIAssistantCoreApp class >> removing [
 	AIFunctionsSet clearCurrent.
 	AIChatGenerationLog clearCurrent.
 ]
+
+{ #category : 'Not categorized' }
+AIAssistantCoreApp class >> startUp [
+
+	AIAbstractMCPServer startUp
+]

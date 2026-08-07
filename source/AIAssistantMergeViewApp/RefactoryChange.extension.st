@@ -2,6 +2,12 @@ Extension {
 	#name : 'RefactoryChange'
 }
 
+{ #category : 'AI Extensions' }
+RefactoryChange >> executeWithController: aController [
+
+	^ self execute
+]
+
 { #category : 'accessing' }
 RefactoryChange >> isClassChange [
 	^false

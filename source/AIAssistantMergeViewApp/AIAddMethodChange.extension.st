@@ -17,6 +17,13 @@ AIAddMethodChange >> entityRepresentationKey [
 	^className , (self isMeta ifTrue: [' class'] ifFalse: ['']) , '>>#' , self selector
 ]
 
+{ #category : 'AI extensions' }
+AIAddMethodChange >> executeWithController: aController [
+
+	controller := aController.
+	[ ^self execute ] ensure: [ controller := nil ]
+]
+
 { #category : 'accessing' }
 AIAddMethodChange >> listviewDisplayString [
 
