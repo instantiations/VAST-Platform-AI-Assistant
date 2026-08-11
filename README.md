@@ -1,3 +1,5 @@
+<img src="./docs/images/vast-ai-assistant-readme-header.png" alt="VAST + AI Assistant: Header Image for Readme">
+
 # VAST Platform AI Assistant
 
 This repository provides the integration tools for AI-assisted development within the [VAST platform](https://www.instantiations.com/vast-platform/) development environment. It enables developers to use natural language to query codebases, analyze runtime errors, run tests, and automate development tasks directly from the IDE.
