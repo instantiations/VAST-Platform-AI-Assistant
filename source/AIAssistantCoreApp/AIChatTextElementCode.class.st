@@ -8,31 +8,31 @@ Class {
 	#category : 'AIAssistantCoreApp'
 }
 
-{ #category : 'Not categorized' }
+{ #category : 'Instantiation' }
 AIChatTextElementCode class >> code: code [
 
 	^ self basicNew initializeWithCode: code
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Comparing' }
 AIChatTextElementCode >> = object [
 
 	^ self class = object class and: [ self code = object code ]
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIChatTextElementCode >> code [
 
 	^ codeTextString string
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIChatTextElementCode >> codeTextString [
 
 	^ codeTextString
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Initialization' }
 AIChatTextElementCode >> initializeWithCode: initialCode [
 
 	self initialize.
@@ -40,13 +40,13 @@ AIChatTextElementCode >> initializeWithCode: initialCode [
 	isPointedTo := false.
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Testing' }
 AIChatTextElementCode >> isCodeElement [
 
 	^ true
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Testing' }
 AIChatTextElementCode >> isPointedTo [
 
 	^ isPointedTo

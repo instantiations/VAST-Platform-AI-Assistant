@@ -53,6 +53,7 @@ AIChat class >> defaultSystemInstruction [
 		'    - The generated code will be automatically displayed to the user in a code block by the system. Do not output the code in your text response. Instead, provide any explanation of the generated code in your text response.'
 		'    - Do not attempt to query or reflect on a class or method immediately after using a modification tool to create/change it, as the changes will not exist in the environment until the user manually approves them.'
 		'    - You CAN and SHOULD propose multiple related changes in a single response (e.g., adding a class and its methods together). The modification tools and their validation logic are designed to handle methods that reference classes or instance variables proposed in the same conversation, so you do not need to wait for the user to approve a class before adding methods to it.'
+		'    - If a modification tool returns a warning about unimplemented selectors, verify if you have already defined them or intend to define them in your current response. If not, treat the warning as an error, as you have likely made a typo or hallucinated a method, and immediately correct the code.'
 		'   Only use Markdown code blocks for code examples or workspace scripts meant for the user to execute manually.'
 		'6. Getting source code in VAST may be slow. When using the parameter `with_source` available in many tools, try to minimize cases where a `true` is specified and try favor `false`'
 		)
@@ -164,7 +165,7 @@ Return ONLY the Title text. No preambles, no quotes, no markdown.'.
 	summarizerChat title: 'summarizer'.
 		
 	[
-		summarizerGenerator := self model generatorClass forChat: summarizerChat.
+		summarizerGenerator := self model generatorClass forChat: summarizerChat functionsSet: AIFunctionsSet new.
 		[
 			summarizerGenerator generate.
 			summarizerChat userMessages first generatedContents isEmpty not ifTrue: [
@@ -255,7 +256,8 @@ AIChat >> model [
 { #category : 'Accessing' }
 AIChat >> model: newModel [
 
-	model := newModel
+	model := newModel.
+	self changed: #model.
 ]
 
 { #category : 'Not categorized' }

@@ -3,6 +3,13 @@ Extension {
 }
 
 { #category : 'User Interface' }
-AIModelGoogleGeminiAPI >> addSpecificDetailsTo: modelDetailsPane in: modelSettings [
-	"No specific details for Gemini models"
+AIModelGoogleGeminiAPI >> addSpecificDetailsTo: aPane in: aModel [
+
+	aModel createGeminiModelDetailsOn: aPane
+]
+
+{ #category : 'User Interface' }
+AIModelGoogleGeminiAPI >> hasParameters [
+
+	^true
 ]

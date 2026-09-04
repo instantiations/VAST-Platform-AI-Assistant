@@ -54,17 +54,31 @@ AIAbstractStackIterationFunction >> parameters [
 
 { #category : 'Internal',
   #vaVisibility : 'private' }
-AIAbstractStackIterationFunction >> stackFramesJSONFor: process arguments: arguments [
+AIAbstractStackIterationFunction >> stackFramesJSONFrom: firstFrame arguments: arguments [
 
-	| stringlimit stacklimit firstFrame frames |
+	^ self
+		stackFramesJSONFrom: firstFrame
+		arguments: arguments
+		until: [:frame | false]
+]
 
+{ #category : 'Internal',
+  #vaVisibility : 'private' }
+AIAbstractStackIterationFunction >> stackFramesJSONFrom: firstFrame arguments: arguments until: endBlock [
+
+	| stringlimit stacklimit frames allFrames |
+
+	firstFrame ifNil: [^#()].
 	stringlimit := (arguments at: 'printstring_limit' ifAbsent: [self defaultPrintStringLimit]) min: self maxPrintStringLimit.
 	stacklimit := (arguments at: 'stacksize_limit' ifAbsent: [self defaultStackSizeLimit]) min: self maxStackSizeLimit.
 	
-	firstFrame := process topFrame.
-	frames := OrderedCollection new: stacklimit.
-	frames add: (firstFrame aiJSONWithStringsLimitedTo: stringlimit).
-	(firstFrame previousFrames: stacklimit - 1) do: [:frame | frames add: (frame aiJSONWithStringsLimitedTo: stringlimit) ].
+	allFrames := OrderedCollection with: firstFrame.
+	allFrames addAll: (firstFrame previousFrames: stacklimit - 1).
+	
+	frames := OrderedCollection new: allFrames size.
+	allFrames do: [:frame |
+		frames add: (frame aiJSONWithStringsLimitedTo: stringlimit).
+		(endBlock value: frame) ifTrue: [^frames]].
 	
 	^ frames
 ]

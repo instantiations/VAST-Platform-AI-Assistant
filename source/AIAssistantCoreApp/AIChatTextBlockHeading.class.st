@@ -8,7 +8,7 @@ Class {
 	#category : 'AIAssistantCoreApp'
 }
 
-{ #category : 'Not categorized' }
+{ #category : 'Instantiation' }
 AIChatTextBlockHeading class >> fromLine: line [
 
 	| level afterLevel |
@@ -27,19 +27,19 @@ AIChatTextBlockHeading class >> fromLine: line [
 	^ self level: level text: AIChatTextElementSequence new
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Instantiation' }
 AIChatTextBlockHeading class >> level: level text: text [
 
 	^ self basicNew initializeWithLevel: level text: text
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Comparing' }
 AIChatTextBlockHeading >> = object [
 
 	^ self class = object class and: [ self level = object level and: [ self textElement = object textElement ] ]
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Initialization' }
 AIChatTextBlockHeading >> initializeWithLevel: initialLevel text: initialText [
 
 	self initialize.
@@ -47,19 +47,19 @@ AIChatTextBlockHeading >> initializeWithLevel: initialLevel text: initialText [
 	text := initialText.
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Testing' }
 AIChatTextBlockHeading >> isHeadingBlock [
 
 	^ true
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIChatTextBlockHeading >> level [
 
 	^ level
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIChatTextBlockHeading >> textElement [
 
 	^ text

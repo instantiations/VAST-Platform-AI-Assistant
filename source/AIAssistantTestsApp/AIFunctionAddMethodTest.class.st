@@ -88,8 +88,9 @@ AIFunctionAddMethodTest >> testUnknownMessageSendInMethodIsFlagged [
 	args at: 'source' put: 'foo ^ self someNonExistentMessageSendWhichNobodyImplements'.
 	args at: 'application' put: 'AIAssistantTestsApp'.
 	result := self applyFunction: AIFunctionAddMethod withArguments: args.
-	self assert: (result includesKey: 'error').
-	self assert: (result at: 'error') equals: 'Sends selectors that have no implementors: #someNonExistentMessageSendWhichNobodyImplements'.
+	self deny: (result includesKey: 'error').
+	self assert: (result includesKey: 'warning').
+	self assert: (result at: 'warning') equals: 'Sends selectors that have no implementors: #someNonExistentMessageSendWhichNobodyImplements'.
 ]
 
 { #category : 'Tests' }

@@ -26,3 +26,9 @@ AIChat >> storeOn: stream [
 	userMessages storeOn: stream.
 	stream nextPut: $).
 ]
+
+{ #category : 'Not categorized' }
+AIChat >> writeFormattedOn: stream [
+
+	userMessages do: [ :userMessage | userMessage writeFormattedOn: stream ] separatedBy: [ stream newLine ]
+]

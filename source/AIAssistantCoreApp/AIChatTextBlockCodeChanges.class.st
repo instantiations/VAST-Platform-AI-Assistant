@@ -8,7 +8,7 @@ Class {
 	#category : 'AIAssistantCoreApp'
 }
 
-{ #category : 'Instance Creation' }
+{ #category : 'Instantiation' }
 AIChatTextBlockCodeChanges class >> changes: aCollectionOfChanges [
 	^ self basicNew initializeWithChanges: aCollectionOfChanges
 ]
@@ -24,7 +24,7 @@ AIChatTextBlockCodeChanges >> initializeWithChanges: aCollectionOfChanges [
 	changes := aCollectionOfChanges
 ]
 
-{ #category : 'Accessing' }
+{ #category : 'Testing' }
 AIChatTextBlockCodeChanges >> isCodeChangesBlock [
 
 	^ true

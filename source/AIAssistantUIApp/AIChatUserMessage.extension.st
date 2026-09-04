@@ -15,3 +15,19 @@ AIChatUserMessage >> storeOn: stream [
 	codeChanges storeOn: stream.
 	stream nextPut: $).
 ]
+
+{ #category : 'Not categorized' }
+AIChatUserMessage >> writeFormattedOn: stream [
+
+	| userQuoteTextBlock |
+
+	userQuoteTextBlock := AIChatTextBlockQuote new.
+	self userText textBlocks do: [ :textBlock |
+		userQuoteTextBlock addBlock: textBlock ].
+	userQuoteTextBlock writeFormattedOn: stream.
+	stream newLine.
+	
+	(self modelText textBlocks reject: [ :block | block isThoughtBlock or: [ block isFunctionCallsBlock ] ])
+		do: [ :block | block writeFormattedOn: stream ]
+		separatedBy: [ stream newLine ]
+]

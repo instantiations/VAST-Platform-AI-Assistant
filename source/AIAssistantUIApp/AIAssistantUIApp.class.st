@@ -28,10 +28,23 @@ AIAssistantUIApp class >> addToSystemMenu [
 ]
 
 { #category : 'Internal' }
+AIAssistantUIApp class >> addToTranscriptToolbar [
+
+	| toolBar |
+
+	StsPowerTools commandNameMap at: #stsAIAssistant put: 'AI Assistant'.
+	toolBar := StsPowerTools toolBarDefinitionFor: Transcript class name ifAbsent: [ StsPowerTools toolBars at: Transcript class name put: Transcript stsDefaultToolBar ].
+	(toolBar includes: #stsAIAssistant) ifFalse: [
+		toolBar add: #space; add: #stsAIAssistant.
+		self updateTranscriptToolbar ].
+]
+
+{ #category : 'Internal' }
 AIAssistantUIApp class >> failedRemove [
 
 	self hookDebuggerMenuCallbacks.
-	self addToSystemMenu
+	self addToSystemMenu.
+	self addToTranscriptToolbar.
 ]
 
 { #category : 'Internal' }
@@ -49,6 +62,7 @@ AIAssistantUIApp class >> hookDebuggerMenuCallbacks [
 AIAssistantUIApp class >> loaded [
 
 	self addToSystemMenu.
+	self addToTranscriptToolbar.
 	self releaseDebuggerMenuCallbacks.
 	self hookDebuggerMenuCallbacks
 ]
@@ -78,10 +92,25 @@ AIAssistantUIApp class >> removeFromSystemMenu [
 ]
 
 { #category : 'Internal' }
+AIAssistantUIApp class >> removeFromTranscriptToolbar [
+
+	StsPowerTools toolBars at: Transcript class name ifPresent: [ :toolBar |
+		| index |
+		index := toolBar indexOf: #stsAIAssistant.
+		index ~= 0 ifTrue: [
+			toolBar removeAtIndex: index. 
+			(index = (toolBar size + 1) and: [ index > 1 and: [ (toolBar at: index - 1) = #space ] ]) ifTrue: [
+				toolBar removeAtIndex: index - 1 ].
+			self updateTranscriptToolbar ] ].
+	StsPowerTools commandNameMap removeKey: #stsAIAssistant ifAbsent: [ ].
+]
+
+{ #category : 'Internal' }
 AIAssistantUIApp class >> removing [
 
 	self releaseDebuggerMenuCallbacks.
 	self removeFromSystemMenu.
+	self removeFromTranscriptToolbar.
 	AIChatWidget resetFontSets.
 ]
 
@@ -89,4 +118,14 @@ AIAssistantUIApp class >> removing [
 AIAssistantUIApp class >> shutDown [
 
 	AIChatWidget resetFontSets
+]
+
+{ #category : 'Internal' }
+AIAssistantUIApp class >> updateTranscriptToolbar [
+
+	| height |
+
+	height := (Transcript instVarNamed: 'toolBar') destroyWidget; height.
+	(Transcript instVarNamed: 'toolBar' put: Transcript stsToolBar) height: height.
+	Transcript setAttachments.
 ]

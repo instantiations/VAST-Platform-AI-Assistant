@@ -9,31 +9,31 @@ Class {
 	#category : 'AIAssistantCoreApp'
 }
 
-{ #category : 'Not categorized' }
+{ #category : 'Instantiation' }
 AIChatTextElementLink class >> element: element destination: destination [
 
 	^ self basicNew initializeWithElement: element destination: destination
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Comparing' }
 AIChatTextElementLink >> = object [
 
 	^ self class = object class and: [ self element = object element and: [ self destination = object destination ] ]
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIChatTextElementLink >> destination [
 
 	^ destination
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIChatTextElementLink >> element [
 
 	^ element
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Initialization' }
 AIChatTextElementLink >> initializeWithElement: initialElement destination: initialDestination [
 
 	self initialize.
@@ -42,7 +42,7 @@ AIChatTextElementLink >> initializeWithElement: initialElement destination: init
 	isPointedTo := false.
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Testing' }
 AIChatTextElementLink >> isPointedTo [
 
 	^ isPointedTo

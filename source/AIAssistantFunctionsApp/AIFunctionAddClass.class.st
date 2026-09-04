@@ -113,6 +113,7 @@ AIFunctionAddClass >> definitionStringFor: className type: type superclass: supe
 	keyword := self classCreationKeywordFor: type.
 	^	(String streamContents: [:stream |
 			stream
+				cr;
 				nextPutAll: superclassName;
 				space;
 				nextPutAll: keyword;

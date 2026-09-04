@@ -2,13 +2,13 @@ Extension {
 	#name : 'AIChatTextBlockCodeChanges'
 }
 
-{ #category : 'Not categorized' }
+{ #category : 'Widget Event Handling' }
 AIChatTextBlockCodeChanges >> browse [
 
 	CwAppContext default asyncExecInUI: [AIRefactoryChangesBrowser openOn: changes]
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Drawing' }
 AIChatTextBlockCodeChanges >> drawOnChatWidget: chatWidget dc: dc [
 
 	chatWidget drawTextBlockCodeChanges: self dc: dc
@@ -23,4 +23,10 @@ AIChatTextBlockCodeChanges >> textElement [
 				bindWith: changes size asString
 				with: (changes size = 1 ifTrue: [ 'change' ] ifFalse: [ 'changes' ])))
 			block: [self browse] ]
+]
+
+{ #category : 'Writing' }
+AIChatTextBlockCodeChanges >> writeFormattedOn: stream [
+
+	self shouldNotImplement
 ]

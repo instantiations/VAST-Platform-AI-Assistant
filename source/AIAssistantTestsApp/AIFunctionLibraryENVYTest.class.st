@@ -4,10 +4,8 @@ Class {
 	#instVars : [
 		'appOne',
 		'appSeveral',
-		'appMany',
 		'mapOne',
-		'mapSeveral',
-		'mapMany'
+		'mapSeveral'
 	],
 	#category : 'AIAssistantTestsApp'
 }

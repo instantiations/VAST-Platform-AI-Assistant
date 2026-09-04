@@ -14,7 +14,7 @@ AIJSONSerializationTest >> testClassAIJSON [
 	self assert: json keys size equals: 5.
 	self assert: (json at: 'superclass') equals: 'Object'.
 	self assert: (json at: 'instance_variables') equals: #('var1' 'var2').
-	self assert: (json at: 'class_variables') asArray equals: #('ClassVar1').
+	self assert: (json at: 'class_variables') equals: #('AClassVar3' 'ClassVar1' 'ZClassVar2').
 	self assert: (json at: 'pool_dictionaries') equals: #('CldtConstants').
 	self assert: (json at: 'application') equals: 'AIAssistantTestsApp'
 ]

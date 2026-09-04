@@ -4,9 +4,11 @@ Extension {
 
 { #category : 'accessing' }
 RemoveClassChange >> displayInMergeBrowser: aBrowser [
-	| cls |
+	| cls leftString |
 	cls := self changeClass.
-	aBrowser updateDiffViewLeft: (cls ifNil: [''] ifNotNil: [cls definitionString]) right: ''.
+	leftString := (cls ifNil: [''] ifNotNil: [cls definitionString]).
+	leftString := EmTextCompatibilityFilter sourceFilter filter: leftString.
+	aBrowser updateDiffViewLeft: leftString right: ''.
 ]
 
 { #category : 'accessing' }

@@ -71,7 +71,7 @@ AIAbstractFunction >> classesScopedTo: applicationNames and: classNames [
 	^classesToSearch
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIAbstractFunction >> defaultEnabled [
 
 	^ true
@@ -169,7 +169,7 @@ AIAbstractFunction >> resultLimitFor: aContext withSource: includeSource [
 	^resultLimit
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'API' }
 AIAbstractFunction >> validateFunctionCallArguments: arguments [
 
 	| parameters |

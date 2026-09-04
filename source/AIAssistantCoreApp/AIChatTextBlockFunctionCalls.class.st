@@ -9,32 +9,32 @@ Class {
 	#category : 'AIAssistantCoreApp'
 }
 
-{ #category : 'Not categorized' }
+{ #category : 'Instantiation' }
 AIChatTextBlockFunctionCalls class >> new [
 
 	^ self basicNew initialize
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIChatTextBlockFunctionCalls >> addFunctionCall: functionCallContentPart [
 
 	functionCalls add: functionCallContentPart
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Copying' }
 AIChatTextBlockFunctionCalls >> copyStateFrom: anotherFunctionBlock [
 	"Copy any state from another block into self"
 	isExpanded := anotherFunctionBlock isExpanded.
 	isPointedTo := anotherFunctionBlock isPointedTo.
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIChatTextBlockFunctionCalls >> functionCalls [
 
 	^ functionCalls
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Initialization' }
 AIChatTextBlockFunctionCalls >> initialize [
 
 	super initialize.
@@ -43,31 +43,31 @@ AIChatTextBlockFunctionCalls >> initialize [
 	isExpanded := false.
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Testing' }
 AIChatTextBlockFunctionCalls >> isExpanded [
 
 	^ isExpanded
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Testing' }
 AIChatTextBlockFunctionCalls >> isFunctionCallsBlock [
 
 	^ true
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Testing' }
 AIChatTextBlockFunctionCalls >> isPointedTo [
 
 	^ isPointedTo
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIChatTextBlockFunctionCalls >> textElement [
 
 	self shouldNotImplement
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIChatTextBlockFunctionCalls >> toggleIsExpanded [
 
 	isExpanded := isExpanded not

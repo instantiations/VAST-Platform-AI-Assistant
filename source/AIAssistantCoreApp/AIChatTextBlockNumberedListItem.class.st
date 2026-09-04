@@ -10,13 +10,13 @@ Class {
 	#category : 'AIAssistantCoreApp'
 }
 
-{ #category : 'Not categorized' }
+{ #category : 'Instantiation' }
 AIChatTextBlockNumberedListItem class >> number: number marker: marker indentationLevel: indentationLevel [
 
 	^ self basicNew initializeWithNumber: number marker: marker indentationLevel: indentationLevel
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Instantiation' }
 AIChatTextBlockNumberedListItem class >> startingAtLine: line [
 
 	| numberIndex digits firstDigit markerIndex marker contentIndex |
@@ -31,19 +31,19 @@ AIChatTextBlockNumberedListItem class >> startingAtLine: line [
 	^ self number: (line copyFrom: numberIndex to: markerIndex - 1) asNumber marker: marker indentationLevel: contentIndex - 1
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Comparing' }
 AIChatTextBlockNumberedListItem >> = object [
 
 	^ self class = object class and: [ self number = object number and: [ self sequenceBlock = object sequenceBlock ] ]
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIChatTextBlockNumberedListItem >> addBlock: block [
 
 	sequenceBlock addBlock: block
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Initialization' }
 AIChatTextBlockNumberedListItem >> initializeWithNumber: initialNumber marker: initialMarker indentationLevel: initialIndentationLevel [
 
 	self initialize.
@@ -53,25 +53,25 @@ AIChatTextBlockNumberedListItem >> initializeWithNumber: initialNumber marker: i
 	sequenceBlock := AIChatTextBlockSequence new.
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Testing' }
 AIChatTextBlockNumberedListItem >> isNumberedListItemBlock [
 
 	^ true
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Parsing' }
 AIChatTextBlockNumberedListItem >> lineWithoutStartMarker: line [
 
 	^ line copyFrom: indentationLevel + 1 to: line size
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIChatTextBlockNumberedListItem >> markerString [
 
 	^ number asString , (String with: marker)
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Parsing' }
 AIChatTextBlockNumberedListItem >> matchLine: line [
 
 	1 to: (line size min: indentationLevel) do: [ :index |
@@ -79,19 +79,19 @@ AIChatTextBlockNumberedListItem >> matchLine: line [
 	^ line copyFrom: indentationLevel + 1 to: line size
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIChatTextBlockNumberedListItem >> number [
 
 	^ number
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIChatTextBlockNumberedListItem >> sequenceBlock [
 
 	^ sequenceBlock
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIChatTextBlockNumberedListItem >> textElement [
 
 	self shouldNotImplement

@@ -2,26 +2,32 @@ Extension {
 	#name : 'AIChatTextBlockSequence'
 }
 
-{ #category : 'Not categorized' }
+{ #category : 'Drawing' }
 AIChatTextBlockSequence >> drawOnChatWidget: chatWidget dc: dc [
 
 	chatWidget drawTextBlockSequence: self dc: dc
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Drawing' }
 AIChatTextBlockSequence >> resetLayout [
 
 	self blocks do: [ :block | block resetLayout ]
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Drawing' }
 AIChatTextBlockSequence >> spacingFactorAfter [
 
 	^ self blocks ifEmpty: [ 0 ] ifNotEmpty: [ self blocks last spacingFactorAfter ]
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Drawing' }
 AIChatTextBlockSequence >> spacingFactorBefore [
 
 	^ self blocks ifEmpty: [ 0 ] ifNotEmpty: [ self blocks first spacingFactorBefore ]
+]
+
+{ #category : 'Writing' }
+AIChatTextBlockSequence >> writeFormattedOn: stream [
+
+	blocks do: [ :block | block writeFormattedOn: stream ] separatedBy: [ stream newLine ]
 ]

@@ -10,8 +10,6 @@ Class {
 		'leftEditor',
 		'rightEditor',
 		'comparer',
-		'leftScroll',
-		'rightScroll',
 		'isScrolling',
 		'classNamesListWidget',
 		'selectedClassname',

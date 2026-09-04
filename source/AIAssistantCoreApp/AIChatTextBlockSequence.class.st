@@ -8,7 +8,7 @@ Class {
 	#category : 'AIAssistantCoreApp'
 }
 
-{ #category : 'Not categorized' }
+{ #category : 'Instantiation' }
 AIChatTextBlockSequence class >> fromString: string [
 
 	| previousLines pendingCodeStartNumberOfTicks lastTopicLine sequenceBlock blocks |
@@ -80,19 +80,19 @@ AIChatTextBlockSequence class >> fromString: string [
 	^ sequenceBlock
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Instantiation' }
 AIChatTextBlockSequence class >> new [
 
 	^ self basicNew initialize
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Comparing' }
 AIChatTextBlockSequence >> = object [
 
 	^ self class = object class and: [ self blocks = object blocks ]
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIChatTextBlockSequence >> addBlock: block [
 
 	blocks add: block.
@@ -101,39 +101,39 @@ AIChatTextBlockSequence >> addBlock: block [
 			self lastTopicLine: newLastTopicLine ] ]
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIChatTextBlockSequence >> blocks [
 
 	^ blocks
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Copying' }
 AIChatTextBlockSequence >> copyStateFrom: otherSequenceBlock [
 
 	otherSequenceBlock blocks doWithIndex: [ :otherTextBlock :index |
 		(blocks at: index) copyStateFrom: otherTextBlock ]
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Initialization' }
 AIChatTextBlockSequence >> initialize [
 
 	super initialize.
 	blocks := OrderedCollection new.
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Testing' }
 AIChatTextBlockSequence >> isSequenceBlock [
 
 	^ true
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIChatTextBlockSequence >> lastTopicLine [
 
 	^ lastTopicLine
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIChatTextBlockSequence >> lastTopicLine: newLastTopicLine [
 
 	lastTopicLine := newLastTopicLine

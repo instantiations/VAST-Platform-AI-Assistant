@@ -1,9 +1,6 @@
 Class {
 	#name : 'AIChatTest',
 	#superclass : 'TestCase',
-	#instVars : [
-		'server'
-	],
 	#category : 'AIAssistantTestsApp'
 }
 
@@ -113,6 +110,43 @@ AIChatTest >> testFunctionCall [
 		self assert: chat userMessages first generatedContents first modelContentParts first arguments equals: functionArguments.
 		self assert: chat userMessages first generatedContents second modelContentParts size equals: 1.
 		self assert: chat userMessages first generatedContents second modelContentParts first string equals: messageString ].
+]
+
+{ #category : 'Not categorized' }
+AIChatTest >> testWriteFormattedOn [
+
+	| chat |
+	
+	chat := AIChat systemInstruction: 'You are an AI assistant' model: self class testModels first filePaths: OrderedCollection new userMessages: (OrderedCollection withAll: {
+		AIChatUserMessage message: 'Write a list' generatedContents: (OrderedCollection withAll: {
+			AIChatGeneratedContent
+				modelContentParts: (OrderedCollection withAll: {
+					AIChatGeneratedContentPartText string: (String lf join: #('+ **Bold**' '+ \*\*Not bold**' '+ * Nested item')) thought: false thoughtSignature: nil })
+				functionResponseParts: OrderedCollection new }).
+		AIChatUserMessage message: 'Call a function' generatedContents: (OrderedCollection withAll: {
+			AIChatGeneratedContent
+				modelContentParts: (OrderedCollection withAll: {
+					AIChatGeneratedContentPartText string: 'Thinking...' thought: true thoughtSignature: nil.
+					AIChatGeneratedContentPartFunctionCall id: '1' name: 'testfunction' arguments: Dictionary new thoughtSignature: nil })
+				functionResponseParts: (OrderedCollection withAll: {
+					AIChatGeneratedContentPartFunctionResponse id: '1' name: 'testfunction' response: Dictionary new }).
+			AIChatGeneratedContent
+				modelContentParts: (OrderedCollection withAll: {
+					AIChatGeneratedContentPartText string: 'I called `testfunction`' thought: false thoughtSignature: nil })
+				functionResponseParts: OrderedCollection new }) }).
+	self assert: (String streamContents: [ :stream | chat writeFormattedOn: stream ]) equals: (CldtConstants::LineDelimiter join: #(
+		'> Write a list'
+		''
+		'* **Bold**'
+		''
+		'* \*\*Not bold\*\*'
+		''
+		'* * Nested item'
+		''
+		'> Call a function'
+		''
+		'I called `testfunction`'
+		'')).
 ]
 
 { #category : 'Not categorized' }

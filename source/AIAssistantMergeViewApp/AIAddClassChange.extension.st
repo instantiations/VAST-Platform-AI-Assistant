@@ -4,11 +4,13 @@ Extension {
 
 { #category : 'accessing' }
 AIAddClassChange >> displayInMergeBrowser: aBrowser [
-	| cls leftString rightString |
+	| cls leftString rightString filter |
 	cls := self changeClass.
 	leftString := (cls ifNil: [''] ifNotNil: [cls definitionString]).
 	rightString := self definition.
-	rightString := EmTextCompatibilityFilter sourceFilter filter: rightString.
+	filter := EmTextCompatibilityFilter sourceFilter.
+	leftString := filter filter: leftString.
+	rightString := filter filter: rightString.
 	aBrowser updateDiffViewLeft: leftString right: rightString
 ]
 

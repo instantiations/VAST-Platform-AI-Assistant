@@ -2,14 +2,20 @@ Extension {
 	#name : 'AIAbstractChatTextElement'
 }
 
-{ #category : 'Not categorized' }
+{ #category : 'Drawing' }
 AIAbstractChatTextElement >> drawOnChatWidget: chatWidget dc: dc [
 
 	self subclassResponsibility
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Drawing' }
 AIAbstractChatTextElement >> resetLayout [
+
+	self subclassResponsibility
+]
+
+{ #category : 'Writing' }
+AIAbstractChatTextElement >> writeFormattedOn: stream [
 
 	self subclassResponsibility
 ]

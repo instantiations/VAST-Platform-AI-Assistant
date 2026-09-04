@@ -119,7 +119,9 @@ AIAbstractFunction >> regexMatcherForArgumentsIn: functionArguments onSyntaxErro
 { #category : 'Validation',
   #vaVisibility : 'private' }
 AIAbstractFunction >> undefinedVariablesIn: methodParseNode context: context targetClassName: targetClassName isClassSide: isClassSide [
-
+	"Returns the collection of variables that are referenced but not defined.
+	 Empty collection means all variable references are valid."
+	
 	| proposedVariables localVariableNames proposedClasses undefinedVariables |
 
 	proposedVariables := self proposedVariablesFrom: context forClass: targetClassName isClassSide: isClassSide.
@@ -155,28 +157,9 @@ AIAbstractFunction >> undefinedVariablesIn: methodParseNode context: context tar
 
 { #category : 'Validation',
   #vaVisibility : 'private' }
-AIAbstractFunction >> validate: code forEvaluation: forEvaluation context: context targetClassName: targetClassName isClassSide: isClassSide [
-
-	| methodParseNode |
-
-	methodParseNode :=
-		AISmalltalkParser
-			parse: code
-			messagePattern: forEvaluation not
-			scanComments: true
-			onError: [:errorString :sourcePosition |
-				^EsOrderedDictionary with:
-					'error' -> ('Syntax error in given code at position ', sourcePosition asString, ': ', errorString)].
-					
-	(self validateMessagesSentIn: methodParseNode context: context) ifNotNil: [:error | ^ error ].
-	(self validateVariableReferencesIn: methodParseNode context: context targetClassName: targetClassName isClassSide: isClassSide) ifNotNil: [:error | ^ error ].
-	
-	^EsOrderedDictionary with: 'valid' -> true
-]
-
-{ #category : 'Validation',
-  #vaVisibility : 'private' }
-AIAbstractFunction >> validateMessagesSentIn: methodParseNode context: context [
+AIAbstractFunction >> unimplementedMessagesSentIn: methodParseNode context: context [
+	"Returns the collection of messages that are sent but not implemented. 
+	 Empty collection means all messages are valid."
 
 	| proposedSelectors selectors |
 
@@ -188,25 +171,34 @@ AIAbstractFunction >> validateMessagesSentIn: methodParseNode context: context [
 				or: [StsPowerTools methodSelectorExistsInSystem: selector]].
 
 	^selectors
-		ifEmpty: [nil]
-		ifNotEmpty: [
-			EsOrderedDictionary with:
-				'error' -> ('Sends selectors that have no implementors: ' , ((selectors sorted collect: [:selector | selector printString]) joinUsing: ', '))]
 ]
 
 { #category : 'Validation',
   #vaVisibility : 'private' }
-AIAbstractFunction >> validateVariableReferencesIn: methodParseNode context: context targetClassName: targetClassName isClassSide: isClassSide [
+AIAbstractFunction >> validate: code forEvaluation: forEvaluation context: context targetClassName: targetClassName isClassSide: isClassSide [
 
-	| undefinedVariables |
+	| methodParseNode undefinedVariables messagesSentButNotImplemented |
+
+	methodParseNode :=
+		AISmalltalkParser
+			parse: code
+			messagePattern: forEvaluation not
+			scanComments: true
+			onError: [:errorString :sourcePosition |
+				^EsOrderedDictionary with:
+					'error' -> ('Syntax error in given code at position ' , sourcePosition asString , ': ' ,errorString)].
 
 	undefinedVariables := self undefinedVariablesIn: methodParseNode context: context targetClassName: targetClassName isClassSide: isClassSide.
+	undefinedVariables ifNotEmpty: [
+		^EsOrderedDictionary with:
+			'error' -> ('References unknown variables, classes or globals: ' , ((undefinedVariables asSortedCollection collect: [:name | name printString]) joinUsing: ', '))].
+			
+	messagesSentButNotImplemented := self unimplementedMessagesSentIn: methodParseNode context: context.
+	messagesSentButNotImplemented ifNotEmpty: [
+		^EsOrderedDictionary with:
+			'warning' -> ('Sends selectors that have no implementors: ' , ((messagesSentButNotImplemented sorted collect: [:selector | selector printString]) joinUsing: ', '))].
 
-	^undefinedVariables
-		ifEmpty: [nil]
-		ifNotEmpty: [
-			EsOrderedDictionary with:
-				'error' -> ('References unknown variables, classes or globals: ' , ((undefinedVariables asSortedCollection collect: [:name | name printString]) joinUsing: ', '))]
+	^EsOrderedDictionary with: 'valid' -> true
 ]
 
 { #category : 'Internal',

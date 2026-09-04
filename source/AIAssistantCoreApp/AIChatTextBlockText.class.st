@@ -7,44 +7,44 @@ Class {
 	#category : 'AIAssistantCoreApp'
 }
 
-{ #category : 'Not categorized' }
+{ #category : 'Instantiation' }
 AIChatTextBlockText class >> fromString: string [
 
 	^ self text: (AIChatTextElementSequence fromString: string)
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Instantiation' }
 AIChatTextBlockText class >> new [
 
 	^ self text: AIChatTextElementString new
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Instantiation' }
 AIChatTextBlockText class >> text: text [
 
 	^ self basicNew initializeWithText: text
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Comparing' }
 AIChatTextBlockText >> = object [
 
 	^ self class = object class and: [ self textElement = object textElement ]
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Initialization' }
 AIChatTextBlockText >> initializeWithText: initialText [
 
 	self initialize.
 	text := initialText.
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Testing' }
 AIChatTextBlockText >> isTextBlock [
 
 	^ true
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIChatTextBlockText >> textElement [
 
 	^ text

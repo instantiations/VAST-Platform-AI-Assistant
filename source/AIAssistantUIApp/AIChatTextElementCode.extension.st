@@ -2,7 +2,7 @@ Extension {
 	#name : 'AIChatTextElementCode'
 }
 
-{ #category : 'Not categorized' }
+{ #category : 'Widget Event Handling' }
 AIChatTextElementCode >> buttonPressedIn: chatWidget [
 
 	self referencedMethod ifNotNil: [ :method |
@@ -30,34 +30,34 @@ AIChatTextElementCode >> buttonPressedIn: chatWidget [
 				open ] ]
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Drawing' }
 AIChatTextElementCode >> drawOnChatWidget: chatWidget dc: dc [
 
 	^ chatWidget drawTextElementCode: self dc: dc
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Widget Event Handling' }
 AIChatTextElementCode >> pointerEnteredIn: chatWidget [
 
 	isPointedTo := true.
 	chatWidget redraw.
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Widget Event Handling' }
 AIChatTextElementCode >> pointerLeftIn: chatWidget [
 
 	isPointedTo := false.
 	chatWidget redraw.
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIChatTextElementCode >> referencedClass [
 
 	^ (self code notEmpty and: [ self code first isUppercase and: [ self code isSmalltalkIdentifier ] ])
 		ifTrue: [ Smalltalk classAt: self code asEsString ]
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIChatTextElementCode >> referencedMethod [
 
 	| parts className isMeta selector class |
@@ -73,20 +73,49 @@ AIChatTextElementCode >> referencedMethod [
 	^ class compiledMethodAt: selector asSymbol ifAbsent: [ nil ]
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Testing' }
 AIChatTextElementCode >> referencesClass [
 
 	^ self referencedClass notNil
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Testing' }
 AIChatTextElementCode >> referencesMethod [
 
 	^ self referencedMethod notNil
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Drawing' }
 AIChatTextElementCode >> resetLayout [
 
 	self codeTextString resetLayout
+]
+
+{ #category : 'Writing' }
+AIChatTextElementCode >> writeFormattedOn: stream [
+
+	| numberOfTicks startIndexTicks delimiter startsOrEndsWithTick |
+
+	numberOfTicks := 1.
+	startIndexTicks := nil.
+	self code keysAndValuesDo: [ :index :character |
+		character = $` ifTrue: [
+			startIndexTicks ifNil: [
+				startIndexTicks := index ]
+		] ifFalse: [
+			startIndexTicks ifNotNil: [
+				numberOfTicks := numberOfTicks max: (index - startIndexTicks + 1) ] ] ].
+	startIndexTicks ifNotNil: [
+		numberOfTicks := numberOfTicks max: (self code size + 1 - startIndexTicks + 1) ].
+	
+	delimiter := String new: numberOfTicks withAll: $`.
+	startsOrEndsWithTick := self code notEmpty and: [ self code first = $` or: [ self code last = $` ] ].
+	
+	stream nextPutAll: delimiter.
+	startsOrEndsWithTick ifTrue: [
+		stream nextPut: Character space ].
+	stream nextPutAll: self code.
+	startsOrEndsWithTick ifTrue: [
+		stream nextPut: Character space ].
+	stream nextPutAll: delimiter.
 ]

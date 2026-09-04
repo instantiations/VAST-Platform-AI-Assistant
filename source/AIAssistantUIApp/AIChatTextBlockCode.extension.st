@@ -2,12 +2,12 @@ Extension {
 	#name : 'AIChatTextBlockCode'
 }
 
-{ #category : 'Interactions' }
+{ #category : 'Widget Event Handling' }
 AIChatTextBlockCode >> browse [
 	self openWorkspace
 ]
 
-{ #category : 'Interactions' }
+{ #category : 'Widget Event Handling' }
 AIChatTextBlockCode >> buttonPressedIn: chatWidget [
 
 	CwAppContext default asyncExecInUI: [
@@ -53,13 +53,13 @@ AIChatTextBlockCode >> codeAssistProvider [
 		do: [ :provider | ^ provider ]
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Drawing' }
 AIChatTextBlockCode >> drawOnChatWidget: chatWidget dc: dc [
 
 	chatWidget drawTextBlockCode: self dc: dc
 ]
 
-{ #category : 'Interactions' }
+{ #category : 'Widget Event Handling' }
 AIChatTextBlockCode >> openWorkspace [
 
 	| workspace |
@@ -71,16 +71,40 @@ AIChatTextBlockCode >> openWorkspace [
 	workspace textWidget codeAssistant updateActiveProvider: self codeAssistProvider
 ]
 
-{ #category : 'Interactions' }
+{ #category : 'Widget Event Handling' }
 AIChatTextBlockCode >> pointerEnteredIn: chatWidget [
 
 	isPointedTo := true.
 	chatWidget redraw.
 ]
 
-{ #category : 'Interactions' }
+{ #category : 'Widget Event Handling' }
 AIChatTextBlockCode >> pointerLeftIn: chatWidget [
 
 	isPointedTo := false.
 	chatWidget redraw.
+]
+
+{ #category : 'Writing' }
+AIChatTextBlockCode >> writeFormattedOn: stream [
+
+	| numberOfTicks backticks |
+
+	numberOfTicks := 3.
+	code linesDo: [ :line |
+		line size >= 3 ifTrue: [
+			| startIndex stopIndex |
+			startIndex := (1 to: 3) detect: [ :index | (line at: index) ~= Character space ] ifNone: [ 4 ].
+			stopIndex := (startIndex to: line size) detect: [ :index | (line at: index) ~= $` ] ifNone: [ line size + 1 ].
+			numberOfTicks := numberOfTicks max: (stopIndex - startIndex + 1) ] ].
+	
+	backticks := String new: numberOfTicks withAll: $`.
+	
+	stream nextPutAll: backticks.
+	infoString ifNotNil: [
+		stream nextPutAll: infoString ].
+	stream newLine.
+	stream nextPutAll: code.
+	stream newLine.
+	stream nextPutAll: backticks.
 ]

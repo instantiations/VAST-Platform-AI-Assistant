@@ -6,7 +6,9 @@ Class {
 		'var2'
 	],
 	#classVars : [
-		'ClassVar1'
+		'ZClassVar2',
+		'ClassVar1',
+		'AClassVar3'
 	],
 	#pools : [
 		'CldtConstants'

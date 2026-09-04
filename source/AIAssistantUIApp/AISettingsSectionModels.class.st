@@ -5,7 +5,6 @@ Class {
 		'modelList',
 		'selectedModel',
 		'currentModel',
-		'selectedProvider',
 		'currentProvider',
 		'unregisterButton',
 		'newButton',

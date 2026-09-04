@@ -9,19 +9,19 @@ Class {
 	#category : 'AIAssistantCoreApp'
 }
 
-{ #category : 'Not categorized' }
+{ #category : 'Instantiation' }
 AIChatTextBlockThought class >> new [
 
 	^ self basicNew initialize
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIChatTextBlockThought >> addBlock: block [
 
 	sequenceBlock addBlock: block
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Copying' }
 AIChatTextBlockThought >> copyStateFrom: anotherThoughtBlock [
 	"Copy any state from another block into self"
 	isExpanded := anotherThoughtBlock isExpanded.
@@ -29,7 +29,7 @@ AIChatTextBlockThought >> copyStateFrom: anotherThoughtBlock [
 	self sequenceBlock copyStateFrom: anotherThoughtBlock sequenceBlock.
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Initialization' }
 AIChatTextBlockThought >> initialize [
 
 	super initialize.
@@ -38,43 +38,43 @@ AIChatTextBlockThought >> initialize [
 	isExpanded := false.
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Testing' }
 AIChatTextBlockThought >> isExpanded [
 
 	^ isExpanded
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Testing' }
 AIChatTextBlockThought >> isPointedTo [
 
 	^ isPointedTo
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Testing' }
 AIChatTextBlockThought >> isThoughtBlock [
 
 	^ true
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIChatTextBlockThought >> lastTopicLine [
 
 	^ sequenceBlock lastTopicLine
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIChatTextBlockThought >> sequenceBlock [
 
 	^ sequenceBlock
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIChatTextBlockThought >> textElement [
 
 	self shouldNotImplement
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIChatTextBlockThought >> toggleIsExpanded [
 
 	isExpanded := isExpanded not

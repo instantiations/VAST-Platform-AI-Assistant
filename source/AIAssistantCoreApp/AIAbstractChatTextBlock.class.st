@@ -4,72 +4,72 @@ Class {
 	#category : 'AIAssistantCoreApp'
 }
 
-{ #category : 'Not categorized' }
+{ #category : 'Copying' }
 AIAbstractChatTextBlock >> copyStateFrom: anotherTextBlock [
 	"Copy any state from another block into self"
 ]
 
-{ #category : 'Accessing' }
+{ #category : 'Testing' }
 AIAbstractChatTextBlock >> isCodeBlock [
 
 	^ false
 ]
 
-{ #category : 'Accessing' }
+{ #category : 'Testing' }
 AIAbstractChatTextBlock >> isCodeChangesBlock [
 
 	^ false
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Testing' }
 AIAbstractChatTextBlock >> isFunctionCallsBlock [
 
 	^ false
 ]
 
-{ #category : 'Accessing' }
+{ #category : 'Testing' }
 AIAbstractChatTextBlock >> isFunctionResponseBlock [
 
 	^ false
 ]
 
-{ #category : 'Accessing' }
+{ #category : 'Testing' }
 AIAbstractChatTextBlock >> isHeadingBlock [
 
 	^ false
 ]
 
-{ #category : 'Accessing' }
+{ #category : 'Testing' }
 AIAbstractChatTextBlock >> isListItemBlock [
 
 	^ false
 ]
 
-{ #category : 'Accessing' }
+{ #category : 'Testing' }
 AIAbstractChatTextBlock >> isNumberedListItemBlock [
 
 	^ false
 ]
 
-{ #category : 'Accessing' }
+{ #category : 'Testing' }
 AIAbstractChatTextBlock >> isQuoteBlock [
 
 	^ false
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Testing' }
 AIAbstractChatTextBlock >> isSequenceBlock [
 
 	^ false
 ]
 
-{ #category : 'Accessing' }
+{ #category : 'Testing' }
 AIAbstractChatTextBlock >> isTextBlock [
 
 	^ false
 ]
 
-{ #category : 'Accessing' }
+{ #category : 'Testing' }
 AIAbstractChatTextBlock >> isThoughtBlock [
 
 	^ false

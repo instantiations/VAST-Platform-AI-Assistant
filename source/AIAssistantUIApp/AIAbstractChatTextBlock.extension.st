@@ -2,26 +2,32 @@ Extension {
 	#name : 'AIAbstractChatTextBlock'
 }
 
-{ #category : 'Not categorized' }
+{ #category : 'Drawing' }
 AIAbstractChatTextBlock >> drawOnChatWidget: chatWidget dc: dc [
 
 	self subclassResponsibility
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Drawing' }
 AIAbstractChatTextBlock >> resetLayout [
 
 	self textElement resetLayout
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Drawing' }
 AIAbstractChatTextBlock >> spacingFactorAfter [
 
 	^ 1 / 2
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Drawing' }
 AIAbstractChatTextBlock >> spacingFactorBefore [
 
 	^ 1 / 2
+]
+
+{ #category : 'Writing' }
+AIAbstractChatTextBlock >> writeFormattedOn: stream [
+
+	self subclassResponsibility
 ]

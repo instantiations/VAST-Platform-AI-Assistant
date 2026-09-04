@@ -140,7 +140,7 @@ AIChatWindow >> createMenusBeforeWorkRegion [
   #vaVisibility : 'private' }
 AIChatWindow >> createWorkRegion [
 
-	| sash selectedType unknown notSymbol |
+	| sash selectedType unknown notSymbol buttonForm |
 
 	sash := (self newSash: XmHORIZONTAL) manageChild.
 	(chatWidget := AIChatWidget createWidget: 'chat' parent: self defaultWidgetParent argBlock: nil)
@@ -175,8 +175,10 @@ AIChatWindow >> createWorkRegion [
 		clientData: nil.
 	self addTargetTextWidgetCallbacks: inputWidget.
 
+	(buttonForm := self defaultWidgetParent createForm: nil argBlock: nil)
+		manageChild.
 	(buttonWidget :=
-		self defaultWidgetParent
+		buttonForm
 			createPushButton: 'button'
 			argBlock: [:w |
 				w
@@ -187,7 +189,7 @@ AIChatWindow >> createWorkRegion [
 			receiver: self
 			selector: #pushedButton:clientData:callData:
 			clientData: nil.
-	statusLine := (self newLabelWidget: #statusLineText) manageChild.
+	statusLine := self addOSInformationLine: buttonForm.
 
 	chatWidget setValuesBlock: [:w |
 		w
@@ -202,33 +204,33 @@ AIChatWindow >> createWorkRegion [
 			rightAttachment: XmATTACHFORM;
 			topAttachment: XmATTACHPOSITION;
 			topPosition: 75;
-			orientation: XmHORIZONTAL].
+			borderWidth: 0].
 	inputWidget parent setValuesBlock: [:w |
 		w
 			topAttachment: XmATTACHWIDGET;
 			topWidget: sash;
 			leftAttachment: XmATTACHFORM;
-			bottomAttachment: XmATTACHFORM;
-			bottomOffset: 35;
+			bottomAttachment: XmATTACHWIDGET;
+			bottomWidget: statusLine;
 			rightAttachment: XmATTACHFORM].
+	buttonForm setValuesBlock: [:w |
+		w
+			topAttachment: XmATTACHOPPOSITEFORM;
+			topOffset: statusLine topOffset;
+			bottomAttachment: XmATTACHFORM;
+			leftAttachment: XmATTACHFORM].
 	buttonWidget setValuesBlock: [:w |
 		w
-			topAttachment: XmATTACHWIDGET;
-			topWidget: inputWidget;
-			topOffset: 2;
-			bottomAttachment: XmATTACHFORM;
-			bottomOffset: 2;
+			topAttachment: XmATTACHFORM;
+			topOffset: 3;
 			leftAttachment: XmATTACHFORM;
-			leftOffset: 2].
-	statusLine setValuesBlock: [:w |
-		w
-			topAttachment: XmATTACHWIDGET;
-			topWidget: inputWidget;
-			leftAttachment: XmATTACHWIDGET;
-			leftWidget: buttonWidget;
-			leftOffset: 5;
+			leftOffset: 3;
 			rightAttachment: XmATTACHFORM;
-			bottomAttachment: XmATTACHFORM].
+			rightOffset: 3;
+			bottomAttachment: XmATTACHFORM;
+			bottomOffset: 3;
+			marginLeft: 8;
+			marginRight: 8].
 			
 	self updateStatusLine
 ]
@@ -290,6 +292,24 @@ AIChatWindow >> menuActionChatAddFile [
 
 	CwFileSelectionPrompter new prompt
 		ifNotNil: [:selectedPathString | chat addFilePath: (CfsPath named: selectedPathString)]
+]
+
+{ #category : 'Operations',
+  #vaVisibility : 'private' }
+AIChatWindow >> menuActionChatExport [
+
+	(CwFileSelectionPrompter new
+		accessType: XmSAVE;
+		fileExtension: '.md';
+		fileName: (self chatTitle ifNotNil: [ :chatTitle | (self asValidWindowsFileName: chatTitle) , '.md' ] ifNil: [ '' ]);
+		prompt) ifNotNil: [ :pathString |
+			| formattedString fileStream |
+			formattedString := String streamContents: [ :stream | chat writeFormattedOn: stream ].
+			fileStream := CfsWriteFileStream openEmpty: pathString.
+			[
+				fileStream isBytes: true;
+					nextPutAll: formattedString asUtf8Bytes
+			] ensure: [ fileStream close ] ]
 ]
 
 { #category : 'Operations',
@@ -378,6 +398,7 @@ AIChatWindow >> menuChat [
 		add: #menuActionChatOpen label: 'Open...' enable: true for: nil;
 		add: #menuActionChatSave label: 'Save' enable: true for: nil;
 		add: #menuActionChatSaveAs label: 'Save As...' enable: true for: nil;
+		add: #menuActionChatExport label: 'Export...';
 		addLine;
 		add: #menuActionChatAddFile label: 'Add File...' enable: true for: nil.
 
@@ -534,12 +555,12 @@ AIChatWindow >> pushedButton: button clientData: clientData callData: callData [
 AIChatWindow >> registeredModelsChanged [
 
 	self updateMenuModelOptions.
+	self updateStatusLine.
 	"update the model used by chat to reflect change"
 	(AIAbstractModel registeredModels contains: [:one | one = chat model])
 		ifFalse: [chat model: nil].
 	(chat model isNil and: [AIAbstractModel registeredModels size = 1])
 		ifTrue: [chat model: AIAbstractModel registeredModels first].
-	self updateInput
 ]
 
 { #category : 'Initialization' }
@@ -598,7 +619,12 @@ AIChatWindow >> statusLineText [
 	| max |
 
 	chat model isNil ifFalse: [max := chat model contextWindowSize].
-	^chat tokenUsage printString , ' / ' , (max ifNil: ['?'] ifNotNil: [max printString])
+	^ '%1 / %2%3'
+		bindWith: chat tokenUsage printString
+		with: (max ifNil: [ '?' ] ifNotNil: [ max printString ])
+		with: (chat model
+			ifNil: [ '' ]
+			ifNotNil: [ ' %1 %2' bindWith: ((UnicodeString value: 16r2014) asSBString ifNil: [ '-' ]) with: chat model label ])
 ]
 
 { #category : 'Events',
@@ -608,6 +634,7 @@ AIChatWindow >> update: aParameter [
 	aParameter = #textSegments ifTrue: [self updateStatusLine].
 	aParameter = #title ifTrue: [self shell notNil ifTrue: [ self updateLabel ] ].
 	aParameter = #generating ifTrue: [self updateInput].
+	aParameter = #model ifTrue: [self updateInput; updateStatusLine].
 	aParameter = #registeredModelsChanged ifTrue: [self registeredModelsChanged].
 	super update: aParameter
 ]
@@ -646,7 +673,7 @@ AIChatWindow >> updateStatusLine [
 
 	"Private - Update the status line."
 
-	^ statusLine labelString: self statusLineText
+	^ statusLine labelString: ' ' , self statusLineText
 ]
 
 { #category : 'Private',

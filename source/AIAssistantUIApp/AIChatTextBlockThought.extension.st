@@ -2,47 +2,53 @@ Extension {
 	#name : 'AIChatTextBlockThought'
 }
 
-{ #category : 'Not categorized' }
+{ #category : 'Widget Event Handling' }
 AIChatTextBlockThought >> buttonPressedIn: chatWidget [
 
 	self toggleIsExpanded.
 	chatWidget resetTextSegmentLayout.
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Drawing' }
 AIChatTextBlockThought >> drawOnChatWidget: chatWidget dc: dc [
 
 	chatWidget drawTextBlockThought: self dc: dc
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Widget Event Handling' }
 AIChatTextBlockThought >> pointerEnteredIn: chatWidget [
 
 	isPointedTo := true.
 	chatWidget redraw.
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Widget Event Handling' }
 AIChatTextBlockThought >> pointerLeftIn: chatWidget [
 
 	isPointedTo := false.
 	chatWidget redraw.
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Drawing' }
 AIChatTextBlockThought >> resetLayout [
 
 	self sequenceBlock resetLayout
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Drawing' }
 AIChatTextBlockThought >> spacingFactorAfter [
 
 	^ 2 / 3
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Drawing' }
 AIChatTextBlockThought >> spacingFactorBefore [
 
 	^ 2 / 3
+]
+
+{ #category : 'Writing' }
+AIChatTextBlockThought >> writeFormattedOn: stream [
+
+	self shouldNotImplement
 ]

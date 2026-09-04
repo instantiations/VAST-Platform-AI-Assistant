@@ -70,5 +70,7 @@ AIChatGeneratorGoogleGeminiAPI >> prepareRequestJSONObject [
 						stream nextPut: userContentJSON ] ] ] ]);
 		add: 'tools' -> (EsOrderedDictionary with: 'functionDeclarations' -> functionsSet functionDeclarationsJSON);
 		add: 'systemInstruction' -> (EsOrderedDictionary with: 'parts' -> { EsOrderedDictionary with: 'text' -> chat systemInstruction });
-		add: 'generationConfig' -> (EsOrderedDictionary with: 'thinkingConfig' -> (EsOrderedDictionary with: 'includeThoughts' -> true))
+		add: 'generationConfig' -> (EsOrderedDictionary with: 'thinkingConfig' -> (EsOrderedDictionary with: 'includeThoughts' -> true)).
+	generationModel thinkingLevel ifNotNil: [ :thinkingLevel |
+		((requestJSONObject at: 'generationConfig') at: 'thinkingConfig') add: 'thinkingLevel' -> thinkingLevel ].
 ]

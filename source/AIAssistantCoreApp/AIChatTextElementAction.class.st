@@ -9,25 +9,25 @@ Class {
 	#category : 'AIAssistantCoreApp'
 }
 
-{ #category : 'Not categorized' }
+{ #category : 'Instantiation' }
 AIChatTextElementAction class >> element: element block: block [
 
 	^ self basicNew initializeWithElement: element  block: block
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Comparing' }
 AIChatTextElementAction >> = object [
 
 	^ self class = object class and: [ self element = object element ]
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIChatTextElementAction >> element [
 
 	^ element
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Initialization' }
 AIChatTextElementAction >> initializeWithElement: anElement block: block [
 
 	element :=anElement.
@@ -35,7 +35,7 @@ AIChatTextElementAction >> initializeWithElement: anElement block: block [
 	isPointedTo := false.
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Testing' }
 AIChatTextElementAction >> isPointedTo [
 
 	^ isPointedTo

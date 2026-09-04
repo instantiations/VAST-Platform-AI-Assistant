@@ -44,5 +44,5 @@ AIJSONServerSentEventsStream >> readCurrent [
 	current := stream atEnd ifFalse: [
 		| data |
 		data := stream next data.
-		data ~= '[DONE]' ifTrue: [ AIJSONReader fromString: data ] ]
+		data ~= '[DONE]' ifTrue: [ (AIJSONReader on: (AIPeekableStream on: (AICharacterGraphemeStream on: data unicodeScalars))) next ] ]
 ]

@@ -4,7 +4,6 @@ Class {
 	#instVars : [
 		'allFunctions',
 		'disabledFunctions',
-		'permissionRequiredPerFunction',
 		'functionsRequiringPermission'
 	],
 	#classInstVars : [
@@ -34,15 +33,34 @@ AIFunctionsSet class >> current: newFunctionsSet [
 ]
 
 { #category : 'Not categorized' }
+AIFunctionsSet class >> functions: functions [
+
+	^ self basicNew initializeWithFunctions: functions
+]
+
+{ #category : 'Not categorized' }
 AIFunctionsSet class >> new [
 
-	^ self basicNew initialize
+	^ self functions: OrderedCollection new
 ]
 
 { #category : 'Not categorized' }
 AIFunctionsSet class >> resetCurrent [
 
-	self current: self new
+	self current: self withDefaultFunctions
+]
+
+{ #category : 'Not categorized' }
+AIFunctionsSet class >> withDefaultFunctions [
+
+	| functions |
+
+	(functions := OrderedCollection new)
+		addAll: (((AIAbstractFunction allSubclasses reject: [ :subclass | subclass isAbstract ]) collect: [ :subclass | subclass new ])
+			sorted: [ :function1 :function2 | function1 name < function2 name ]).
+	(AIAbstractMCPServer registeredServers sorted: [ :server1 :server2 | server1 name < server2 name ]) do: [ :server |
+		functions addAll: (server functions sorted: [ :function1 :function2 | function1 name < function2 name ]) ].
+	^ self functions: functions
 ]
 
 { #category : 'Not categorized' }
@@ -106,14 +124,10 @@ AIFunctionsSet >> functionsByCategory [
 ]
 
 { #category : 'Not categorized' }
-AIFunctionsSet >> initialize [
+AIFunctionsSet >> initializeWithFunctions: initialAllFunctions [
 
 	super initialize.
-	(allFunctions := OrderedCollection new)
-		addAll: (((AIAbstractFunction allSubclasses reject: [ :subclass | subclass isAbstract ]) collect: [ :subclass | subclass new ])
-			sorted: [ :function1 :function2 | function1 name < function2 name ]).
-	(AIAbstractMCPServer registeredServers sorted: [ :server1 :server2 | server1 name < server2 name ]) do: [ :server |
-		allFunctions addAll: (server functions sorted: [ :function1 :function2 | function1 name < function2 name ]) ].
+	allFunctions := initialAllFunctions.
 	disabledFunctions := Set withAll: (allFunctions select: [ :function | function defaultEnabled not ]).
 	functionsRequiringPermission := Set new.
 ]

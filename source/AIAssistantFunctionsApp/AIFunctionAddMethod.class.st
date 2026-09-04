@@ -23,7 +23,7 @@ AIFunctionAddMethod >> applyExistingDefaultsFor: existingMethod withCategories: 
 { #category : 'Actions' }
 AIFunctionAddMethod >> applyFunctionTo: arguments in: context [
 
-	| className source appName app isClassSide categories isPrivate change validationResult methodClass existingMethod |
+	| className source appName app isClassSide categories isPrivate change validationResult methodClass existingMethod result |
 	
 	className := arguments at: 'class'.	
 	(self checkClassName: className) ifNotNil: [:errorResult | ^ errorResult ].
@@ -58,7 +58,10 @@ AIFunctionAddMethod >> applyFunctionTo: arguments in: context [
 	app ifNil: [ change application: change defaultApplicationForMethod ].
 	context addRefactoryChange: change.
 	
-	^ EsOrderedDictionary with: 'result' -> 'Successfully created change'
+	result := EsOrderedDictionary with: 'result' -> 'Successfully created change'.
+	(validationResult includesKey: 'warning') ifTrue: [ result at: 'warning' put: (validationResult at: 'warning') ].
+	
+	^ result
 ]
 
 { #category : 'Internal',

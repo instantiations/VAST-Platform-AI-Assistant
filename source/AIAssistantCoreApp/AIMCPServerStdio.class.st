@@ -111,7 +111,7 @@ AIMCPServerStdio >> command: newCommand [
   #vaVisibility : 'private' }
 AIMCPServerStdio >> ensureStderrReaderProcess [
 
-	stderrReaderProcess isDead ifFalse: [ ^ self ].
+	(stderrReaderProcess isNil or: [ stderrReaderProcess isDead ]) ifFalse: [ ^ self ].
 	stderrReaderProcess :=
 		[
 			[

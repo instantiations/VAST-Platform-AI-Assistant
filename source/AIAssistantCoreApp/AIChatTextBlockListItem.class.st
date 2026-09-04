@@ -9,13 +9,13 @@ Class {
 	#category : 'AIAssistantCoreApp'
 }
 
-{ #category : 'Not categorized' }
+{ #category : 'Instantiation' }
 AIChatTextBlockListItem class >> marker: marker indentationLevel: indentationLevel [
 
 	^ self basicNew initializeWithMarker: marker indentationLevel: indentationLevel
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Instantiation' }
 AIChatTextBlockListItem class >> startingAtLine: line [
 
 	| markerIndex marker contentIndex |
@@ -27,19 +27,19 @@ AIChatTextBlockListItem class >> startingAtLine: line [
 	^ self marker: marker indentationLevel: contentIndex - 1
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Comparing' }
 AIChatTextBlockListItem >> = object [
 
 	^ self class = object class and: [ self sequenceBlock = object sequenceBlock ]
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIChatTextBlockListItem >> addBlock: block [
 
 	sequenceBlock addBlock: block
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Initialization' }
 AIChatTextBlockListItem >> initializeWithMarker: initialMarker indentationLevel: initialIndentationLevel [
 
 	self initialize.
@@ -48,25 +48,25 @@ AIChatTextBlockListItem >> initializeWithMarker: initialMarker indentationLevel:
 	sequenceBlock := AIChatTextBlockSequence new.
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Testing' }
 AIChatTextBlockListItem >> isListItemBlock [
 
 	^ true
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Parsing' }
 AIChatTextBlockListItem >> lineWithoutStartMarker: line [
 
 	^ line copyFrom: indentationLevel + 1 to: line size
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIChatTextBlockListItem >> markerString [
 
 	^ UnicodeString value: '\u{2022}'
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Parsing' }
 AIChatTextBlockListItem >> matchLine: line [
 
 	1 to: (line size min: indentationLevel) do: [ :index |
@@ -74,13 +74,13 @@ AIChatTextBlockListItem >> matchLine: line [
 	^ line copyFrom: indentationLevel + 1 to: line size
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIChatTextBlockListItem >> sequenceBlock [
 
 	^ sequenceBlock
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIChatTextBlockListItem >> textElement [
 
 	self shouldNotImplement

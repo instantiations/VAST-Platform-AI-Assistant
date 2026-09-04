@@ -9,6 +9,7 @@ Class {
 		'httpClient',
 		'requestTimestamp',
 		'responseOrError',
+		'pendingContentParts',
 		'retryDelaySeconds',
 		'shouldStop',
 		'functionCallPermissionsSemaphore',
@@ -21,7 +22,13 @@ Class {
 { #category : 'Not categorized' }
 AIAbstractChatGenerator class >> forChat: chat [
 
-	^ self basicNew initializeWithChat: chat
+	^ self basicNew initializeWithChat: chat functionsSet: AIFunctionsSet current copy
+]
+
+{ #category : 'Not categorized' }
+AIAbstractChatGenerator class >> forChat: chat functionsSet: functionsSet [
+
+	^ self basicNew initializeWithChat: chat functionsSet: functionsSet
 ]
 
 { #category : 'Not categorized',
@@ -79,6 +86,16 @@ AIAbstractChatGenerator >> applyFunctionsInLastGeneratedContent [
 ]
 
 { #category : 'Not categorized' }
+AIAbstractChatGenerator >> flushPendingContentParts [
+
+	pendingContentParts ifNotEmpty: [
+		CwAppContext default syncExecInUI: [
+			self addGeneratedContentParts: pendingContentParts.
+			pendingContentParts removeAll.
+			chat updateLastModelTextSegment ] ]
+]
+
+{ #category : 'Not categorized' }
 AIAbstractChatGenerator >> functionCallPermissionsSet [
 
 	functionCallPermissionsSemaphore signal
@@ -109,11 +126,10 @@ AIAbstractChatGenerator >> handleError [
 
 	((responseOrError errorCode = SstErrorConstants::SstReceiveError) and: [
 		responseOrError errorObject sstIsMessage])
-			ifTrue: [| responseErrorObject |
-				responseErrorObject :=
-					responseOrError errorObject contents asUnicodeString
-						ifNotEmpty: [:contentsString | self parseErrorResponseMessage: (AIJSONReader fromString: contentsString) ]
-						ifEmpty: [nil].
+			ifTrue: [| responseErrorObject byteStream characterStream |
+				byteStream := AIAbstractHTTPResponseBodyReadStream on: (AINotifyingWhenEmptiedSocketStream on: httpClient socketStream) header: responseOrError errorObject header.
+				characterStream := AIPeekableStream on: (AICharacterGraphemeStream on: (AIUTF8DecodingStream on: byteStream)).
+				responseErrorObject := characterStream atEnd ifFalse: [ self parseErrorResponseMessage: (AIJSONReader on: characterStream) next ].
 				AIChatGenerationLog current addEntry: (
 					AIChatGenerationLogEntryAPIError
 						timestamp: requestTimestamp
@@ -125,10 +141,14 @@ AIAbstractChatGenerator >> handleError [
 					responseErrorObject notNil]) 
 						ifTrue:[
 							self parseRetryDelaySecondsFrom: responseErrorObject].
-				retryDelaySeconds
-					ifNil:[ responseOrError raise ]
-					ifNotNil: [
-						self handleRetryDelay]]
+				retryDelaySeconds ifNil: [
+					ExError signalWithArguments: {
+						'Received HTTP response with status %1%2' bindWith: responseOrError errorObject header status
+							with: ((responseErrorObject ifNotNil: [ responseErrorObject at: 'message' ifPresent: [ :message | ': ' , message ] ]) ifNil: [ '' ]).
+						responseOrError.
+						responseErrorObject }
+				] ifNotNil: [
+					self handleRetryDelay ]]
 			ifFalse: [
 				AIChatGenerationLog current addEntry: (
 					AIChatGenerationLogEntrySstError
@@ -143,22 +163,26 @@ AIAbstractChatGenerator >> handleError [
 { #category : 'Not categorized' }
 AIAbstractChatGenerator >> handleResponse [
 
-	| responseObjects characterStream stream |
+	| responseObjects socketStream byteStream characterStream stream |
 
 	CwAppContext default syncExecInUI: [
 		chat userMessages last addNewGeneratedContent.
 		chat updateLastModelTextSegment ].
+	pendingContentParts := OrderedCollection new.
 	responseObjects := OrderedCollection new.
-	characterStream := AIPeekableStream on: (AICharacterGraphemeStream on: (AIUTF8DecodingStream on: (AIStreamedByteMessageReadStream on: responseOrError))).
+	socketStream := AINotifyingWhenEmptiedSocketStream on: httpClient socketStream whenEmptiedDo: [ self flushPendingContentParts ].
+	byteStream := AIAbstractHTTPResponseBodyReadStream on: socketStream header: responseOrError header.
+	characterStream := AIPeekableStream on: (AICharacterGraphemeStream on: (AIUTF8DecodingStream on: byteStream)).
 	stream := self jsonResponseStreamOn: characterStream.
-	[ stream atEnd | shouldStop ] whileFalse: [
-		| responseObject contentParts |
-		responseObject := responseObjects add: stream next.
-		contentParts := self parseResponse: responseObject.
-		contentParts ifNotEmpty: [
-			CwAppContext default syncExecInUI: [
-				self addGeneratedContentParts: contentParts.
-				chat updateLastModelTextSegment ] ] ].
+	[
+		[ stream atEnd | shouldStop ] whileFalse: [
+			| responseObject |
+			responseObject := responseObjects add: stream next.
+			pendingContentParts addAll: (self parseResponse: responseObject) ]
+	] when: ExError do: [ :signal |
+		self flushPendingContentParts.
+		signal pass ].
+	self flushPendingContentParts.
 	AIChatGenerationLog current addEntry: (AIChatGenerationLogEntryGeneratedContent timestamp: requestTimestamp model: generationModel requestObject: requestJSONObject
 		responseHeader: responseOrError header responseObjects: responseObjects).
 ]
@@ -181,12 +205,12 @@ AIAbstractChatGenerator >> handleRetryDelay [
 ]
 
 { #category : 'Not categorized' }
-AIAbstractChatGenerator >> initializeWithChat: initialChat [
+AIAbstractChatGenerator >> initializeWithChat: initialChat functionsSet: initialFunctionsSet [
 
 	self initialize.
 	chat := initialChat.
 	generationModel := chat model.
-	functionsSet := AIFunctionsSet current copy.
+	functionsSet := initialFunctionsSet.
 	shouldStop := false.
 	functionCallPermissionsSemaphore := Semaphore new.
 	generationErrorHandlerSemaphore := Semaphore new.
@@ -233,6 +257,12 @@ AIAbstractChatGenerator >> prepareRequestJSONObject [
 	self subclassResponsibility
 ]
 
+{ #category : 'Accessing' }
+AIAbstractChatGenerator >> requestJSONObject [
+
+	^requestJSONObject
+]
+
 { #category : 'Not categorized' }
 AIAbstractChatGenerator >> retryDelaySeconds [
 
@@ -249,7 +279,7 @@ AIAbstractChatGenerator >> sendRequest [
 				proxyEnabled: true.
 			requestTimestamp := DateAndTime now.
 			responseOrError := httpClient post: (AIJSONWriter toString: requestJSONObject) asUtf8Bytes typed: 'application/json;charset=utf-8' at: generationModel urlAPI
-				using: generationModel requestCredentials withHeaders: generationModel requestHeaders streaming: true.
+				using: generationModel requestCredentials withHeaders: generationModel requestHeaders ignoreContent: true.
 			responseOrError isSstError ifTrue: [
 				self handleError.
 				shouldStop ifTrue: [

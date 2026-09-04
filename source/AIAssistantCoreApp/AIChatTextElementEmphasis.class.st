@@ -8,25 +8,25 @@ Class {
 	#category : 'AIAssistantCoreApp'
 }
 
-{ #category : 'Not categorized' }
+{ #category : 'Instantiation' }
 AIChatTextElementEmphasis class >> isStrong: isStrong element: element [
 
 	^ self basicNew initializeWithIsStrong: isStrong element: element
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Comparing' }
 AIChatTextElementEmphasis >> = object [
 
 	^ self class = object class and: [ self isStrong = object isStrong and: [ self element = object element ] ]
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIChatTextElementEmphasis >> element [
 
 	^ element
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Initialization' }
 AIChatTextElementEmphasis >> initializeWithIsStrong: initialIsStrong element: initialElement [
 
 	self initialize.
@@ -34,13 +34,13 @@ AIChatTextElementEmphasis >> initializeWithIsStrong: initialIsStrong element: in
 	element := initialElement.
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Testing' }
 AIChatTextElementEmphasis >> isEmphasisElement [
 
 	^ true
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Testing' }
 AIChatTextElementEmphasis >> isStrong [
 
 	^ isStrong

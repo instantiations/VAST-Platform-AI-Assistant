@@ -9,19 +9,19 @@ Class {
 	#category : 'AIAssistantCoreApp'
 }
 
-{ #category : 'Instance Creation' }
+{ #category : 'Instantiation' }
 AIChatTextBlockCode class >> code: code [
 
 	^ self code: code infoString: nil
 ]
 
-{ #category : 'Instance Creation' }
+{ #category : 'Instantiation' }
 AIChatTextBlockCode class >> code: code infoString: infoString [
 
 	^ self basicNew initializeWithCode: code infoString: infoString
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Comparing' }
 AIChatTextBlockCode >> = object [
 
 	^ self class = object class and: [ self code = object code ]
@@ -48,13 +48,13 @@ AIChatTextBlockCode >> initializeWithCode: initialCode infoString: initialInfoSt
 	isPointedTo := false.
 ]
 
-{ #category : 'Accessing' }
+{ #category : 'Testing' }
 AIChatTextBlockCode >> isCodeBlock [
 
 	^ true
 ]
 
-{ #category : 'Accessing' }
+{ #category : 'Testing' }
 AIChatTextBlockCode >> isPointedTo [
 
 	^ isPointedTo

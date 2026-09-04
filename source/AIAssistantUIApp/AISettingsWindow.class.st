@@ -5,9 +5,7 @@ Class {
 		'list',
 		'settingsForm',
 		'sectionModels',
-		'settingPanes',
-		'selectedProvider',
-		'selectedModel'
+		'settingPanes'
 	],
 	#category : 'AIAssistantUIApp'
 }

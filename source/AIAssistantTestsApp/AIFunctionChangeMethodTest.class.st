@@ -109,10 +109,11 @@ AIFunctionChangeMethodTest >> testUnknownMessageSendInMethodIsFlagged [
 	| args result |
 	args := Dictionary new.
 	args at: 'class' put: 'AIFunctionChangeMethodTest'.
-	args at: 'source' put: 'foo ^ self someNonExistentMessageSendWhichNobodyImplements'.
+	args at: 'source' put: 'testUnknownMessageSendInMethodIsFlagged ^ self someNonExistentMessageSendWhichNobodyImplements'.
 	result := self applyFunction: AIFunctionChangeMethod withArguments: args.
-	self assert: (result includesKey: 'error').
-	self assert: (result at: 'error') equals: 'Sends selectors that have no implementors: #someNonExistentMessageSendWhichNobodyImplements'.
+	self deny: (result includesKey: 'error').
+	self assert: (result includesKey: 'warning').
+	self assert: (result at: 'warning') equals: 'Sends selectors that have no implementors: #someNonExistentMessageSendWhichNobodyImplements'.
 ]
 
 { #category : 'Tests' }

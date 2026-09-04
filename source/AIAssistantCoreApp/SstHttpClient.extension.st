@@ -3,13 +3,13 @@ Extension {
 }
 
 { #category : 'Not categorized' }
-SstHttpClient >> post: msgBody typed: mediaType at: aUrlObject streaming: aBoolean [
+SstHttpClient >> post: msgBody typed: mediaType at: aUrlObject ignoreContent: aBoolean [
 
-	^ self post: msgBody typed: mediaType at: aUrlObject using: nil withHeaders: nil streaming: aBoolean
+	^ self post: msgBody typed: mediaType at: aUrlObject using: nil withHeaders: nil ignoreContent: aBoolean
 ]
 
 { #category : 'Not categorized' }
-SstHttpClient >> post: msgBody typed: mediaType at: aUrlObject using: authCredentials withHeaders: headers streaming: aBoolean [
+SstHttpClient >> post: msgBody typed: mediaType at: aUrlObject using: authCredentials withHeaders: headers ignoreContent: aBoolean [
 
 	^ self
 		createAndSendRequestFor: aUrlObject
@@ -18,5 +18,11 @@ SstHttpClient >> post: msgBody typed: mediaType at: aUrlObject using: authCreden
 		withHeaders: headers
 		templateMessage: self templateHttpPOSTMessage copy
 		data: msgBody
-		assemblerPolicy: (self newAssemblerPolicy streamContents: aBoolean)
+		assemblerPolicy: (self newAssemblerPolicy ignoreContent: aBoolean)
+]
+
+{ #category : 'Not categorized' }
+SstHttpClient >> socketStream [
+
+	^ localEndpoint transport connection stream
 ]

@@ -4,19 +4,19 @@ Class {
 	#category : 'AIAssistantCoreApp'
 }
 
-{ #category : 'Not categorized' }
+{ #category : 'Testing' }
 AIAbstractChatTextElement >> isEmphasisElement [
 
 	^ false
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Testing' }
 AIAbstractChatTextElement >> isSequenceElement [
 
 	^ false
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Testing' }
 AIAbstractChatTextElement >> isStringElement [
 
 	^ false

@@ -1,9 +1,6 @@
 Class {
 	#name : 'AIChatTextSegmentFunctionCallPermission',
 	#superclass : 'AIAbstractChatTextSegment',
-	#instVars : [
-		'functionCalls'
-	],
 	#category : 'AIAssistantCoreApp'
 }
 

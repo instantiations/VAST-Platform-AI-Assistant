@@ -18,8 +18,6 @@ Class {
 		'textMonospaced',
 		'yOffset',
 		'y',
-		'pendingListBullets',
-		'pendingListOrdinals',
 		'pendingListMarkers',
 		'textSegment',
 		'textElementLink',
