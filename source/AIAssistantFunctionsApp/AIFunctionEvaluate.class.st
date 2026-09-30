@@ -12,7 +12,7 @@ AIFunctionEvaluate >> applyFunctionTo: arguments in: context [
 		timeToRun := [ value := Compiler evaluate: (arguments at: 'expression') ] timeToRun.
 		EsOrderedDictionary
 			with: 'value_class' -> value class name asString
-			with: 'value_printstring' -> (value printStringLimitedTo: ((arguments at: 'printstring_limit' ifAbsent: [ 2000 ]) max: 100000))
+			with: 'value_printstring' -> (value printStringLimitedTo: ((arguments at: 'printstring_limit' ifAbsent: [ 2000 ]) min: 100000))
 			with: 'timetorun_ms' -> timeToRun asMilliseconds
 	] when: ExError do: [ :error |
 		error exitWith: (EsOrderedDictionary with: 'error' -> ('The evaluation signaled an error: %1' bindWith: error asString)) ]

@@ -21,4 +21,11 @@ AIChatGenerationLogEntryAPIError >> initializeWithTimestamp: initialTimestamp mo
 	self initializeWithTimestamp: initialTimestamp model: initialModel requestObject: initialRequestObject.
 	responseHeader := initialResponseHeader.
 	responseErrorObject := initialResponseErrorObject.
+	self initializeRetainedObjects.
+]
+
+{ #category : 'Not categorized' }
+AIChatGenerationLogEntryAPIError >> retainedObjectsRoots [
+
+	^ super retainedObjectsRoots , { responseHeader. responseErrorObject }
 ]

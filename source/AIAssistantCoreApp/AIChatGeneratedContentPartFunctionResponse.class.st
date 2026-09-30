@@ -31,26 +31,6 @@ AIChatGeneratedContentPartFunctionResponse >> initializeWithID: initialID name: 
 ]
 
 { #category : 'Not categorized' }
-AIChatGeneratedContentPartFunctionResponse >> json [
-
-	^ EsOrderedDictionary with: self class type -> self jsonValue
-]
-
-{ #category : 'Not categorized' }
-AIChatGeneratedContentPartFunctionResponse >> jsonValue [
-
-	| jsonValue |
-
-	jsonValue := EsOrderedDictionary new.
-	id ifNotNil: [
-		jsonValue at: 'id' put: id ].
-	jsonValue
-		at: 'name' put: name;
-		at: 'response' put: response.
-	^ jsonValue
-]
-
-{ #category : 'Not categorized' }
 AIChatGeneratedContentPartFunctionResponse >> name [
 
 	^ name

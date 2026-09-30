@@ -43,25 +43,6 @@ AIChatGeneratedContentPartText >> isThought [
 ]
 
 { #category : 'Not categorized' }
-AIChatGeneratedContentPartText >> json [
-
-	| jsonObject |
-
-	jsonObject := EsOrderedDictionary with: self class type -> self jsonValue.
-	self isThought ifNotNil: [ :value |
-		jsonObject at: 'thought' put: value ].
-	self thoughtSignature ifNotNil: [ :value |
-		jsonObject at: 'thoughtSignature' put: value ].
-	^ jsonObject
-]
-
-{ #category : 'Not categorized' }
-AIChatGeneratedContentPartText >> jsonValue [
-
-	^ string
-]
-
-{ #category : 'Not categorized' }
 AIChatGeneratedContentPartText >> string [
 
 	^ string

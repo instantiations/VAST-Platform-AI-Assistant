@@ -32,6 +32,7 @@ AIFunctionAddMethod >> applyFunctionTo: arguments in: context [
 	isClassSide ifNil:[ ^EsOrderedDictionary with: 'error' -> ('Invalid value for parameter ''side'': %1' bindWith: (arguments at: 'side')) ].
 	source := (arguments at: 'source') asSBString ifNil:[ ^EsOrderedDictionary with: 'error' -> ('Invalid characters in source. Only extended ASCII allowed.' ) ]. 
 	categories := arguments at: 'categories' ifAbsent: [ nil ].
+	categories := categories ifNotNil:[ categories collect: [:category | category asSBString ifNil: [ ^ EsOrderedDictionary with: 'error' -> ('Invalid characters in categories. Only extended ASCII allowed.')]]].
 	isPrivate := self retrieveIsPrivateIn: arguments.
 	appName := arguments at: 'application' ifAbsent: [ nil ].
 	
@@ -58,7 +59,7 @@ AIFunctionAddMethod >> applyFunctionTo: arguments in: context [
 	app ifNil: [ change application: change defaultApplicationForMethod ].
 	context addRefactoryChange: change.
 	
-	result := EsOrderedDictionary with: 'result' -> 'Successfully created change'.
+	result := EsOrderedDictionary with: 'result' -> 'Change is queued for approval by user'.
 	(validationResult includesKey: 'warning') ifTrue: [ result at: 'warning' put: (validationResult at: 'warning') ].
 	
 	^ result
@@ -68,7 +69,7 @@ AIFunctionAddMethod >> applyFunctionTo: arguments in: context [
   #vaVisibility : 'private' }
 AIFunctionAddMethod >> categoriesParameterDescription [
 
-	^ 'The categories to classify the method under'.
+	^ 'The categories to classify the method under. Only extended ASCII characters allowed.'.
 ]
 
 { #category : 'Accessing' }

@@ -78,7 +78,7 @@ AIAbstractChatGenerator >> applyFunctionsInLastGeneratedContent [
 					(shouldStop or: [ (permissions at: index) not ]) 
 						ifTrue: [ EsOrderedDictionary with: 'disallowed' -> 'The user did not allow the function call' ]
 						ifFalse: [
-							[ (functions at: index) applyFunctionTo: (functionCallParts at: index) arguments in: functionCallContext ]
+							[ (functions at: index) applyFunctionTo: (functionCallParts at: index) arguments jsonObject in: functionCallContext ]
 								when: ExError do: [ :signal | signal exitWith: (EsOrderedDictionary with: 'error' -> 'Error') ] ] ]) ]).
 
 	CwAppContext default syncExecInUI: [ chat updateLastModelTextSegment ].
@@ -91,7 +91,7 @@ AIAbstractChatGenerator >> flushPendingContentParts [
 	pendingContentParts ifNotEmpty: [
 		CwAppContext default syncExecInUI: [
 			self addGeneratedContentParts: pendingContentParts.
-			pendingContentParts removeAll.
+			pendingContentParts := OrderedCollection new.
 			chat updateLastModelTextSegment ] ]
 ]
 

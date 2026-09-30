@@ -14,7 +14,7 @@ AIRefactoryChangeTest >> testChangeClassCompilerErrorNotifiesController [
 		definition: 'Object subclass: #AIInvalidClass instanceVariableNames: ''-'' + '
 		application: AIAssistantTestsApp.
 	
-	change executeWithController: controller.
+	[ change executeWithController: controller ] on: Error do:[:e | ].
 	
 	self assert: controller errorReported notNil.
 	self assert: (controller errorReported isKindOf: CompilerError).
@@ -33,7 +33,7 @@ AIRefactoryChangeTest >> testChangeMethodCompilerErrorNotifiesController [
 		isPrivate: false 
 		isClassSide: false.
 	
-	change executeWithController: controller.
+	[ change executeWithController: controller ] on: Error do:[:e | ].
 	
 	self assert: controller errorReported notNil.
 	self assert: (controller errorReported isKindOf: CompilerError).

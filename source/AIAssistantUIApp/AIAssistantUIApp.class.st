@@ -8,7 +8,9 @@ Class {
 AIAssistantUIApp class >> addSessionsEntries: receiver clientData: clientData callData: menu [
 	"Add an 'Ask AI' menu item to the debugger processes menu"
 
-	menu add: #askAIToInvestigate label: 'Ask AI to Investigate...' enable: true for: menu owner
+	menu add: #askAIToInvestigate label: 'Ask AI to Investigate...'
+		enable: [ menu owner isOneSessionSelected and: [ AIAbstractModel default notNil ] ]
+		for: menu owner
 ]
 
 { #category : 'Internal' }

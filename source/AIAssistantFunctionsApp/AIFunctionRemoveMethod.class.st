@@ -25,7 +25,7 @@ AIFunctionRemoveMethod >> applyFunctionTo: arguments in: context [
 	context addRefactoryChange: change.
 
 	^EsOrderedDictionary
-		with: 'result' -> 'Successfully created change'
+		with: 'result' -> 'Change is queued for approval by user'
 ]
 
 { #category : 'Accessing' }

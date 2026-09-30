@@ -23,7 +23,7 @@ AIFunctionValidateCodeTest >> testClassSideCannotAccessInstanceVariables [
 	args at: 'side' put: 'class'.
 	args at: 'code' put: '^ key'.
 	result := self applyFunction: AIFunctionValidateCode withArguments: args.
-	self assert: (result includesKey: 'error').
+	self assert: result keys size equals: 1.
 	self assert: (result at: 'error') equals: 'References unknown variables, classes or globals: ''key'''.
 ]
 
@@ -70,7 +70,7 @@ AIFunctionValidateCodeTest >> testInvalidCodeWithPoolDictionaryReferenceIsFlagge
 	args at: 'class' put: 'AIFunctionValidateCodeTest'.
 	args at: 'code' put: '^ CldtConstants::SomeUndefinedVarThatDoesNotExist'.
 	result := self applyFunction: AIFunctionValidateCode withArguments: args.
-	self assert: (result includesKey: 'error').
+	self assert: result keys size equals: 1.
 	self assert: (result at: 'error') equals: 'References unknown variables, classes or globals: ''CldtConstants::SomeUndefinedVarThatDoesNotExist'''.
 ]
 
@@ -81,7 +81,7 @@ AIFunctionValidateCodeTest >> testInvalidCodeWithUnknownPoolDictionaryIsFlagged 
 	args at: 'class' put: 'AIFunctionValidateCodeTest'.
 	args at: 'code' put: '^ SomeUndefinedPool::SomeUndefinedVar'.
 	result := self applyFunction: AIFunctionValidateCode withArguments: args.
-	self assert: (result includesKey: 'error').
+	self assert: result keys size equals: 1.
 	self assert: (result at: 'error') equals: 'References unknown variables, classes or globals: ''SomeUndefinedPool::SomeUndefinedVar'''.
 ]
 
@@ -110,7 +110,7 @@ AIFunctionValidateCodeTest >> testInvalidReferenceIsFlagged [
 	args at: 'class' put: 'AITestDummyClass'.
 	args at: 'code' put: '^ SomeNonExistentVariable'.
 	result := self applyFunction: AIFunctionValidateCode withArguments: args inContext: context.
-	self assert: (result includesKey: 'error').
+	self assert: result keys size equals: 1.
 	self assert: (result at: 'error') equals: 'References unknown variables, classes or globals: ''SomeNonExistentVariable'''.
 ]
 
@@ -121,7 +121,7 @@ AIFunctionValidateCodeTest >> testInvalidReferenceToGlobalNotActingAsPoolDiction
 	args at: 'class' put: 'AIFunctionValidateCodeTest'.
 	args at: 'code' put: '^ Transcript::LineDelimiter'.
 	result := self applyFunction: AIFunctionValidateCode withArguments: args.
-	self assert: (result includesKey: 'error').
+	self assert: result keys size equals: 1.
 	self assert: (result at: 'error') equals: 'References unknown variables, classes or globals: ''Transcript::LineDelimiter'''
 ]
 
@@ -141,7 +141,7 @@ AIFunctionValidateCodeTest >> testInvalidReferenceToProposedClassInstVarOnInstan
 	args at: 'side' put: 'instance'.
 	args at: 'code' put: '^ newClassInstVar'.
 	result := self applyFunction: AIFunctionValidateCode withArguments: args inContext: context.
-	self assert: (result includesKey: 'error').
+	self assert: result keys size equals: 1.
 	self assert: (result at: 'error') equals: 'References unknown variables, classes or globals: ''newClassInstVar'''.
 ]
 
@@ -169,7 +169,7 @@ AIFunctionValidateCodeTest >> testPseudoVariableThisContextIsFlagged [
 	args := Dictionary new.
 	args at: 'code' put: '^ thisContext'.
 	result := self applyFunction: AIFunctionValidateCode withArguments: args.
-	self assert: (result includesKey: 'error').
+	self assert: result keys size equals: 1.
 	self assert: (result at: 'error') equals: 'References unknown variables, classes or globals: ''thisContext'''.
 ]
 
@@ -195,7 +195,7 @@ AIFunctionValidateCodeTest >> testSyntaxErrorIsFlagged [
 		a := 1. "Missing pipe for closing temps"
 		^ a'.
 	result := self applyFunction: AIFunctionValidateCode withArguments: args.
-	self assert: (result includesKey: 'error').
+	self assert: result keys size equals: 1.
 	self assert: ('Syntax error in given code at position *: "|" expected' match: (result at: 'error')).
 ]
 

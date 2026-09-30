@@ -7,7 +7,6 @@ DbgDebugger >> askAIToInvestigate [
 	"Ask the AI Assistant to investigate the selected process."
 	
 	| openWindows prompter selected chatWindow |
-	self isOneSessionSelected ifFalse: [ ^self ].
 	
 	openWindows := AIChatWindow allInstances select: [:each | each chatIsAvailableForUserMessage].
 	

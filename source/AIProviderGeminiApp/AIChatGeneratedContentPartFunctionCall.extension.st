@@ -18,3 +18,28 @@ AIChatGeneratedContentPartFunctionCall class >> type [
 
 	^ 'functionCall'
 ]
+
+{ #category : 'Not categorized' }
+AIChatGeneratedContentPartFunctionCall >> json [
+
+	| jsonObject |
+
+	jsonObject := EsOrderedDictionary with: self class type -> self jsonValue.
+	self thoughtSignature ifNotNil: [ :value |
+		jsonObject at: 'thoughtSignature' put: value ].
+	^ jsonObject
+]
+
+{ #category : 'Not categorized' }
+AIChatGeneratedContentPartFunctionCall >> jsonValue [
+
+	| jsonValue |
+
+	jsonValue := EsOrderedDictionary new.
+	id ifNotNil: [
+		jsonValue at: 'id' put: id ].
+	jsonValue at: 'name' put: name.
+	arguments ifNotNil: [
+		jsonValue at: 'args' put: arguments jsonObject ].
+	^ jsonValue
+]

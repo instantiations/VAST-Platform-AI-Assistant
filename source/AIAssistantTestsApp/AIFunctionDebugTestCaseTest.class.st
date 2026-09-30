@@ -4,7 +4,7 @@ Class {
 	#category : 'AIAssistantTestsApp'
 }
 
-{ #category : 'Testing' }
+{ #category : 'Tests' }
 AIFunctionDebugTestCaseTest >> testDebugTestCaseErrors [
 	| result args stackTrace firstFrame lastFrame |
 	args := EsOrderedDictionary new.
@@ -28,7 +28,7 @@ AIFunctionDebugTestCaseTest >> testDebugTestCaseErrors [
 	self assert: (stackTrace noneSatisfy: [:frame | ((frame at: 'signature') includesSubstring: 'applyFunctionTo:in:') ])
 ]
 
-{ #category : 'Testing' }
+{ #category : 'Tests' }
 AIFunctionDebugTestCaseTest >> testDebugTestCaseFails [
 	| result args stackTrace firstFrame lastFrame |
 	args := EsOrderedDictionary new.
@@ -52,7 +52,7 @@ AIFunctionDebugTestCaseTest >> testDebugTestCaseFails [
 	self assert: (stackTrace noneSatisfy: [:frame | (frame at: 'signature') includesSubstring: 'applyFunctionTo:in:' ])
 ]
 
-{ #category : 'Testing' }
+{ #category : 'Tests' }
 AIFunctionDebugTestCaseTest >> testDebugTestCaseInvalidClass [
 	| result args |
 	args := EsOrderedDictionary new.
@@ -65,7 +65,7 @@ AIFunctionDebugTestCaseTest >> testDebugTestCaseInvalidClass [
 	self assert: (result at: 'error') equals: 'Invalid test class provided.'
 ]
 
-{ #category : 'Testing' }
+{ #category : 'Tests' }
 AIFunctionDebugTestCaseTest >> testDebugTestCaseInvalidSelector [
 	| result args |
 	args := EsOrderedDictionary new.
@@ -78,7 +78,7 @@ AIFunctionDebugTestCaseTest >> testDebugTestCaseInvalidSelector [
 	self assert: (result at: 'error') equals: 'Invalid test selector provided.'
 ]
 
-{ #category : 'Testing' }
+{ #category : 'Tests' }
 AIFunctionDebugTestCaseTest >> testDebugTestCaseNotATestClass [
 	| result args |
 	args := EsOrderedDictionary new.
@@ -91,7 +91,7 @@ AIFunctionDebugTestCaseTest >> testDebugTestCaseNotATestClass [
 	self assert: (result at: 'error') equals: 'Invalid test class provided.'
 ]
 
-{ #category : 'Testing' }
+{ #category : 'Tests' }
 AIFunctionDebugTestCaseTest >> testDebugTestCaseNotATestSelector [
 	| result args |
 	args := EsOrderedDictionary new.
@@ -104,7 +104,7 @@ AIFunctionDebugTestCaseTest >> testDebugTestCaseNotATestSelector [
 	self assert: (result at: 'error') equals: 'Invalid test selector provided.'
 ]
 
-{ #category : 'Testing' }
+{ #category : 'Tests' }
 AIFunctionDebugTestCaseTest >> testDebugTestCasePasses [
 	| result args |
 	args := EsOrderedDictionary new.
@@ -117,7 +117,7 @@ AIFunctionDebugTestCaseTest >> testDebugTestCasePasses [
 	self assert: (result at: 'message') equals: 'Test passed successfully.'
 ]
 
-{ #category : 'Testing' }
+{ #category : 'Tests' }
 AIFunctionDebugTestCaseTest >> testDebugTestCaseSetUpErrors [
 	| result args stackTrace firstFrame lastFrame |
 	args := EsOrderedDictionary new.
@@ -141,7 +141,7 @@ AIFunctionDebugTestCaseTest >> testDebugTestCaseSetUpErrors [
 	self assert: (stackTrace noneSatisfy: [:frame | (frame at: 'signature') includesSubstring: 'applyFunctionTo:in:' ])
 ]
 
-{ #category : 'Testing' }
+{ #category : 'Tests' }
 AIFunctionDebugTestCaseTest >> testDebugTestCaseTearDownErrors [
 	| result args stackTrace firstFrame lastFrame |
 	args := EsOrderedDictionary new.

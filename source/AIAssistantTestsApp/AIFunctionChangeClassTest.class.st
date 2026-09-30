@@ -14,7 +14,7 @@ AIFunctionChangeClassTest >> testApplicationNotFound [
 	args at: 'superclass' put: 'TestCase'.
 	args at: 'application' put: 'NonExistentApp123'.
 	result := self applyFunction: AIFunctionChangeClass withArguments: args.
-	self assert: (result includesKey: 'error').
+	self assert: result keys size equals: 1.
 	self assert: (result at: 'error') equals: 'Application NonExistentApp123 not found'
 ]
 
@@ -55,7 +55,7 @@ AIFunctionChangeClassTest >> testInvalidCharacters [
 	args at: 'superclass' put: 'TestCase'.
 	args at: 'instance_variables' put: (Array with: invalidVar).
 	result := self applyFunction: AIFunctionChangeClass withArguments: args.
-	self assert: (result includesKey: 'error').
+	self assert: result keys size equals: 1.
 	self
 		assert: (result at: 'error')
 		equals: 'Invalid characters in definition. Only extended ASCII allowed.'
@@ -74,7 +74,7 @@ AIFunctionChangeClassTest >> testInvalidInstanceVariablesForType [
 		args at: 'instance_variables' put: #('inst1').
 		result := self applyFunction: AIFunctionChangeClass withArguments: args.
 		
-		self assert: (result includesKey: 'error').
+		self assert: result keys size equals: 1.
 		self assert: (result at: 'error') equals: ('Instance variables are not supported for class type %1' bindWith: type).
 	].
 ]
@@ -88,6 +88,7 @@ AIFunctionChangeClassTest >> testInvalidSyntax [
 	args at: 'class_name' put: 'AIFunctionChangeClassTest'.
 	args at: 'superclass' put: 'Invalid Superclass'.
 	result := self applyFunction: AIFunctionChangeClass withArguments: args.
+	self assert: result keys size equals: 1.
 	self assert: (result includesKey: 'error')
 ]
 
@@ -100,7 +101,7 @@ AIFunctionChangeClassTest >> testNonExistentClass [
 	args at: 'class_name' put: 'AIFunctionNonExistentClassSample'.
 	args at: 'superclass' put: 'Object'.
 	result := self applyFunction: AIFunctionChangeClass withArguments: args.
-	self assert: (result includesKey: 'error').
+	self assert: result keys size equals: 1.
 	self assert: (result at: 'error') equals: 'Class AIFunctionNonExistentClassSample not found'
 ]
 
@@ -136,7 +137,7 @@ AIFunctionChangeClassTest >> testUnknownSuperclassIsFlagged [
 	args at: 'class_name' put: 'AIFunctionChangeClassTest'.
 	args at: 'superclass' put: 'NonExistentSuperclassWhichNobodyDefines'.
 	result := self applyFunction: AIFunctionChangeClass withArguments: args.
-	self assert: (result includesKey: 'error').
+	self assert: result keys size equals: 1.
 	self assert: (result at: 'error') equals: 'Unknown superclass: NonExistentSuperclassWhichNobodyDefines'.
 ]
 

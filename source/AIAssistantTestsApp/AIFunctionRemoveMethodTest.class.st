@@ -11,7 +11,7 @@ AIFunctionRemoveMethodTest >> testClassDoesNotExist [
 	args at: 'class' put: 'NonExistentClassXYZ'.
 	args at: 'selector' put: 'foo'.
 	result := self applyFunction: AIFunctionRemoveMethod withArguments: args.
-	self assert: (result includesKey: 'error').
+	self assert: result keys size equals: 1.
 	self assert: (result at: 'error') equals: 'Class NonExistentClassXYZ not found'.
 ]
 
@@ -59,7 +59,7 @@ AIFunctionRemoveMethodTest >> testMethodDoesNotExist [
 	args at: 'class' put: 'AIFunctionRemoveMethodTest'.
 	args at: 'selector' put: 'nonExistentMethodXYZ'.
 	result := self applyFunction: AIFunctionRemoveMethod withArguments: args.
-	self assert: (result includesKey: 'error').
+	self assert: result keys size equals: 1.
 	self assert: (result at: 'error') equals: 'AIFunctionRemoveMethodTest does not implement selector nonExistentMethodXYZ.'.
 ]
 

@@ -16,7 +16,7 @@ AIFunctionRemoveClass >> applyFunctionTo: arguments in: context [
 	change := RemoveClassChange removeClassName: className asSymbol.
 	context addRefactoryChange: change.
 	
-	^ EsOrderedDictionary with: 'result' -> 'Successfully created change'
+	^ EsOrderedDictionary with: 'result' -> 'Change is queued for approval by user'
 ]
 
 { #category : 'Accessing' }

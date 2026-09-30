@@ -4,7 +4,7 @@ Class {
 	#category : 'AIAssistantTestsApp'
 }
 
-{ #category : 'testing' }
+{ #category : 'Tests' }
 AIFunctionGetSuspendedProcessTest >> testGetSuspendedProcessNoDebugger [
 	| result args originalDebugger |
 	originalDebugger := Processor debugger.
@@ -18,7 +18,7 @@ AIFunctionGetSuspendedProcessTest >> testGetSuspendedProcessNoDebugger [
 	self assert: (result at: 'error') equals: 'No debugger is currently open.'
 ]
 
-{ #category : 'testing' }
+{ #category : 'Tests' }
 AIFunctionGetSuspendedProcessTest >> testGetSuspendedProcessNoSelectedSession [
 	| result args originalDebugger mockDebugger |
 	originalDebugger := Processor debugger.
@@ -33,7 +33,7 @@ AIFunctionGetSuspendedProcessTest >> testGetSuspendedProcessNoSelectedSession [
 	self assert: (result at: 'error') equals: 'No process is currently selected in the debugger.'
 ]
 
-{ #category : 'testing' }
+{ #category : 'Tests' }
 AIFunctionGetSuspendedProcessTest >> testGetSuspendedProcessWithSelectedSession [
 	| result args originalDebugger mockDebugger mockSession process |
 	originalDebugger := Processor debugger.

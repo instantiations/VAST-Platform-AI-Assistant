@@ -15,9 +15,3 @@ AIAbstractChatGeneratedContentPart >> isText [
 
 	^ false
 ]
-
-{ #category : 'Not categorized' }
-AIAbstractChatGeneratedContentPart >> json [
-
-	self subclassResponsibility
-]

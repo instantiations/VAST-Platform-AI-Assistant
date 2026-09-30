@@ -121,13 +121,6 @@ AIChatUserMessage >> modelText [
 ]
 
 { #category : 'Not categorized' }
-AIChatUserMessage >> userContentJSON [
-
-	^ EsOrderedDictionary with: 'role' -> 'user'
-		with: 'parts' -> { EsOrderedDictionary with: 'text' -> message }
-]
-
-{ #category : 'Not categorized' }
 AIChatUserMessage >> userText [
 
 	^ AIChatTextSegmentUserMessage textBlocks: (AIChatTextBlockSequence fromString: message) blocks

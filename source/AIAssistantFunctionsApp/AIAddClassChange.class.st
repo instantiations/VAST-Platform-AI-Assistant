@@ -73,7 +73,7 @@ AIAddClassChange >> primitiveExecute [
 	| class oldApp possibleTargetApps compileResult |
 
 	compileResult := super primitiveExecute.
-	compileResult isNil ifTrue: [^self].
+	compileResult isNil ifTrue: [Error signal: 'Could not apply the change'].
 
 	class := Smalltalk classAt: self changeClassName asSymbol.
 

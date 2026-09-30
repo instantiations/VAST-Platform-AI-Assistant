@@ -21,4 +21,11 @@ AIChatGenerationLogEntryGeneratedContent >> initializeWithTimestamp: initialTime
 	self initializeWithTimestamp: initialTimestamp model: initialModel requestObject: initialRequestObject.
 	responseHeader := initialResponseHeader.
 	responseObjects := initialResponseObjects.
+	self initializeRetainedObjects.
+]
+
+{ #category : 'Not categorized' }
+AIChatGenerationLogEntryGeneratedContent >> retainedObjectsRoots [
+
+	^ super retainedObjectsRoots , { responseHeader. responseObjects }
 ]

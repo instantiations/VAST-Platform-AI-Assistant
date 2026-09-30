@@ -25,8 +25,23 @@ AIFunctionAddMethodTest >> testAddMethodFailsIfMethodExists [
 	args at: 'application' put: 'AIAssistantTestsApp'.
 	context := self emptyContext.
 	result := self applyFunction: AIFunctionAddMethod withArguments: args inContext: context.
-	self assert: (result includesKey: 'error').
+	self assert: result keys size equals: 1.
 	self assert: (result at: 'error') equals: 'Method already exists. Use change_method instead.'.
+]
+
+{ #category : 'Tests' }
+AIFunctionAddMethodTest >> testInvalidCategoriesNonAscii [
+
+	| args result context |
+	args := Dictionary new.
+	args at: 'class' put: 'AIFunctionAddMethodTest'.
+	args at: 'source' put: 'dummyMethod ^1'.
+	args at: 'categories' put: (Array with: (UnicodeString utf8: #[226 152 131])).
+	args at: 'application' put: 'AIAssistantTestsApp'.
+	context := self emptyContext.
+	result := self applyFunction: AIFunctionAddMethod withArguments: args inContext: context.
+	self assert: result keys size equals: 1.
+	self assert: (result at: 'error') equals: 'Invalid characters in categories. Only extended ASCII allowed.'.
 ]
 
 { #category : 'Tests' }
@@ -37,7 +52,7 @@ AIFunctionAddMethodTest >> testInvalidClassName [
 	args at: 'class' put: '123Class'.
 	args at: 'source' put: 'foo ^1'.
 	result := self applyFunction: AIFunctionAddMethod withArguments: args.
-	self assert: (result includesKey: 'error').
+	self assert: result keys size equals: 1.
 	self assert: (result at: 'error') equals: 'Invalid class name: 123Class. Provide a valid Smalltalk class name.'
 ]
 
@@ -62,7 +77,7 @@ AIFunctionAddMethodTest >> testInvalidReferenceToProposedClassInstVarOnInstanceS
 	args at: 'application' put: 'AIAssistantTestsApp'.
 
 	result := self applyFunction: AIFunctionAddMethod withArguments: args inContext: context.
-	self assert: (result includesKey: 'error').
+	self assert: result keys size equals: 1.
 	self assert: (result at: 'error') equals: 'References unknown variables, classes or globals: ''newClassInstVar'''.
 ]
 
@@ -76,7 +91,7 @@ AIFunctionAddMethodTest >> testSyntaxErrorInMethodIsFlagged [
 		^ a'.
 	args at: 'application' put: 'AIAssistantTestsApp'.
 	result := self applyFunction: AIFunctionAddMethod withArguments: args.
-	self assert: (result includesKey: 'error').
+	self assert: result keys size equals: 1.
 	self assert: ('Syntax error in given code at position *: "|" expected' match: (result at: 'error')).
 ]
 
@@ -101,7 +116,7 @@ AIFunctionAddMethodTest >> testUnknownVariableInMethodIsFlagged [
 	args at: 'source' put: 'foo ^ SomeNonExistentVariableWhichNobodyDefines'.
 	args at: 'application' put: 'AIAssistantTestsApp'.
 	result := self applyFunction: AIFunctionAddMethod withArguments: args.
-	self assert: (result includesKey: 'error').
+	self assert: result keys size equals: 1.
 	self assert: (result at: 'error') equals: 'References unknown variables, classes or globals: ''SomeNonExistentVariableWhichNobodyDefines'''.
 ]
 
@@ -183,6 +198,6 @@ AIFunctionAddMethodTest >> testValidReferenceToProposedPoolVar [
 	args at: 'application' put: 'AIAssistantTestsApp'.
 	result := self applyFunction: AIFunctionAddMethod withArguments: args inContext: context.
 	self assert: (result includesKey: 'result').
-	self assert: (result at: 'result') equals: 'Successfully created change'.
+	self assert: (result at: 'result') equals: 'Change is queued for approval by user'.
 	self deny: (result includesKey: 'error')
 ]

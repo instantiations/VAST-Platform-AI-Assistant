@@ -48,7 +48,7 @@ AIChatGeneratorOpenAIResponsesAPI >> parseResponse: responseObject [
 		item := responseObject at: 'item'.
 		(item at: 'type') = 'function_call' ifTrue: [
 			| arguments |
-			arguments := (AIJSONReader on: (item at: 'arguments') readStream) mapClass: EsOrderedDictionary; next.
+			arguments := AIFunctionCallArgumentsJSON json: (item at: 'arguments').
 			^ { AIChatGeneratedContentPartFunctionCall id: (item at: 'call_id') name: (item at: 'name') arguments: arguments thoughtSignature: nil } ] ].
 
 	^ #()
@@ -80,7 +80,7 @@ AIChatGeneratorOpenAIResponsesAPI >> prepareRequestJSONObject [
 								| functionResponsePart |
 								functionResponsePart := pendingFunctionResponseParts removeFirst.
 								stream nextPut: (EsOrderedDictionary with: 'type' -> 'function_call' with: 'call_id' -> modelContentPart id
-									with: 'name' -> modelContentPart name with: 'arguments' -> (NeoJSONWriter toString: modelContentPart arguments)).
+									with: 'name' -> modelContentPart name with: 'arguments' -> modelContentPart arguments json).
 								stream nextPut: (EsOrderedDictionary with: 'type' -> 'function_call_output' with: 'call_id' -> functionResponsePart id
 									with: 'output' -> (NeoJSONWriter toString: functionResponsePart response)) ] ] ] ] ]);
 		add: 'stream' -> true;

@@ -1091,6 +1091,14 @@ AIRefactoryChangesBrowser >> stsItemColorBlockFor: widgetName [
 	^super stsItemColorBlockFor: widgetName
 ]
 
+{ #category : 'Toolbar' }
+AIRefactoryChangesBrowser >> stsOpenApplicationManager [
+
+	selectedApplication isNil
+		ifTrue: [super stsOpenApplicationManager]
+		ifFalse: [self stsManageSelectedApplication: selectedApplication name]
+]
+
 { #category : 'Internal',
   #vaVisibility : 'private' }
 AIRefactoryChangesBrowser >> stsStatusBlockFor: widgetName [

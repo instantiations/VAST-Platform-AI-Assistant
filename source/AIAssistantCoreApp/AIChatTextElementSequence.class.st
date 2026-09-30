@@ -27,7 +27,7 @@ AIChatTextElementSequence class >> fromElements: elements [
 			] ifFalse: [
 				pendingStringElementStrings ifNotEmpty: [
 					mergedElements add: (AIChatTextElementString string: ('' join: pendingStringElementStrings)).
-					pendingStringElementStrings removeAll ].
+					pendingStringElementStrings := OrderedCollection new ].
 				mergedElements add: element ] ] ].
 	pendingStringElementStrings ifNotEmpty: [
 		mergedElements add: (AIChatTextElementString string: ('' join: pendingStringElementStrings)) ].

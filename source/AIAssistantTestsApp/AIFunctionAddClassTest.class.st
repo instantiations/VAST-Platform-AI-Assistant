@@ -55,7 +55,7 @@ AIFunctionAddClassTest >> testInvalidCharacters [
 	args at: 'superclass' put: 'Object'.
 	args at: 'instance_variables' put: (Array with: invalidVar).
 	result := self applyFunction: AIFunctionAddClass withArguments: args.
-	self assert: (result includesKey: 'error').
+	self assert: result keys size equals: 1.
 	self
 		assert: (result at: 'error')
 		equals: 'Invalid characters in definition. Only extended ASCII allowed.'
@@ -70,7 +70,7 @@ AIFunctionAddClassTest >> testInvalidClassName [
 	args at: 'class_name' put: '123Class'.
 	args at: 'superclass' put: 'Object'.
 	result := self applyFunction: AIFunctionAddClass withArguments: args.
-	self assert: (result includesKey: 'error').
+	self assert: result keys size equals: 1.
 	self
 		assert: (result at: 'error')
 		equals: 'Invalid class name: 123Class. Provide a valid Smalltalk class name.'
@@ -85,7 +85,7 @@ AIFunctionAddClassTest >> testInvalidClassType [
 	args at: 'superclass' put: 'Object'.
 	args at: 'class_type' put: 'invalid'.
 	result := self applyFunction: AIFunctionAddClass withArguments: args.
-	self assert: (result includesKey: 'error').
+	self assert: result keys size equals: 1.
 	self assert: (result at: 'error') equals: 'Invalid class type invalid. Should be one of: normal, variable, variableByte, variableWord, variableLong.'
 ]
 
@@ -103,7 +103,7 @@ AIFunctionAddClassTest >> testInvalidInstanceVariablesForType [
 		context := self emptyContext.
 		result := self applyFunction: AIFunctionAddClass withArguments: args inContext: context.
 		
-		self assert: (result includesKey: 'error').
+		self assert: result keys size equals: 1.
 		self assert: (result at: 'error') equals: ('Instance variables are not supported for class type %1' bindWith: type).
 	].
 ]
@@ -117,6 +117,7 @@ AIFunctionAddClassTest >> testInvalidSyntax [
 	args at: 'class_name' put: 'AIFunctionAddClassSample4'.
 	args at: 'superclass' put: 'Invalid Superclass'. "invalid syntax"
 	result := self applyFunction: AIFunctionAddClass withArguments: args.
+	self assert: result keys size equals: 1.
 	self assert: (result includesKey: 'error')
 ]
 
@@ -152,7 +153,7 @@ AIFunctionAddClassTest >> testUnknownSuperclassIsFlagged [
 	args at: 'class_name' put: 'AIFunctionAddClassSample8'.
 	args at: 'superclass' put: 'NonExistentSuperclassWhichNobodyDefines'.
 	result := self applyFunction: AIFunctionAddClass withArguments: args.
-	self assert: (result includesKey: 'error').
+	self assert: result keys size equals: 1.
 	self assert: (result at: 'error') equals: 'Unknown superclass: NonExistentSuperclassWhichNobodyDefines'.
 ]
 

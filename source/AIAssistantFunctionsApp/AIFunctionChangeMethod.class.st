@@ -28,7 +28,7 @@ AIFunctionChangeMethod >> applyExistingDefaultsFor: existingMethod withCategorie
   #vaVisibility : 'private' }
 AIFunctionChangeMethod >> categoriesParameterDescription [
 
-	^ 'The categories to classify the method under. Defaults to existing categories'
+	^ 'The categories to classify the method under. Only extended ASCII characters allowed. Defaults to existing categories.'
 ]
 
 { #category : 'Internal',

@@ -172,17 +172,18 @@ AIAbstractFunction >> resultLimitFor: aContext withSource: includeSource [
 { #category : 'API' }
 AIAbstractFunction >> validateFunctionCallArguments: arguments [
 
-	| parameters |
+	| parameters argumentsJSONObject |
 
 	parameters := self parameters.
-	arguments keysAndValuesDo: [ :parameterName :argument |
+	argumentsJSONObject := arguments jsonObject ifNil: [ ^ 'The given arguments are not a valid JSON object' ].
+	argumentsJSONObject keysAndValuesDo: [ :parameterName :argument |
 		| parameter |
 		parameter := parameters detect: [ :someParameter | someParameter name = parameterName ] ifNone: [
 			^ 'The function does not have a parameter "%1"' bindWith: parameterName ].
 		(parameter validateArgument: argument) ifFalse: [
 			^ 'Invalid argument given for parameter "%1"' bindWith: parameterName ] ].
 	parameters do: [ :parameter |
-		(parameter isRequired not or: [ arguments includesKey: parameter name ]) ifFalse: [
+		(parameter isRequired not or: [ argumentsJSONObject includesKey: parameter name ]) ifFalse: [
 			^ 'No argument given for required parameter "%1"' bindWith: parameter name ] ].
 	^ nil
 ]

@@ -64,7 +64,7 @@ AIAddMethodChange >> primitiveExecute [
 	| method possibleTargetApps compileResult |
 
 	compileResult := super primitiveExecute.
-	compileResult isNil ifTrue: [^self].
+	compileResult isNil ifTrue: [Error signal: 'Could not apply the change'].
 
 	self changeClass categoriesFor: self selector are: self protocols.
 	

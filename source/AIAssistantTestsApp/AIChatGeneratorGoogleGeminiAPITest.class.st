@@ -15,7 +15,6 @@ AIChatGeneratorGoogleGeminiAPITest >> testPrepareRequestJSONObjectThinkingLevel 
 		provider: (AIModelProviderTestGoogleGeminiAPI createNamed: 'Gemini').
 
 	chat := AITestChat systemInstruction: 'You are an AI assistant' model: model.
-	chat sendUserMessage: 'Hello'.
 	generator := AIChatGeneratorGoogleGeminiAPI forChat: chat.
 
 	"Default thinking level"

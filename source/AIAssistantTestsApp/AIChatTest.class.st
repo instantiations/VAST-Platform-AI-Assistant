@@ -107,9 +107,56 @@ AIChatTest >> testFunctionCall [
 		self assert: chat userMessages first generatedContents size equals: 2.
 		self assert: chat userMessages first generatedContents first modelContentParts size equals: 1.
 		self assert: chat userMessages first generatedContents first modelContentParts first name equals: functionName.
-		self assert: chat userMessages first generatedContents first modelContentParts first arguments equals: functionArguments.
+		self assert: chat userMessages first generatedContents first modelContentParts first arguments jsonObject equals: functionArguments.
 		self assert: chat userMessages first generatedContents second modelContentParts size equals: 1.
 		self assert: chat userMessages first generatedContents second modelContentParts first string equals: messageString ].
+]
+
+{ #category : 'Not categorized' }
+AIChatTest >> testFunctionCallWithInvalidArguments [
+
+	| functionName messageString |
+
+	functionName := AIFunctionsSet current functions first name.
+	messageString := 'I called the function'.
+	AIServerTestResource current responseObjectsSequenceGeminiAPI: {
+		{
+			EsOrderedDictionary with: 'candidates' -> {
+				EsOrderedDictionary with: 'content' ->
+					(EsOrderedDictionary
+						with: 'role' -> 'model'
+						with: 'parts' -> {
+							EsOrderedDictionary with: 'functionCall' -> (EsOrderedDictionary with: 'name' -> functionName with: 'args' -> (EsOrderedDictionary with: 'invalidparameter' -> 'testargument')) }) } }.
+		{
+			EsOrderedDictionary with: 'candidates' -> {
+				EsOrderedDictionary with: 'content' ->
+					(EsOrderedDictionary
+						with: 'role' -> 'model'
+						with: 'parts' -> {
+							EsOrderedDictionary with: 'text' -> messageString }) } } }.
+	AIServerTestResource current responseObjectsSequenceResponsesAPI: {
+		{
+			EsOrderedDictionary with: 'type' -> 'response.output_item.done'
+				with: 'item' -> (EsOrderedDictionary with: 'id' -> 'fc_1' with: 'type' -> 'function_call' with: 'call_id' -> 'call_1'
+					with: 'name' -> functionName with: 'arguments' -> '{invalid json}').
+			self responseObjectResponseCompleted }.
+		{
+			EsOrderedDictionary with: 'type' -> 'response.output_text.delta' with: 'item_id' -> 'msg_1' with: 'delta' -> messageString.
+			self responseObjectResponseCompleted } }.
+
+	self class testModels with: #('The function does not have a parameter "invalidparameter"' 'The given arguments are not a valid JSON object') do: [ :model :errorMessage |
+		| chat |
+		chat := AITestChat systemInstruction: 'You are an AI assistant' model: model.
+		chat sendUserMessage: 'Call a function'.
+		self waitForChatGeneration: chat.
+		self assert: chat userMessages size equals: 1.
+		self assert: chat userMessages first generatedContents size equals: 2.
+		self assert: chat userMessages first generatedContents first modelContentParts size equals: 1.
+		self assert: chat userMessages first generatedContents first modelContentParts first name equals: functionName.
+		self assert: chat userMessages first generatedContents second modelContentParts size equals: 1.
+		self assert: chat userMessages first generatedContents second modelContentParts first string equals: messageString.
+		self assert: chat userMessages first generatedContents first functionResponseParts size equals: 1.
+		self assert: (chat userMessages first generatedContents first functionResponseParts first response at: 'error') equals: errorMessage ].
 ]
 
 { #category : 'Not categorized' }
@@ -127,7 +174,7 @@ AIChatTest >> testWriteFormattedOn [
 			AIChatGeneratedContent
 				modelContentParts: (OrderedCollection withAll: {
 					AIChatGeneratedContentPartText string: 'Thinking...' thought: true thoughtSignature: nil.
-					AIChatGeneratedContentPartFunctionCall id: '1' name: 'testfunction' arguments: Dictionary new thoughtSignature: nil })
+					AIChatGeneratedContentPartFunctionCall id: '1' name: 'testfunction' arguments: EsOrderedDictionary new thoughtSignature: nil })
 				functionResponseParts: (OrderedCollection withAll: {
 					AIChatGeneratedContentPartFunctionResponse id: '1' name: 'testfunction' response: Dictionary new }).
 			AIChatGeneratedContent

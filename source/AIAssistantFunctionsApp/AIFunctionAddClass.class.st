@@ -56,7 +56,7 @@ AIFunctionAddClass >> applyFunctionTo: arguments in: context [
 	change validateDefinition ifNotNil:[ :string | ^ EsOrderedDictionary with: 'error' -> string ].
 	
 	context addRefactoryChange: change.
-	^EsOrderedDictionary with: 'result' -> 'Successfully created change'
+	^EsOrderedDictionary with: 'result' -> 'Change is queued for approval by user'
 ]
 
 { #category : 'Accessing' }

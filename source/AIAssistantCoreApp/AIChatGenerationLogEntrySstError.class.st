@@ -21,4 +21,5 @@ AIChatGenerationLogEntrySstError >> initializeWithTimestamp: initialTimestamp mo
 	self initializeWithTimestamp: initialTimestamp model: initialModel requestObject: initialRequestObject.
 	errorCode := initialErrorCode.
 	errorObject := initialErrorObject.
+	self initializeRetainedObjects.
 ]

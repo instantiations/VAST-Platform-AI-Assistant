@@ -17,3 +17,9 @@ AIAbstractChatGeneratedContentPart class >> fromJSON: jsonObject [
 			^ subclass fromJSON: jsonObject ] ].
 	Error signal: 'Unrecognized type of content part'
 ]
+
+{ #category : 'Not categorized' }
+AIAbstractChatGeneratedContentPart >> json [
+
+	self subclassResponsibility
+]
