@@ -2,8 +2,8 @@
 	{
 		#formatVersion : '1.1',
 		#name : 'VAST AI Assistant (VAST 15.0)',
-		#versionName : '1.7.0',
-		#ts : 3968218800,
+		#versionName : '1.7.0.noSUnit',
+		#ts : 3968936100,
 		#applications : [
 			{
 				#name : 'AIAssistantCoreApp'
@@ -50,11 +50,6 @@
 						#ts : 3947181474
 					},
 					{
-						#name : 'z.ST: SUnit',
-						#versionName : 'V 15.0.0  [593]',
-						#ts : 3947181478
-					},
-					{
 						#name : 'z.ST: Refactoring Browser',
 						#versionName : 'V 15.0.0  [593]',
 						#ts : 3947181472
@@ -66,8 +61,8 @@
 	{
 		#formatVersion : '1.1',
 		#name : 'VAST AI Assistant (VAST 14.1)',
-		#versionName : '1.7.0',
-		#ts : 3968218800,
+		#versionName : '1.7.0.noSUnit',
+		#ts : 3968936100,
 		#applications : [
 			{
 				#name : 'AIAssistantCoreApp'
@@ -112,11 +107,6 @@
 						#name : 'z.ST: Server Smalltalk (SST) - HTTP',
 						#versionName : 'V 14.1.0  [580]',
 						#ts : 3930819166
-					},
-					{
-						#name : 'z.ST: SUnit',
-						#versionName : 'V 14.1.0  [580]',
-						#ts : 3930819170
 					},
 					{
 						#name : 'z.ST: Refactoring Browser',

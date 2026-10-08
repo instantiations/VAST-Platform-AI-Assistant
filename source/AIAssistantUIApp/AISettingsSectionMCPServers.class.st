@@ -487,11 +487,11 @@ AISettingsSectionMCPServers >> updateServerStatus [
 	serverStatusLabel labelIcon: ((selectedServer notNil and: [ selectedServer isStdio ])
 		ifTrue: [
 			selectedServer isRunning
-				ifTrue: [ SUnitBrowser greenBallIcon ]
+				ifTrue: [ StsImageManager iconFromSelector: #GreenBall ]
 				ifFalse: [
 					selectedServer hasExitError
-						ifTrue: [ SUnitBrowser redBallIcon ]
-						ifFalse: [ SUnitBrowser grayBallIcon ] ] ]
+						ifTrue: [ StsImageManager iconFromSelector: #RedBall ]
+						ifFalse: [ StsImageManager iconFromSelector: #GrayBall ] ] ]
 		ifFalse: [ CgIcon unspecifiedIcon ])
 ]
 
