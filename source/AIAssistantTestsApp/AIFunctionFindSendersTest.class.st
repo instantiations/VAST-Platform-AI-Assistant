@@ -1,6 +1,6 @@
 Class {
 	#name : 'AIFunctionFindSendersTest',
-	#superclass : 'TestCase',
+	#superclass : 'AIFunctionTestCase',
 	#category : 'AIAssistantTestsApp'
 }
 
@@ -153,11 +153,27 @@ AIFunctionFindSendersTest >> testInstanceMethodWithoutSource [
 { #category : 'Tests' }
 AIFunctionFindSendersTest >> testMaxResultsWarning [
 
-	|args result context sample|
+	| args result context |
 	args := Dictionary new.
 	args at: 'selectors' put: #('mySampleSenderOnTheClassSide' 'myNonExistentClassSideMethod').
 	args at: 'with_source' put: false.
-	context := AIFunctionCallContext model: (AIAbstractModel name: 'Test contextSize' label: 'A' provider: AIAbstractModelProvider new contextWindowSize: 0) filePaths: #() codeChanges: #().
-	result := AIFunctionFindSenders new applyFunctionTo: args in: context. 
+	context := self contextWithModel: (
+		AIAbstractModel
+			name: 'Test contextSize'
+			label: 'A'
+			provider: AIAbstractModelProvider new
+			contextWindowSize: 0).
+	result := AIFunctionFindSenders new applyFunctionTo: args in: context.
 	self assert: (result at: 'warning' ifAbsent: [nil]) notNil
+]
+
+{ #category : 'Tests' }
+AIFunctionFindSendersTest >> testSubApplicationScoped [
+
+	self
+		assertSubApplicationScopedForFunction: AIFunctionFindSenders
+		withArguments: (Dictionary new
+			at: 'selectors' put: #('new');
+			yourself)
+		matchingClassBlock: [:cls | cls selectors anySatisfy: [:sel | (cls compiledMethodAt: sel) symbolLiterals includes: #new]]
 ]

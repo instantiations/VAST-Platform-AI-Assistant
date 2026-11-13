@@ -25,3 +25,13 @@ AIJSONMockClass class >> mockClassMethod [
 AIJSONMockClass >> mockMethod [
 	^ 'this is a mock method'
 ]
+
+{ #category : 'accessing' }
+AIJSONMockClass >> var1: anObject [
+	var1 := anObject
+]
+
+{ #category : 'accessing' }
+AIJSONMockClass >> var2: anObject [
+	var2 := anObject
+]

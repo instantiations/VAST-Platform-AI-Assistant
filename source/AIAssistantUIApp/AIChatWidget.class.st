@@ -18,16 +18,17 @@ Class {
 	],
 	#classVars : [
 		'BaseFontSize',
-		'HeadingFontSets',
-		'BaseFontSet'
+		'BaseFontSetPerScale',
+		'HeadingFontSetsPerScale'
 	],
 	#category : 'AIAssistantUIApp'
 }
 
 { #category : 'Not categorized' }
-AIChatWidget class >> baseFontSet [
+AIChatWidget class >> baseFontSetAtScale: scale [
 
-	^ BaseFontSet ifNil: [ BaseFontSet := AIChatWidgetFontSet size: self baseFontSize ]
+	^ (BaseFontSetPerScale ifNil: [ BaseFontSetPerScale := Dictionary new ])
+		at: scale ifAbsentPut: [ AIChatWidgetFontSet size: (self baseFontSize * scale) floor ]
 ]
 
 { #category : 'Not categorized' }
@@ -48,20 +49,21 @@ AIChatWidget class >> baseFontSize: newSize [
 ]
 
 { #category : 'Not categorized' }
-AIChatWidget class >> headingFontSets [
+AIChatWidget class >> headingFontSetsAtScale: scale [
 
-	^ HeadingFontSets ifNil: [ HeadingFontSets := #(150 125 110 100) collect: [ :factor | AIChatWidgetFontSet size: self baseFontSize * factor // 100 ] ]
+	^ (HeadingFontSetsPerScale ifNil: [ HeadingFontSetsPerScale := Dictionary new ])
+		at: scale ifAbsentPut: [ #(150 125 110 100) collect: [ :factor | AIChatWidgetFontSet size: (self baseFontSize * (factor / 100) * scale) floor ] ]
 ]
 
 { #category : 'Not categorized' }
 AIChatWidget class >> resetFontSets [
 
-	BaseFontSet ifNotNil: [
-		BaseFontSet freeFonts.
-		BaseFontSet := nil ].
-	HeadingFontSets ifNotNil: [
-		HeadingFontSets do: [ :headingFontSet | headingFontSet freeFonts ].
-		HeadingFontSets := nil ].
+	BaseFontSetPerScale ifNotNil: [
+		BaseFontSetPerScale do: [ :fontSet | fontSet freeFonts ].
+		BaseFontSetPerScale := nil ].
+	HeadingFontSetsPerScale ifNotNil: [
+		HeadingFontSetsPerScale do: [ :headingFontSets | headingFontSets do: [ :headingFontSet | headingFontSet freeFonts ] ].
+		HeadingFontSetsPerScale := nil ].
 ]
 
 { #category : 'Not categorized' }
@@ -134,11 +136,11 @@ AIChatWidget >> createWidgetSystem [
 AIChatWidget >> drawBottomBackground: dc [
 
 	dc pixmap fillRectangle: dc gc x: dc baseLeftInset y: dc y + dc yOffset
-		width: (drawingArea width - dc rightInset - dc baseLeftInset)
+		width: ((DPIScaler autoScaleUp: drawingArea width drawable: drawingArea window) - dc rightInset - dc baseLeftInset)
 		height: dc padding.
 	dc gc setArcMode: ArcPieSlice.
 	dc pixmap fillArc: dc gc x: dc baseLeftInset - dc padding y: dc y + dc yOffset - dc padding width: dc padding * 2 height: dc padding * 2 angle1: 64 * 180 angle2: 64 * 90.
-	dc pixmap fillArc: dc gc x: (drawingArea width - dc rightInset - dc padding) y: dc y + dc yOffset - dc padding width: dc padding * 2 height: dc padding * 2 angle1: 64 * 270 angle2: 64 * 90.
+	dc pixmap fillArc: dc gc x: ((DPIScaler autoScaleUp: drawingArea width drawable: drawingArea window) - dc rightInset - dc padding) y: dc y + dc yOffset - dc padding width: dc padding * 2 height: dc padding * 2 angle1: 64 * 270 angle2: 64 * 90.
 ]
 
 { #category : 'Not categorized' }
@@ -146,7 +148,7 @@ AIChatWidget >> drawLeafTextBlock: textBlock dc: dc [
 
 	| drawnAreas |
 
-	dc fontSet: (textBlock isHeadingBlock ifTrue: [ self class headingFontSets at: (textBlock level min: self class headingFontSets size) ] ifFalse: [ self class baseFontSet ]).
+	dc fontSet: (textBlock isHeadingBlock ifTrue: [ (self class headingFontSetsAtScale: dc scale) at: (textBlock level min: (self class headingFontSetsAtScale: dc scale) size) ] ifFalse: [ self class baseFontSetAtScale: dc scale ]).
 	dc ascent: dc fontSet proportional normal ascent.
 	dc descent: dc fontSet proportional normal descent.
 	^ dc withTextMonospaced: false do: [
@@ -170,9 +172,9 @@ AIChatWidget >> drawMarkerTextBlockCode: textBlock startY: startY dc: dc [
 
 	dc gc setForeground: (dc pixmap getPalette nearestPixelValue: (textBlock isPointedTo ifTrue: [ self pointedToCodeTextBlockColor ] ifFalse: [ Color lightGray ])).
 	markerRectangle := Rectangle origin: (dc leftInset + (dc leftInsetCodeBlockIncrement // 4)) @ startY
-		extent: 3 @ (dc y - startY).
+		extent: (3 * dc scale) rounded @ (dc y - startY).
 	dc pixmap fillRectangles: dc gc rectangles: { markerRectangle translateBy: 0 @ dc yOffset }.
-	dc interactableAreas add: (AIChatWidgetInteractableArea rectangle: (markerRectangle expandBy: 5 @ 2) handler: textBlock).
+	dc interactableAreas add: (AIChatWidgetInteractableArea rectangle: (markerRectangle expandBy: ((5 @ 2) * dc scale) rounded) handler: textBlock).
 ]
 
 { #category : 'Not categorized' }
@@ -187,7 +189,7 @@ AIChatWidget >> drawMiddleBackground: height dc: dc [
 	dc backgroundColor ifNil: [ ^ self ].
 	dc gc setForeground: (dc pixmap getPalette nearestPixelValue: dc backgroundColor).
 	dc pixmap fillRectangle: dc gc x: dc baseLeftInset - dc padding y: dc y + dc yOffset
-		width: ((drawingArea width - dc rightInset + dc padding) - (dc baseLeftInset - dc padding))
+		width: (((DPIScaler autoScaleUp: drawingArea width drawable: drawingArea window) - dc rightInset + dc padding) - (dc baseLeftInset - dc padding))
 		height: height
 ]
 
@@ -199,9 +201,9 @@ AIChatWidget >> drawPendingListMarkers: dc [
 		leftInset := dc pendingListMarkers last key.
 		listItemBlock := dc pendingListMarkers removeLast value.
 		markerString := listItemBlock markerString , (String new: 3 withAll: Character space).
-		dc gc setFont: self class baseFontSet proportional normal font.
+		dc gc setFont: (self class baseFontSetAtScale: dc scale) proportional normal font.
 		dc gc setForeground: (dc pixmap getPalette nearestPixelValue: dc textColor).
-		dc pixmap drawString: dc gc x: leftInset - (self class baseFontSet proportional normal textWidth: markerString) y: dc y + dc ascent + dc yOffset string: markerString ].
+		dc pixmap drawString: dc gc x: leftInset - ((self class baseFontSetAtScale: dc scale) proportional normal textWidth: markerString drawable: dc pixmap) y: dc y + dc ascent + dc yOffset string: markerString ].
 ]
 
 { #category : 'Not categorized' }
@@ -217,23 +219,33 @@ AIChatWidget >> drawStringLayout: layout dc: dc [
 				do: [ :tabPart |
 					tabPart
 						do: [ :drawnString |
-							| textWidth |
-							(selectionEndPoint notNil and: [ dc selectionStartX < Float infinity and: [ dc selectionEndX > dc x ] ]) ifTrue: [
-								| selectionStartIndex selectionEndIndex |
-								selectionStartIndex := (1 to: drawnString size) findFirst: [ :index |
-									(dc x + (dc fontStruct textWidth: (drawnString copyFrom: 1 to: index))) > dc selectionStartX ].
-								selectionStartIndex ~= 0 ifTrue: [
-									selectionEndIndex := (1 to: drawnString size) findLast: [ :index |
-										(dc x + (dc fontStruct textWidth: (drawnString copyFrom: 1 to: index - 1))) < dc selectionEndX ].
-										selectionEndIndex ~= 0 ifTrue: [
-											dc selectionStream nextPutAll: (drawnString copyFrom: selectionStartIndex to: selectionEndIndex).
-											dc gc setForeground: (dc pixmap getPalette nearestPixelValue: self selectionBackgroundColor).
-											dc pixmap fillRectangle: dc gc x: dc x + (dc fontStruct textWidth: (drawnString copyFrom: 1 to: selectionStartIndex - 1))
-												y: dc y + dc yOffset width: (dc fontStruct textWidth: (drawnString copyFrom: selectionStartIndex to: selectionEndIndex))
-												height: dc ascent + dc descent + dc lineSpacing ] ] ].
-							dc gc setForeground: (dc pixmap getPalette nearestPixelValue: dc textColor).
-							dc pixmap drawString: dc gc x: dc x y: dc y + dc ascent + dc yOffset string: drawnString.
-							textWidth := dc fontStruct textWidth: drawnString.
+							| textWidth selectionStartIndex selectionEndIndex |
+							selectionStartIndex := (selectionEndPoint notNil and: [ dc selectionStartX < Float infinity and: [ dc selectionEndX > dc x ] ]) ifFalse: [ 0 ] ifTrue: [
+								(1 to: drawnString size) findFirst: [ :index | (dc x + (dc fontStruct textWidth: (drawnString copyFrom: 1 to: index) drawable: dc pixmap)) > dc selectionStartX ] ].
+							selectionEndIndex := (selectionStartIndex ~= 0) ifFalse: [ 0 ] ifTrue: [
+								(1 to: drawnString size) findLast: [ :index | (dc x + (dc fontStruct textWidth: (drawnString copyFrom: 1 to: index - 1) drawable: dc pixmap)) < dc selectionEndX ] ].
+							selectionEndIndex ~= 0 ifTrue: [
+								| widthBefore stringSelected widthSelected  |
+								widthBefore := selectionStartIndex > 1 ifFalse: [ 0 ] ifTrue: [
+									| stringBefore |
+									stringBefore := drawnString copyFrom: 1 to: selectionStartIndex - 1.
+									dc gc setForeground: (dc pixmap getPalette nearestPixelValue: dc textColor).
+									dc pixmap drawString: dc gc x: dc x y: dc y + dc ascent + dc yOffset string: stringBefore.
+									dc fontStruct textWidth: stringBefore drawable: dc pixmap ].
+								stringSelected := drawnString copyFrom: selectionStartIndex to: selectionEndIndex.
+								dc selectionStream nextPutAll: stringSelected.
+								widthSelected := dc fontStruct textWidth: stringSelected drawable: dc pixmap.
+								dc gc setForeground: (dc pixmap getPalette nearestPixelValue: self selectionBackgroundColor).
+								dc pixmap fillRectangle: dc gc x: dc x + widthBefore y: dc y + dc yOffset width: widthSelected height: dc ascent + dc descent + dc lineSpacing.
+								dc gc setForeground: (dc pixmap getPalette nearestPixelValue: self selectionForegroundColor).
+								dc pixmap drawString: dc gc x: dc x + widthBefore y: dc y + dc ascent + dc yOffset string: stringSelected.
+								selectionEndIndex < drawnString size ifTrue: [
+									dc gc setForeground: (dc pixmap getPalette nearestPixelValue: dc textColor).
+									dc pixmap drawString: dc gc x: dc x + widthBefore + widthSelected y: dc y + dc ascent + dc yOffset string: (drawnString copyFrom: selectionEndIndex + 1 to: drawnString size) ].
+							] ifFalse: [
+								dc gc setForeground: (dc pixmap getPalette nearestPixelValue: dc textColor).
+								dc pixmap drawString: dc gc x: dc x y: dc y + dc ascent + dc yOffset string: drawnString ].
+							textWidth := dc fontStruct textWidth: drawnString drawable: dc pixmap.
 							drawnAreas add: (Rectangle origin: dc x @ dc y extent: textWidth @ (dc ascent + dc descent + dc lineSpacing)).
 							dc x: dc x + textWidth ]
 						separatedBy: [
@@ -253,7 +265,7 @@ AIChatWidget >> drawStringLayout: layout dc: dc [
 							dc pixmap fillRectangle: dc gc x: dc x y: dc y + dc yOffset width: newX - dc x height: dc ascent + dc descent + dc lineSpacing ] ].
 					drawnAreas add: (Rectangle origin: dc x @ dc y extent: (newX - dc x) @ (dc ascent + dc descent + dc lineSpacing)).
 					dc x: newX.
-					dc x > (drawingArea width - dc rightInset) ifTrue: [
+					dc x > ((DPIScaler autoScaleUp: drawingArea width drawable: drawingArea window) - dc rightInset) ifTrue: [
 						dc x: dc leftInset.
 						dc y: dc y + dc ascent + dc descent + dc lineSpacing.
 						dc ascent: dc fontSet proportional normal ascent.
@@ -282,7 +294,7 @@ AIChatWidget >> drawTextBlock: textBlock dc: dc [
 { #category : 'Not categorized' }
 AIChatWidget >> drawTextBlockCode: textBlock dc: dc [
 
-	dc withLineSpacing: (self class baseFontSet proportional normal height * (25 / 1000)) rounded do: [
+	dc withLineSpacing: ((self class baseFontSetAtScale: dc scale) proportional normal height * (25 / 1000)) rounded do: [
 		self drawLeafTextBlock: textBlock dc: dc ]
 ]
 
@@ -292,7 +304,7 @@ AIChatWidget >> drawTextBlockCodeChanges: codeChanges dc: dc [
 	| outerStartY markerRectangle padding drawnAreas maxEndX |
 
 	outerStartY := dc y.
-	padding := (self class baseFontSet proportional normal height * (35 / 100)) rounded.
+	padding := ((self class baseFontSetAtScale: dc scale) proportional normal height * (35 / 100)) rounded.
 	dc y: dc y + padding.
 	dc withLeftInsetIncreasedBy: padding do: [
 		dc withRightInsetIncreasedBy: padding do: [
@@ -301,7 +313,7 @@ AIChatWidget >> drawTextBlockCodeChanges: codeChanges dc: dc [
 	maxEndX := drawnAreas ifEmpty: [ dc leftInset ] ifNotEmpty: [
 		drawnAreas inject: drawnAreas first right into: [ :max :drawnArea | max max: drawnArea right ] ].
 	dc gc setForeground: (dc pixmap getPalette nearestPixelValue: Color lightGray).
-	markerRectangle := Rectangle origin: dc leftInset @ outerStartY corner: ((maxEndX + padding) min: drawingArea width - dc rightInset) @ dc y.
+	markerRectangle := Rectangle origin: dc leftInset @ outerStartY corner: ((maxEndX + padding) min: (DPIScaler autoScaleUp: drawingArea width drawable: drawingArea window) - dc rightInset) @ dc y.
 	dc pixmap drawRectangles: dc gc rectangles: { markerRectangle translateBy: 0 @ dc yOffset }.
 ]
 
@@ -322,7 +334,7 @@ AIChatWidget >> drawTextBlockFunctionCalls: textBlock dc: dc [
 				addBlock: (AIChatTextBlockText text: (AIChatTextElementString string: functionCall displayString));
 				yourself) ].
 		dc withTextColor: Color darkGray do: [
-			dc y: dc y + (self class baseFontSet proportional normal height * (1 / 10)) rounded.
+			dc y: dc y + ((self class baseFontSetAtScale: dc scale) proportional normal height * (1 / 10)) rounded.
 			self drawTextBlock: sequenceBlock dc: dc ] ].
 ]
 
@@ -361,7 +373,7 @@ AIChatWidget >> drawTextBlockQuote: textBlock dc: dc [
 	dc withLeftInsetIncreasedBy: dc leftInsetQuoteBlockIncrement do: [
 		self drawTextBlock: textBlock sequenceBlock dc: dc ].
 	dc gc setForeground: (dc pixmap getPalette nearestPixelValue: Color lightGray).
-	markerRectangle := Rectangle origin: (dc leftInset + (dc leftInsetQuoteBlockIncrement // 4)) @ outerStartY extent: 1 @ (dc y - outerStartY).
+	markerRectangle := Rectangle origin: (dc leftInset + (dc leftInsetQuoteBlockIncrement // 4)) @ outerStartY extent: (1 * dc scale) rounded @ (dc y - outerStartY).
 	dc pixmap fillRectangles: dc gc rectangles: { markerRectangle translateBy: 0 @ dc yOffset }.
 ]
 
@@ -391,7 +403,7 @@ AIChatWidget >> drawTextBlockThought: textBlock dc: dc [
 			self drawTextBlock: (AIChatTextBlockText text: (AIChatTextElementString string: 'Thoughts ' , (self toggleIndicatorExpanded: textBlock isExpanded) , topicSuffix)) dc: dc ].
 		dc interactableAreas add: (AIChatWidgetInteractableArea rectangle: (Rectangle origin: dc leftInset @ startY corner: dc x @ dc y) handler: textBlock).
 		textBlock isExpanded ifTrue: [
-			dc y: dc y + (self class baseFontSet proportional normal height * (1 / 3)) rounded.
+			dc y: dc y + ((self class baseFontSetAtScale: dc scale) proportional normal height * (1 / 3)) rounded.
 			self drawTextBlock: textBlock sequenceBlock dc: dc ] ].
 ]
 
@@ -404,7 +416,7 @@ AIChatWidget >> drawTextBlocks: textBlocks dc: dc [
 	textBlocks do: [ :textBlock |
 		previousTextBlock ifNotNil: [
 			| spacing |
-			spacing := (self class baseFontSet proportional normal height * (previousTextBlock spacingFactorAfter max: textBlock spacingFactorBefore)) rounded.
+			spacing := ((self class baseFontSetAtScale: dc scale) proportional normal height * (previousTextBlock spacingFactorAfter max: textBlock spacingFactorBefore)) rounded.
 			self drawMiddleBackground: spacing dc: dc.
 			self updateSelectionStartEndX: spacing dc: dc.
 			selectionEndPoint ifNotNil: [
@@ -412,7 +424,7 @@ AIChatWidget >> drawTextBlocks: textBlocks dc: dc [
 					dc selectionStream newLine.
 					dc gc setForeground: (dc pixmap getPalette nearestPixelValue: self selectionBackgroundColor).
 					dc pixmap fillRectangle: dc gc x: dc leftInset
-						y: dc y + dc yOffset width: (dc fontStruct textWidth: (String with: Character space))
+						y: dc y + dc yOffset width: (dc fontStruct textWidth: (String with: Character space) drawable: dc pixmap)
 						height: spacing ] ].
 			dc y: dc y + spacing ].
 		self drawTextBlock: textBlock dc: dc.
@@ -577,7 +589,7 @@ AIChatWidget >> drawTextSegmentSystemInstruction: textSegment dc: dc [
 		self drawTextBlock: (AIChatTextBlockText text: (AIChatTextElementString string: 'System Instruction ' , (self toggleIndicatorExpanded: textSegment isExpanded))) dc: dc ].
 	dc interactableAreas add: (AIChatWidgetInteractableArea rectangle: (Rectangle origin: dc leftInset @ startY corner: dc x @ dc y) handler: textSegment).
 	textSegment isExpanded ifTrue: [
-		dc y: dc y + (self class baseFontSet proportional normal height * (1 / 3)) rounded.
+		dc y: dc y + ((self class baseFontSetAtScale: dc scale) proportional normal height * (1 / 3)) rounded.
 		self drawTextBlocksOfTextSegment: textSegment dc: dc ]
 ]
 
@@ -586,7 +598,7 @@ AIChatWidget >> drawTextSegmentUserMessage: textSegment dc: dc [
 
 	dc
 		backgroundColor: self userMessageBackgroundColor;
-		padding: 10.
+		padding: (10 * dc scale) rounded.
 	self drawTopBackground: dc.
 	dc y: dc y + dc padding.
 	self drawTextBlocksOfTextSegment: textSegment dc: dc.
@@ -603,14 +615,14 @@ AIChatWidget >> drawTextSegments: dc [
 			| textSegmentHeight |
 			textSegmentHeight := textSegment height.
 			(textSegmentHeight isNil or: [ 
-				((dc y + textSegmentHeight) > (scrollBar value * scrollBarValueFactor) and: [ dc y < (scrollBar value * scrollBarValueFactor + drawingArea height) ]) or: [
+				((dc y + textSegmentHeight) > (DPIScaler autoScaleUp: scrollBar value * scrollBarValueFactor drawable: drawingArea window) and: [ dc y < ((DPIScaler autoScaleUp: scrollBar value * scrollBarValueFactor drawable: drawingArea window) + (DPIScaler autoScaleUp: drawingArea height drawable: drawingArea window)) ]) or: [
 					selectionEndPoint notNil and: [ (dc y + textSegmentHeight) > (selectionStartPoint y min: selectionEndPoint y) and: [ dc y < (selectionStartPoint y max: selectionEndPoint y) ] ] ] ])
 						ifFalse: [
 							dc y: dc y + textSegmentHeight
 						] ifTrue: [
 							textSegment height: (self drawTextSegment: textSegment dc: dc) ] ]
 		separatedBy: [
-			dc y: dc y + (self class baseFontSet proportional normal height * (3 / 2)) rounded ].
+			dc y: dc y + ((self class baseFontSetAtScale: dc scale) proportional normal height * (3 / 2)) rounded ].
 ]
 
 { #category : 'Not categorized' }
@@ -632,11 +644,19 @@ AIChatWidget >> drawTopBackground: dc [
 
 	dc gc setForeground: (dc pixmap getPalette nearestPixelValue: dc backgroundColor).
 	dc pixmap fillRectangle: dc gc x: dc baseLeftInset y: dc y + dc yOffset
-		width: (drawingArea width - dc rightInset - dc baseLeftInset)
+		width: ((DPIScaler autoScaleUp: drawingArea width drawable: drawingArea window) - dc rightInset - dc baseLeftInset)
 		height: dc padding.
 	dc gc setArcMode: ArcPieSlice.
 	dc pixmap fillArc: dc gc x: dc baseLeftInset - dc padding y: dc y + dc yOffset width: dc padding * 2 height: dc padding * 2 angle1: 64 * 90 angle2: 64 * 90.
-	dc pixmap fillArc: dc gc x: (drawingArea width - dc rightInset - dc padding) y: dc y + dc yOffset width: dc padding * 2 height: dc padding * 2 angle1: 64 * 0 angle2: 64 * 90.
+	dc pixmap fillArc: dc gc x: ((DPIScaler autoScaleUp: drawingArea width drawable: drawingArea window) - dc rightInset - dc padding) y: dc y + dc yOffset width: dc padding * 2 height: dc padding * 2 angle1: 64 * 0 angle2: 64 * 90.
+]
+
+{ #category : 'Not categorized' }
+AIChatWidget >> drawingAreaAutoScaleChanged [
+
+	chat resetTextSegmentLayout.
+	selectionStartPoint := nil.
+	selectionEndPoint := nil.
 ]
 
 { #category : 'Not categorized' }
@@ -645,7 +665,7 @@ AIChatWidget >> drawingAreaButtonPress: ignored clientData: clientData callData:
 	| point |
 
 	buttonEvent button = Button1 ifFalse: [ ^ self ].
-	point := buttonEvent point + (0 @( scrollBar value * scrollBarValueFactor)).
+	point := (DPIScaler autoScaleUpPoint: buttonEvent point drawable: drawingArea window) + (0 @ (DPIScaler autoScaleUp: scrollBar value * scrollBarValueFactor drawable: drawingArea window)).
 	(drawnInteractableAreas detect: [ :interactableArea | interactableArea containsPoint: point ] ifNone: [ nil ])
 		ifNotNil: [ :interactableArea |
 			interactableArea buttonPressedIn: self ]
@@ -677,23 +697,25 @@ AIChatWidget >> drawingAreaExposed: ignored clientData: clientData callData: cal
 	| dc spacing |
 
 	(dc := AIChatWidgetDrawingContext new)
-		pixmap: (drawingArea window createDpiPixmap: (DPIScaler autoScaleUp: drawingArea width drawable: drawingArea window)
+		scale: (DPIScaler getDeviceScaleFactor: drawingArea window autoScaleContext) normalized;
+		pixmap: (drawingArea window createChatWidgetPixmap: ((DPIScaler autoScaleUp: drawingArea width drawable: drawingArea window) max:
+				((DPIScaler autoScaleUp: callData event x drawable: drawingArea window) + (DPIScaler autoScaleUp: callData event width drawable: drawingArea window)))
 			height: (DPIScaler autoScaleUp: callData event height drawable: drawingArea window) depth: drawingArea window depth);
 		gc: (dc pixmap createGC: CgConstants::None values: nil);
-		tabWidth: (self class baseFontSet proportional normal textWidth: (String new: 4 withAll: Character space));
-		baseLeftInset: 20;
+		tabWidth: ((self class baseFontSetAtScale: dc scale) proportional normal textWidth: (String new: 4 withAll: Character space) drawable: dc pixmap);
+		baseLeftInset: (20 * dc scale) rounded;
 		leftInset: dc baseLeftInset;
 		leftInsetCodeBlockIncrement: dc tabWidth;
 		leftInsetQuoteBlockIncrement: dc tabWidth;
-		leftInsetListItemBlockIncrement: (self class baseFontSet proportional normal textWidth: (String new: 8 withAll: Character space));
-		rightInset: 20;
-		lineSpacing: (self class baseFontSet proportional normal height * (5 / 100)) rounded;
-		yOffset: (scrollBar value * scrollBarValueFactor + callData event y) negated;
-		y: (self class baseFontSet proportional normal height * (3 / 2)) rounded;
+		leftInsetListItemBlockIncrement: ((self class baseFontSetAtScale: dc scale) proportional normal textWidth: (String new: 8 withAll: Character space) drawable: dc pixmap);
+		rightInset: (20 * dc scale) rounded;
+		lineSpacing: ((self class baseFontSetAtScale: dc scale) proportional normal height * (5 / 100)) rounded;
+		yOffset: ((DPIScaler autoScaleUp: scrollBar value * scrollBarValueFactor drawable: drawingArea window) + (DPIScaler autoScaleUp: callData event y drawable: drawingArea window)) negated;
+		y: ((self class baseFontSetAtScale: dc scale) proportional normal height * (3 / 2)) rounded;
 		pendingListMarkers: OrderedCollection new;
 		interactableAreas: OrderedCollection new;
 		selectionStream: (WriteStream on: String new).
-	dc pixmap setPalette: (CgIndexedPalette colors: CgIndexedPalette default colors , { self selectionBackgroundColor.
+	dc pixmap setPalette: (CgIndexedPalette colors: CgIndexedPalette default colors , { self selectionBackgroundColor. self selectionForegroundColor.
 		self userMessageBackgroundColor. self pointedToCodeTextBlockColor.
 		self codeElementReferencingClassNameColor. self pointedToCodeElementReferencingClassNameColor.
 		Color lightGray }).
@@ -701,18 +723,20 @@ AIChatWidget >> drawingAreaExposed: ignored clientData: clientData callData: cal
 	dc pixmap fillRectangle: dc gc x: 0 y: 0 width: dc pixmap width height: dc pixmap height.
 	self drawTextSegments: dc.
 	chat isActivelyGenerating ifTrue: [
-		dc gc setFont: self class baseFontSet proportional normal font; setForeground: (dc pixmap getPalette nearestPixelValue: Color darkGray).
-		dc pixmap drawString: dc gc x: dc leftInset y: dc y + self class baseFontSet proportional normal ascent + dc yOffset string: '...'.
-		dc y: dc y + self class baseFontSet proportional normal height ].
+		dc gc setFont: (self class baseFontSetAtScale: dc scale) proportional normal font; setForeground: (dc pixmap getPalette nearestPixelValue: Color darkGray).
+		dc pixmap drawString: dc gc x: dc leftInset y: dc y + (self class baseFontSetAtScale: dc scale) proportional normal ascent + dc yOffset string: '...'.
+		dc y: dc y + (self class baseFontSetAtScale: dc scale) proportional normal height ].
 	dc pixmap copyArea: drawingArea window gc: dc gc
-		srcX: callData event x srcY: 0 srcWidth: callData event width srcHeight: callData event height
+		srcX: (DPIScaler autoScaleUp: callData event x drawable: drawingArea window) srcY: 0
+		srcWidth: (DPIScaler autoScaleUp: callData event width drawable: drawingArea window)
+		srcHeight: (DPIScaler autoScaleUp: callData event height drawable: drawingArea window)
 		destX: callData event x destY: callData event y destWidth: callData event width destHeight: callData event height.
-	spacing := (self class baseFontSet proportional normal height * (3 / 4)) rounded.
-	scrollBarNextMinMaxValue := dc y + spacing.
+	spacing := ((self class baseFontSetAtScale: dc scale) proportional normal height * (3 / 2)) rounded.
+	scrollBarNextMinMaxValue := DPIScaler autoScaleDown: dc y + (spacing // 2) drawable: drawingArea window.
 	scrollBar
-		maximum: (scrollBarNextMinMaxValue + spacing max: (scrollBarMinMaxValue + drawingArea height)) + scrollBarValueFactor - 1 // scrollBarValueFactor;
+		maximum: ((DPIScaler autoScaleDown: dc y + spacing drawable: drawingArea window) max: (scrollBarMinMaxValue + drawingArea height)) + scrollBarValueFactor - 1 // scrollBarValueFactor;
 		sliderSize: drawingArea height + scrollBarValueFactor - 1 // scrollBarValueFactor;
-		increment: self class baseFontSet proportional normal height + scrollBarValueFactor - 1 // scrollBarValueFactor;
+		increment: (DPIScaler autoScaleDown: (self class baseFontSetAtScale: dc scale) proportional normal height drawable: drawingArea window) + scrollBarValueFactor - 1 // scrollBarValueFactor;
 		pageIncrement: drawingArea height + scrollBarValueFactor - 1 // scrollBarValueFactor.
 	drawnInteractableAreas := dc interactableAreas.
 	selectedString := dc selectionStream contents.
@@ -725,7 +749,7 @@ AIChatWidget >> drawingAreaPointerMotion: ignored clientData: clientData callDat
 
 	| point |
 
-	point := motionEvent point + (0 @ (scrollBar value * scrollBarValueFactor)).
+	point := (DPIScaler autoScaleUpPoint: motionEvent point drawable: drawingArea window) + (0 @ (DPIScaler autoScaleUp: scrollBar value * scrollBarValueFactor drawable: drawingArea window)).
 	selecting ifTrue: [
 		selectionEndPoint := point.
 		selectionScrollTimeoutID ifNil: [
@@ -748,7 +772,7 @@ AIChatWidget >> drawingAreaPointerMotion: ignored clientData: clientData callDat
 AIChatWidget >> initialize [
 
 	super initialize.
-	scrollBarValueFactor := self class baseFontSet proportional normal height.
+	scrollBarValueFactor := DPIScaler autoScaleDown: (self class baseFontSetAtScale: (DPIScaler getDeviceScaleFactor: nil) normalized) proportional normal height for: nil.
 	selecting := false.
 	selectionScrollTimeoutID := nil.
 	selectedString := ''.
@@ -791,13 +815,13 @@ AIChatWidget >> layOutString: textString dc: dc [
 								startIndex := 1.
 								[ startIndex <= string size ] whileTrue: [
 									| maxWidth leftIndex rightIndex distance drawnString textWidth |
-									maxWidth := drawingArea width - dc rightInset - x.
+									maxWidth := (DPIScaler autoScaleUp: drawingArea width drawable: drawingArea window) - dc rightInset - x.
 									leftIndex := startIndex.
 									rightIndex := string size + 1.
 									[ (distance := rightIndex - leftIndex) > 1 ] whileTrue: [
 										| width middleIndex |
 										middleIndex := leftIndex + (distance // 2).
-										width := dc fontStruct textWidth: (string copyFrom: startIndex to: middleIndex).
+										width := dc fontStruct textWidth: (string copyFrom: startIndex to: middleIndex) drawable: dc pixmap.
 										width <= maxWidth ifTrue: [
 											leftIndex := middleIndex.
 										] ifFalse: [
@@ -813,7 +837,7 @@ AIChatWidget >> layOutString: textString dc: dc [
 												leftIndex := newLeftIndex ] ] ].
 									drawnString := string copyFrom: startIndex to: leftIndex.
 									drawnStringStream nextPut: drawnString.
-									textWidth := dc fontStruct textWidth: drawnString.
+									textWidth := dc fontStruct textWidth: drawnString drawable: dc pixmap.
 									x := x + textWidth.
 									startIndex := leftIndex + 1.
 									startIndex <= string size ifTrue: [
@@ -822,7 +846,7 @@ AIChatWidget >> layOutString: textString dc: dc [
 							| newX |
 							newX := x - dc leftInset // dc tabWidth + 1 * dc tabWidth + dc leftInset.
 							x := newX.
-							x > (drawingArea width - dc rightInset) ifTrue: [
+							x > ((DPIScaler autoScaleUp: drawingArea width drawable: drawingArea window) - dc rightInset) ifTrue: [
 								x := dc leftInset ] ] ]) ]
 			separatedBy: [
 				x := dc leftInset ] ]
@@ -929,19 +953,25 @@ AIChatWidget >> selectionBackgroundColor [
 ]
 
 { #category : 'Not categorized' }
+AIChatWidget >> selectionForegroundColor [
+
+	^ Color selectionForeground
+]
+
+{ #category : 'Not categorized' }
 AIChatWidget >> selectionScrollTimeoutElapsed: clientData [
 
 	| relativeSelectionEndY distanceSelectionEndY valueDelta previousValue |
 
 	selectionScrollTimeoutID := nil.
 	(selecting and: [ selectionEndPoint notNil ]) ifFalse: [ ^ self ].
-	relativeSelectionEndY := selectionEndPoint y - (scrollBar value * scrollBarValueFactor).
-	(relativeSelectionEndY between: 0 and: drawingArea height) ifTrue: [ ^ self ].
-	distanceSelectionEndY := relativeSelectionEndY negative ifTrue: [ relativeSelectionEndY abs ] ifFalse: [ relativeSelectionEndY - drawingArea height ].
-	valueDelta := ((distanceSelectionEndY // 4 min: scrollBar pageIncrement * scrollBarValueFactor) max: scrollBarValueFactor) * relativeSelectionEndY sign.
+	relativeSelectionEndY := selectionEndPoint y - (DPIScaler autoScaleUp: (scrollBar value * scrollBarValueFactor) drawable: drawingArea window).
+	(relativeSelectionEndY between: 0 and: (DPIScaler autoScaleUp: drawingArea height drawable: drawingArea window)) ifTrue: [ ^ self ].
+	distanceSelectionEndY := relativeSelectionEndY negative ifTrue: [ relativeSelectionEndY abs ] ifFalse: [ relativeSelectionEndY - (DPIScaler autoScaleUp: drawingArea height drawable: drawingArea window) ].
+	valueDelta := (((DPIScaler autoScaleDown: distanceSelectionEndY drawable: drawingArea window) // 4 min: scrollBar pageIncrement * scrollBarValueFactor) max: scrollBarValueFactor) * relativeSelectionEndY sign.
 	previousValue := scrollBar value * scrollBarValueFactor.
 	scrollBar setValue: (previousValue + valueDelta) // scrollBarValueFactor notify: true.
-	selectionEndPoint := selectionEndPoint + (0 @ (scrollBar value * scrollBarValueFactor - previousValue)).
+	selectionEndPoint := selectionEndPoint + (0 @ ((DPIScaler autoScaleUp: (scrollBar value * scrollBarValueFactor) drawable: drawingArea window) - (DPIScaler autoScaleUp: previousValue drawable: drawingArea window))).
 	self addSelectionScrollTimeout
 ]
 

@@ -42,11 +42,26 @@ AIAssistantUIApp class >> addToTranscriptToolbar [
 ]
 
 { #category : 'Internal' }
+AIAssistantUIApp class >> addToWorkspaceToolbar [
+
+	| toolBar |
+
+	StsPowerTools commandNameMap at: #shareWithAIAssistant put: 'Share with AI Assistant'.
+	toolBar := StsPowerTools
+		toolBarDefinitionFor: #StsWorkspace
+		ifAbsent: [ StsPowerTools toolBars at: #StsWorkspace put: StsWorkspace basicNew stsDefaultToolBar ].
+	(toolBar includes: #shareWithAIAssistant) ifFalse: [
+		toolBar add: #space; add: #shareWithAIAssistant.
+		self updateWorkspaceToolbars ]
+]
+
+{ #category : 'Internal' }
 AIAssistantUIApp class >> failedRemove [
 
 	self hookDebuggerMenuCallbacks.
 	self addToSystemMenu.
 	self addToTranscriptToolbar.
+	self addToWorkspaceToolbar.
 ]
 
 { #category : 'Internal' }
@@ -65,6 +80,7 @@ AIAssistantUIApp class >> loaded [
 
 	self addToSystemMenu.
 	self addToTranscriptToolbar.
+	self addToWorkspaceToolbar.
 	self releaseDebuggerMenuCallbacks.
 	self hookDebuggerMenuCallbacks
 ]
@@ -108,11 +124,26 @@ AIAssistantUIApp class >> removeFromTranscriptToolbar [
 ]
 
 { #category : 'Internal' }
+AIAssistantUIApp class >> removeFromWorkspaceToolbar [
+
+	StsPowerTools toolBars at: #StsWorkspace ifPresent: [ :toolBar |
+		| index |
+		index := toolBar indexOf: #shareWithAIAssistant.
+		index ~= 0 ifTrue: [
+			toolBar removeAtIndex: index.
+			(index > 1 and: [ (toolBar at: index - 1) = #space ]) ifTrue: [
+				toolBar removeAtIndex: index - 1 ].
+			self updateWorkspaceToolbars ] ].
+	StsPowerTools commandNameMap removeKey: #shareWithAIAssistant ifAbsent: [ ]
+]
+
+{ #category : 'Internal' }
 AIAssistantUIApp class >> removing [
 
 	self releaseDebuggerMenuCallbacks.
 	self removeFromSystemMenu.
 	self removeFromTranscriptToolbar.
+	self removeFromWorkspaceToolbar.
 	AIChatWidget resetFontSets.
 ]
 
@@ -130,4 +161,10 @@ AIAssistantUIApp class >> updateTranscriptToolbar [
 	height := (Transcript instVarNamed: 'toolBar') destroyWidget; height.
 	(Transcript instVarNamed: 'toolBar' put: Transcript stsToolBar) height: height.
 	Transcript setAttachments.
+]
+
+{ #category : 'Internal' }
+AIAssistantUIApp class >> updateWorkspaceToolbars [
+
+	StsWorkspace allOpenWorkspaces do: [ :ws | ws updateToolBar ]
 ]

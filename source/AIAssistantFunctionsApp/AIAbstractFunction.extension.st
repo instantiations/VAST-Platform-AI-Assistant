@@ -13,6 +13,30 @@ AIAbstractFunction >> checkClassName: className [
 
 { #category : 'Internal',
   #vaVisibility : 'private' }
+AIAbstractFunction >> defaultIndexedLimit [
+
+	^ 50
+]
+
+{ #category : 'Internal',
+  #vaVisibility : 'private' }
+AIAbstractFunction >> defaultPrintStringLimit [
+
+	^ 200
+]
+
+{ #category : 'Internal',
+  #vaVisibility : 'private' }
+AIAbstractFunction >> indexedLimitFrom: arguments [
+
+	^ (((arguments at: 'indexed_limit' ifAbsent: [ nil ])
+		ifNil: [ self defaultIndexedLimit ])
+			max: 0)
+				min: self maxIndexedLimit
+]
+
+{ #category : 'Internal',
+  #vaVisibility : 'private' }
 AIAbstractFunction >> isClassSideParametervalue: side [
 
 	side = 'instance' ifTrue: [^ false].
@@ -77,6 +101,30 @@ AIAbstractFunction >> isVariable: varName visibleInTargetClass: targetClassName 
 					(pool includesKey: varName asSymbol) or: [ pool includesKey: varName asString ] ] ])
 					ifTrue: [ ^ true ] ] ].
 	^ false
+]
+
+{ #category : 'Internal',
+  #vaVisibility : 'private' }
+AIAbstractFunction >> maxIndexedLimit [
+
+	^ 1000
+]
+
+{ #category : 'Internal',
+  #vaVisibility : 'private' }
+AIAbstractFunction >> maxPrintStringLimit [
+
+	^ 1000
+]
+
+{ #category : 'Internal',
+  #vaVisibility : 'private' }
+AIAbstractFunction >> printStringLimitFrom: arguments [
+
+	^ (((arguments at: 'printstring_limit' ifAbsent: [ nil ])
+		ifNil: [ self defaultPrintStringLimit ])
+			max: 1)
+				min: self maxPrintStringLimit
 ]
 
 { #category : 'Validation',

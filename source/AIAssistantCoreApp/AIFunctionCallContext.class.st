@@ -4,15 +4,17 @@ Class {
 	#instVars : [
 		'model',
 		'filePaths',
-		'codeChanges'
+		'codeChanges',
+		'objectRegistry',
+		'workspaceRegistry'
 	],
 	#category : 'AIAssistantCoreApp'
 }
 
-{ #category : 'Not categorized' }
-AIFunctionCallContext class >> model: model filePaths: filePaths codeChanges: codeChanges [
+{ #category : 'Instance Creation' }
+AIFunctionCallContext class >> model: model filePaths: filePaths codeChanges: codeChanges objectRegistry: objectRegistry workspaceRegistry: workspaceRegistry [
 
-	^ self basicNew initializeWith: model filePaths: filePaths codeChanges: codeChanges
+	^ self basicNew initializeWith: model filePaths: filePaths codeChanges: codeChanges objectRegistry: objectRegistry workspaceRegistry: workspaceRegistry
 ]
 
 { #category : 'Accessing' }
@@ -35,15 +37,29 @@ AIFunctionCallContext >> filePaths [
 ]
 
 { #category : 'Initialization' }
-AIFunctionCallContext >> initializeWith: initialModel filePaths: initialFilePaths codeChanges: initialCodeChanges [
+AIFunctionCallContext >> initializeWith: initialModel filePaths: initialFilePaths codeChanges: initialCodeChanges objectRegistry: initialObjectRegistry workspaceRegistry: initialWorkspaceRegistry [
 
 	self initialize.
 	model := initialModel.
 	filePaths := initialFilePaths.
 	codeChanges := initialCodeChanges.
+	objectRegistry := initialObjectRegistry.
+	workspaceRegistry := initialWorkspaceRegistry.
 ]
 
 { #category : 'Accessing' }
 AIFunctionCallContext >> model [
 	^model
+]
+
+{ #category : 'Accessing' }
+AIFunctionCallContext >> objectRegistry [
+
+	^ objectRegistry
+]
+
+{ #category : 'Accessing' }
+AIFunctionCallContext >> workspaceRegistry [
+
+	^ workspaceRegistry
 ]

@@ -12,23 +12,9 @@ AIAbstractStackIterationFunction class >> isAbstract [
 
 { #category : 'Internal',
   #vaVisibility : 'private' }
-AIAbstractStackIterationFunction >> defaultPrintStringLimit [
-
-	^ 200
-]
-
-{ #category : 'Internal',
-  #vaVisibility : 'private' }
 AIAbstractStackIterationFunction >> defaultStackSizeLimit [
 
 	^ DbgDebugSession defaultStackSizeLimit min: 500
-]
-
-{ #category : 'Internal',
-  #vaVisibility : 'private' }
-AIAbstractStackIterationFunction >> maxPrintStringLimit [
-
-	^ 1000
 ]
 
 { #category : 'Internal',
@@ -54,22 +40,23 @@ AIAbstractStackIterationFunction >> parameters [
 
 { #category : 'Internal',
   #vaVisibility : 'private' }
-AIAbstractStackIterationFunction >> stackFramesJSONFrom: firstFrame arguments: arguments [
+AIAbstractStackIterationFunction >> stackFramesJSONFrom: firstFrame arguments: arguments inContext: context [
 
 	^ self
 		stackFramesJSONFrom: firstFrame
 		arguments: arguments
+		inContext: context
 		until: [:frame | false]
 ]
 
 { #category : 'Internal',
   #vaVisibility : 'private' }
-AIAbstractStackIterationFunction >> stackFramesJSONFrom: firstFrame arguments: arguments until: endBlock [
+AIAbstractStackIterationFunction >> stackFramesJSONFrom: firstFrame arguments: arguments inContext: context until: endBlock [
 
 	| stringlimit stacklimit frames allFrames |
 
 	firstFrame ifNil: [^#()].
-	stringlimit := (arguments at: 'printstring_limit' ifAbsent: [self defaultPrintStringLimit]) min: self maxPrintStringLimit.
+	stringlimit := self printStringLimitFrom: arguments.
 	stacklimit := (arguments at: 'stacksize_limit' ifAbsent: [self defaultStackSizeLimit]) min: self maxStackSizeLimit.
 	
 	allFrames := OrderedCollection with: firstFrame.
@@ -77,7 +64,7 @@ AIAbstractStackIterationFunction >> stackFramesJSONFrom: firstFrame arguments: a
 	
 	frames := OrderedCollection new: allFrames size.
 	allFrames do: [:frame |
-		frames add: (frame aiJSONWithStringsLimitedTo: stringlimit).
+		frames add: (frame aiJSONInContext: context stringsLimitedTo: stringlimit indexedLimitedTo: self defaultIndexedLimit).
 		(endBlock value: frame) ifTrue: [^frames]].
 	
 	^ frames

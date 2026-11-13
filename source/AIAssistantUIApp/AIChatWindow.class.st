@@ -88,6 +88,12 @@ AIChatWindow >> acceptNewUserMessage: aString [
 			^true]
 ]
 
+{ #category : 'Operations' }
+AIChatWindow >> addWorkspace: aWorkspace [
+
+	^ chat addWorkspace: aWorkspace
+]
+
 { #category : 'Private',
   #vaVisibility : 'private' }
 AIChatWindow >> asValidWindowsFileName: aString [
@@ -98,6 +104,36 @@ AIChatWindow >> asValidWindowsFileName: aString [
 	^(aString collect: [:e |
 		(e codePoint > 255 or: [CfsNTFSPath isIllegalCharacter: e]) ifTrue: [$_] ifFalse: [e]])
 			asReducedString
+]
+
+{ #category : 'Code Assist' }
+AIChatWindow >> caProvideContextFor: aTextWidget [
+
+	^StsCodeAssistAIChatContext on: self
+]
+
+{ #category : 'Code Assist' }
+AIChatWindow >> caSupportsCodeCompletionFor: aTextWidget [
+
+	^inputWidget == aTextWidget
+]
+
+{ #category : 'Code Assist' }
+AIChatWindow >> caWorkspaceVariableType: aName [
+
+	chat activeWorkspaces do: [:ws |
+		(ws caWorkspaceVariableType: aName) ifNotNil: [:type | ^type]].
+	^nil
+]
+
+{ #category : 'Code Assist' }
+AIChatWindow >> caWorkspaceVariables [
+
+	| variables |
+
+	variables := Set new.
+	chat activeWorkspaces do: [:ws | variables addAll: ws caWorkspaceVariables].
+	^variables asArray
 ]
 
 { #category : 'User Interface' }
@@ -161,18 +197,16 @@ AIChatWindow >> createWorkRegion [
 				add: #stsImplementors label: [ self stsImplementorsLabelFor: selectedType ] enable: [ notSymbol ] visible: [ unknown not ] for: self;
 				yourself)
 			owner: self.
-	inputWidget :=
-		(self defaultWidgetParent
-			createScrolledText: 'text'
-			argBlock: [:w |
-				w
-					editMode: XmMULTILINEEDIT;
-					wordWrap: true]) manageChild.
-	inputWidget
+	(inputWidget := AIChatWindowScintillaEditor createWidget: 'text' parent: self defaultWidgetParent
+		argBlock: [ :w |
+			self stsSetFontListFor: w.
+			w wordWrap: true;
+				scrollHorizontal: false ])
+		manageChild;
 		addEventHandler: KeyPressMask
-		receiver: self
-		selector: #keyPressedInInputWidget:clientData:callData:
-		clientData: nil.
+			receiver: self
+			selector: #keyPressedInInputWidget:clientData:callData:
+			clientData: nil.
 	self addTargetTextWidgetCallbacks: inputWidget.
 
 	(buttonForm := self defaultWidgetParent createForm: nil argBlock: nil)
@@ -204,8 +238,9 @@ AIChatWindow >> createWorkRegion [
 			rightAttachment: XmATTACHFORM;
 			topAttachment: XmATTACHPOSITION;
 			topPosition: 75;
-			borderWidth: 0].
-	inputWidget parent setValuesBlock: [:w |
+			borderWidth: 0;
+			bottomLimitWidget: statusLine].
+	inputWidget setValuesBlock: [:w |
 		w
 			topAttachment: XmATTACHWIDGET;
 			topWidget: sash;
@@ -240,6 +275,13 @@ AIChatWindow >> createWorkRegion [
 AIChatWindow >> initializeAfterRealize [
 
 	super initializeAfterRealize.
+	inputWidget
+		stsConfigureSelection;
+		stsConfigureCodePageForUtf8;
+		setMarginWidth: 1 width: 0;
+		clearCmdKey: ScintillaConstants::SCK_RETURN.
+	(self stsRequestCodeAssistOn: inputWidget contextProvider: self)
+		ifNotNil: [:codeAssist | codeAssist connect].
 	self updateInput.
 	inputWidget setInputFocus.
 ]
@@ -267,12 +309,15 @@ AIChatWindow >> initializeWithFilePathString: initialFilePathString chat: initia
 AIChatWindow >> keyPressedInInputWidget: widget clientData: clientData callData: callData [
 
 	(callData keysym = XKReturn
-		and: [(callData state noMask: ShiftMask) and: [chat isGenerating not]])
+		and: [(callData state noMask: ShiftMask)
+			and: [chat isGenerating not
+				and: [inputWidget codeAssistant isNil or: [inputWidget codeAssistant isShowingPopups not]]]])
 			ifTrue: [
 				chat model isNil: [
 					CwMessagePrompter
 						warningMessage: 'Setup provider and add model before sending message'.
 					^AISettingsWindow new open].
+
 				self sendUserMessage]
 ]
 
@@ -292,6 +337,43 @@ AIChatWindow >> menuActionChatAddFile [
 
 	CwFileSelectionPrompter new prompt
 		ifNotNil: [:selectedPathString | chat addFilePath: (CfsPath named: selectedPathString)]
+]
+
+{ #category : 'Operations',
+  #vaVisibility : 'private' }
+AIChatWindow >> menuActionChatAddWorkspace [
+
+	| openWorkspaces availableWorkspaces prompter selected |
+
+	openWorkspaces := StsWorkspace allOpenWorkspaces.
+	availableWorkspaces := openWorkspaces reject: [ :ws | chat workspaces includes: ws ].
+	availableWorkspaces isEmpty ifTrue: [
+		(CwMessagePrompter confirm: 'No unshared workspaces found. Would you like to create a new workspace?') ifTrue: [
+			| newWs |
+			newWs := StsWorkspace new.
+			newWs open.
+			chat addWorkspace: newWs ].
+		^ self ].
+
+	prompter := AIChatListPrompter new
+		title: 'Add Workspace';
+		messageString: 'Select a workspace to share with this chat.';
+		button1Name: 'Select';
+		button2Name: 'Cancel';
+		button3Name: 'New Workspace';
+		items: (availableWorkspaces sorted: [ :w1 :w2 | (w1 label ifNil: [ '' ]) <= (w2 label ifNil: [ '' ]) ]);
+		printBlock: [ :ws | ws label ifNil: [ '' ] ].
+
+	selected := prompter prompt.
+	selected ifNil: [ ^ self ].
+	selected == #newChatWindow ifTrue: [
+		| newWs |
+		newWs := StsWorkspace new.
+		newWs open.
+		chat addWorkspace: newWs.
+		^ self ].
+
+	chat addWorkspace: selected
 ]
 
 { #category : 'Operations',
@@ -327,6 +409,32 @@ AIChatWindow >> menuActionChatOpen [
 			fileExtension: '.gc';
 			prompt) ifNotNil: [ :selectedPathString |
 				(self class fromFile: selectedPathString) ifNotNil:[:w | w open]].
+]
+
+{ #category : 'Operations',
+  #vaVisibility : 'private' }
+AIChatWindow >> menuActionChatRemoveWorkspace [
+
+	| sharedWorkspaces prompter selected |
+
+	sharedWorkspaces := chat activeWorkspaces.
+	sharedWorkspaces isEmpty ifTrue: [
+		CwMessagePrompter errorMessage: 'There are no active workspaces shared with this chat.'.
+		^ self ].
+
+	sharedWorkspaces size = 1 ifTrue: [
+		chat removeWorkspace: sharedWorkspaces first.
+		^ self ].
+
+	prompter := CwListSelectionPrompter new
+		title: 'Remove Workspace';
+		messageString: 'Select a workspace to stop sharing with this chat.';
+		items: (sharedWorkspaces sorted: [ :w1 :w2 | (w1 label ifNil: [ '' ]) <= (w2 label ifNil: [ '' ]) ]);
+		printBlock: [ :ws | ws label ifNil: [ '' ] ];
+		selectedPrintBlock: [ :ws | ws label ifNil: [ '' ] ].
+
+	selected := prompter prompt.
+	selected ifNotNil: [ chat removeWorkspace: selected ]
 ]
 
 { #category : 'Operations',
@@ -400,7 +508,9 @@ AIChatWindow >> menuChat [
 		add: #menuActionChatSaveAs label: 'Save As...' enable: true for: nil;
 		add: #menuActionChatExport label: 'Export...';
 		addLine;
-		add: #menuActionChatAddFile label: 'Add File...' enable: true for: nil.
+		add: #menuActionChatAddFile label: 'Add File...' enable: true for: nil;
+		add: #menuActionChatAddWorkspace label: 'Add Workspace...' enable: true for: nil;
+		add: #menuActionChatRemoveWorkspace label: 'Remove Workspace...' enable: true for: nil.
 
 	^chatMenu
 ]
@@ -569,7 +679,7 @@ AIChatWindow >> restartWindowFromSnapshot: widgetHierarchySnapshot [
 	chatWidget ifNotNil: [
 		chatWidget release.
 		chatWidget := nil ].
-		
+	chat reattachWorkspaces.
 	^ super restartWindowFromSnapshot: widgetHierarchySnapshot
 ]
 
@@ -590,9 +700,11 @@ AIChatWindow >> saveToFile: pathString [
   #vaVisibility : 'private' }
 AIChatWindow >> sendUserMessage [
 
-	inputWidget value ifNotEmpty: [
-		self sendUserMessage: inputWidget value ].
+	inputWidget codeAssistant ifNotNil: [:ca | ca closeCompletionSessionIfExists].
+	inputWidget value ifNotEmpty: [:value |
+		self sendUserMessage:  value utf8AsUnicodeString ].
 	inputWidget value: ''.
+
 ]
 
 { #category : 'Private',
@@ -616,15 +728,19 @@ AIChatWindow >> snapshotTextWidget [
   #vaVisibility : 'private' }
 AIChatWindow >> statusLineText [
 
-	| max |
+	| max parts |
 
 	chat model isNil ifFalse: [max := chat model contextWindowSize].
-	^ '%1 / %2%3'
+	parts := OrderedCollection new.
+	parts add: ('%1 / %2'
 		bindWith: chat tokenUsage printString
-		with: (max ifNil: [ '?' ] ifNotNil: [ max printString ])
-		with: (chat model
-			ifNil: [ '' ]
-			ifNotNil: [ ' %1 %2' bindWith: ((UnicodeString value: 16r2014) asSBString ifNil: [ '-' ]) with: chat model label ])
+		with: (max ifNil: [ '?' ] ifNotNil: [ max printString ])).
+	chat model ifNotNil: [
+		parts add: ('%1 %2' bindWith: ((UnicodeString value: 16r2014) asSBString ifNil: [ '-' ]) with: chat model label) ].
+	chat activeWorkspaces ifNotEmpty: [ :wsList |
+		parts add: ('%1 %2 %3' bindWith: ((UnicodeString value: 16r2014) asSBString ifNil: [ '-' ]) with: wsList size printString
+			with: (wsList size = 1 ifTrue: [ 'workspace' ] ifFalse: [ 'workspaces' ])) ].
+	^ ' ' join: parts
 ]
 
 { #category : 'Events',
@@ -636,6 +752,7 @@ AIChatWindow >> update: aParameter [
 	aParameter = #generating ifTrue: [self updateInput].
 	aParameter = #model ifTrue: [self updateInput; updateStatusLine].
 	aParameter = #registeredModelsChanged ifTrue: [self registeredModelsChanged].
+	aParameter = #workspaces ifTrue: [self updateStatusLine].
 	super update: aParameter
 ]
 
@@ -643,7 +760,12 @@ AIChatWindow >> update: aParameter [
   #vaVisibility : 'private' }
 AIChatWindow >> updateInput [
 
-	inputWidget foregroundColor: ( chat isGenerating not ifTrue: [ Color black ] ifFalse: [ Color darkGray ]).
+	| foregroundColor |
+
+	foregroundColor := (chat isGenerating not ifTrue: [ Color black ] ifFalse: [ Color darkGray ]) asOSRGB.
+	inputWidget
+		styleSetFore: ScintillaConstants::STYLE_DEFAULT color: foregroundColor;
+		styleSetFore: 0 color: foregroundColor.
 	buttonWidget
 		labelString: (chat isGenerating ifTrue: [ chat isStoppingGeneration ifTrue: [ (UnicodeString escaped: 'Stopping\u{2026}') ] ifFalse: [ 'Stop' ] ] ifFalse: [ 'Send' ]);
 		setSensitive: (chat model notNil and: [chat isStoppingGeneration not]).
@@ -692,4 +814,11 @@ AIChatWindow >> windowClose: widget clientData: clientData callData: callData [
 	callData doit & chat notNil ifTrue: [
 		chat removeDependent: self;
 			terminateGeneration ].
+]
+
+{ #category : 'ET-Internal',
+  #vaVisibility : 'private' }
+AIChatWindow >> windowIndex [
+
+	^ super windowIndex + 1000000
 ]

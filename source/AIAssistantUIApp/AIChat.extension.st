@@ -2,6 +2,12 @@ Extension {
 	#name : 'AIChat'
 }
 
+{ #category : 'Accessing' }
+AIChat >> activeWorkspaces [
+
+	^ workspaceRegistry activeWorkspaces
+]
+
 { #category : 'Actions' }
 AIChat >> resetTextSegmentLayout [
 
@@ -24,6 +30,10 @@ AIChat >> storeOn: stream [
 	stream nextPutAll: ' collect: [ :name | CfsPath named: name ])'.
 	stream nextPutAll: ' userMessages: '.
 	userMessages storeOn: stream.
+	stream nextPutAll: ' nextObjectHandle: '.
+	objectRegistry nextHandle storeOn: stream.
+	stream nextPutAll: ' nextWorkspaceHandle: '.
+	workspaceRegistry nextWorkspaceHandle storeOn: stream.
 	stream nextPut: $).
 ]
 

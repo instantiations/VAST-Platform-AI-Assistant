@@ -53,6 +53,26 @@ AIFunctionDebugTestCaseTest >> testDebugTestCaseFails [
 ]
 
 { #category : 'Tests' }
+AIFunctionDebugTestCaseTest >> testDebugTestCaseHalts [
+	| result args stackTrace lastFrame |
+	args := EsOrderedDictionary new.
+	args at: 'class_name' put: 'AIFunctionDebugTestCaseMockTest'.
+	args at: 'selector' put: 'testHalts'.
+
+	result := self applyFunction: AIFunctionDebugTestCase withArguments: args.
+
+	self assert: (result includesKey: 'status') not.
+	self assert: (result at: 'process_name') equals: 'AIFunctionDebugTestCaseMockTest>>testHalts'.
+	self assert: (result at: 'exception_class') equals: 'Halt'.
+	self assert: ((result at: 'error_message') includesSubstring: 'Explicit halt in test').
+
+	stackTrace := result at: 'stack_trace'.
+	self assert: stackTrace notEmpty.
+	lastFrame := stackTrace last.
+	self assert: (lastFrame at: 'signature') equals: 'AIFunctionDebugTestCaseMockTest>>#testHalts'
+]
+
+{ #category : 'Tests' }
 AIFunctionDebugTestCaseTest >> testDebugTestCaseInvalidClass [
 	| result args |
 	args := EsOrderedDictionary new.
@@ -139,6 +159,37 @@ AIFunctionDebugTestCaseTest >> testDebugTestCaseSetUpErrors [
 	lastFrame := stackTrace last.
 	self assert: (lastFrame at: 'signature') equals: 'AIFunctionDebugTestCaseMockTest>>#setUp'.
 	self assert: (stackTrace noneSatisfy: [:frame | (frame at: 'signature') includesSubstring: 'applyFunctionTo:in:' ])
+]
+
+{ #category : 'Tests' }
+AIFunctionDebugTestCaseTest >> testDebugTestCaseStackFrameReceiverArgumentsAndTemporaries [
+	| context result args stackTrace helperFrame receiver arguments temporaries |
+	context := self emptyContext.
+	args := EsOrderedDictionary
+		with: 'class_name' -> 'AIFunctionDebugTestCaseMockTest'
+		with: 'selector' -> 'testFailsWithArgsAndTemps'
+		with: 'printstring_limit' -> 10.
+
+	result := self applyFunction: AIFunctionDebugTestCase withArguments: args inContext: context.
+	stackTrace := result at: 'stack_trace'.
+
+	helperFrame := stackTrace
+		detect: [ :frame | (frame at: 'signature') = 'AIFunctionDebugTestCaseMockTest>>#failingHelperWithArg:' ]
+		ifNone: [ self fail: 'Expected failingHelperWithArg: frame in stack trace' ].
+
+	receiver := helperFrame at: 'receiver'.
+	self assert: (receiver at: 'class') equals: 'AIFunctionDebugTestCaseMockTest'.
+	self assert: (receiver includesKey: 'object_handle').
+
+	arguments := helperFrame at: 'arguments'.
+	self assert: (arguments includesKey: 'anArg').
+	self assert: ((arguments at: 'anArg') at: 'class') equals: 'String'.
+	self assert: ((arguments at: 'anArg') at: 'print_string') equals: '''hello'''.
+
+	temporaries := helperFrame at: 'temporaries'.
+	self assert: (temporaries includesKey: 'tempVar').
+	self assert: ((temporaries at: 'tempVar') at: 'class') equals: 'String'.
+	self assert: ((temporaries at: 'tempVar') at: 'print_string') equals: ('hello world' printStringLimitedTo: 10)
 ]
 
 { #category : 'Tests' }

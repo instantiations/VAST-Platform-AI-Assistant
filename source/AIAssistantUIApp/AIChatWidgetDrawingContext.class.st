@@ -2,6 +2,7 @@ Class {
 	#name : 'AIChatWidgetDrawingContext',
 	#superclass : 'Object',
 	#instVars : [
+		'scale',
 		'pixmap',
 		'gc',
 		'tabWidth',
@@ -204,6 +205,16 @@ AIChatWidgetDrawingContext >> rightInset [
 { #category : 'Not categorized' }
 AIChatWidgetDrawingContext >> rightInset: anObject [
 	rightInset := anObject
+]
+
+{ #category : 'Not categorized' }
+AIChatWidgetDrawingContext >> scale [
+	^scale
+]
+
+{ #category : 'Not categorized' }
+AIChatWidgetDrawingContext >> scale: anObject [
+	scale := anObject
 ]
 
 { #category : 'Not categorized' }

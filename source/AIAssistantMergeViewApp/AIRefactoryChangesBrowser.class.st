@@ -620,7 +620,15 @@ AIRefactoryChangesBrowser >> initializeAfterRealize [
   #vaVisibility : 'private' }
 AIRefactoryChangesBrowser >> initializeComparer [
 	"Initialize the comparer with the text from our editors."
-	comparer := AIDMPStringComparer new
+	| c |
+
+	"Backwards compatibility check: If the highly optimized EsStringDiffApp and StsTabbedBrowserApp are present, 
+	 we should use its native StsStringComparer instead of our own."
+	(Smalltalk includesKey: #StsStringComparer)
+		ifTrue: [c := (Smalltalk at: #StsStringComparer) new]
+		ifFalse: [c := AIDMPStringComparer new].
+		
+	comparer := c
 		string1: leftEditor getString;
 		string2: rightEditor getString;
 		compare;

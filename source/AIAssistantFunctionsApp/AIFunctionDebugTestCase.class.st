@@ -59,6 +59,7 @@ AIFunctionDebugTestCase >> applyFunctionTo: arguments in: context [
 					self
 						stackFramesJSONFrom: firstFrame
 						arguments: arguments
+						inContext: context
 						until: [:frame | frame isExecutingBlock not and: [stopMethods includes: frame method]]]
 				ifFalse: [#()]]
 					ensure: [process terminate].

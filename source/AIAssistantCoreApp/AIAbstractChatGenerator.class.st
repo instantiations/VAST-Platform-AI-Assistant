@@ -69,7 +69,12 @@ AIAbstractChatGenerator >> applyFunctionsInLastGeneratedContent [
 			chat functionCallPermissionTextSegments: functionCallPermissionTextSegments ].
 		functionCallPermissionsSemaphore wait ].
 
-	functionCallContext := AIFunctionCallContext model: generationModel filePaths: chat filePaths codeChanges: chat userMessages last codeChanges.
+	functionCallContext := AIFunctionCallContext
+		model: generationModel
+		filePaths: chat filePaths
+		codeChanges: chat userMessages last codeChanges
+		objectRegistry: chat objectRegistry
+		workspaceRegistry: chat workspaceRegistry.
 	generatedContents addFunctionResponseParts: ((1 to: functionCallParts size) collect: [ :index |
 		AIChatGeneratedContentPartFunctionResponse id: (functionCallParts at: index) id name: (functionCallParts at: index) name
 			response: ((errorMessages at: index)

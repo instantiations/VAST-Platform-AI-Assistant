@@ -34,7 +34,7 @@ AIFunctionListClassesInApplications >> category [
 { #category : 'Not categorized' }
 AIFunctionListClassesInApplications >> description [
 
-	^ 'Returns a Dictionary where keys are application names and values are lists of class names defined in those applications.'
+	^ 'Returns a Dictionary where keys are application names and values are the names of classes defined or extended in that application, including all of its subapplications (recursively). Passing a subapplication returns only that subapplication and the subapplications below it.'
 ]
 
 { #category : 'Not categorized' }

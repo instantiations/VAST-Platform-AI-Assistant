@@ -3,6 +3,12 @@ Extension {
 }
 
 { #category : 'STS-Pixmaps' }
+StsImageManager class >> shareWithAIAssistant [
+
+	^ self stsAIAssistant
+]
+
+{ #category : 'STS-Pixmaps' }
 StsImageManager class >> stsAIAssistant [
 
 	^ #[66 77 120 5 0 0 0 0 0 0 54 0 0 0 40 0 0 0 21 0 0 0 21 0 0 0 1 0 24 0 0 0 0 0 66 5 0 0 18 11 0

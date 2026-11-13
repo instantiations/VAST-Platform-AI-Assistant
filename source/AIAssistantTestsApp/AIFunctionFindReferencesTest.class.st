@@ -1,6 +1,6 @@
 Class {
 	#name : 'AIFunctionFindReferencesTest',
-	#superclass : 'TestCase',
+	#superclass : 'AIFunctionTestCase',
 	#category : 'AIAssistantTestsApp'
 }
 
@@ -19,16 +19,21 @@ AIFunctionFindReferencesTest >> mySampleTestSelectorOnTheInstanceSide [
 { #category : 'Tests' }
 AIFunctionFindReferencesTest >> testMaxResultsWarning [
 
-	|args result context |
+	| args result context |
 	args := Dictionary new.
 	args at: 'variable_name' put: 'AIFunctionFindReferencesTest'.
 	args at: 'with_source' put: false.
 	args at: 'applications' put: #('AIAssistantTestsApp').
-	context := AIFunctionCallContext model: (AIAbstractModel name: 'Test contextSize' label: 'A' provider: AIAbstractModelProvider new contextWindowSize: 0) filePaths: #() codeChanges: #().
-	result := AIFunctionFindReferences new applyFunctionTo: args in: context. 
+	context := self contextWithModel: (
+		AIAbstractModel
+			name: 'Test contextSize'
+			label: 'A'
+			provider: AIAbstractModelProvider new
+			contextWindowSize: 0).
+	result := AIFunctionFindReferences new applyFunctionTo: args in: context.
 	self assert: (result at: 'methods') notEmpty.
 	"With contextSize 0, maxResults should also be 0"
-	self assert:  (result at: 'warning' ifAbsent: [nil]) notNil
+	self assert: (result at: 'warning' ifAbsent: [nil]) notNil
 ]
 
 { #category : 'Tests' }
@@ -103,4 +108,17 @@ AIFunctionFindReferencesTest >> testReferencesWithoutSource [
 		self assert: (method at: 'source' ifAbsent: [nil]) isNil
 		]
 
+]
+
+{ #category : 'Tests' }
+AIFunctionFindReferencesTest >> testSubApplicationScoped [
+
+	| target |
+	target := Smalltalk associationAt: #String.
+	self
+		assertSubApplicationScopedForFunction: AIFunctionFindReferences
+		withArguments: (Dictionary new
+			at: 'variable_name' put: 'String';
+			yourself)
+		matchingClassBlock: [:cls | (cls whichMethodsReferenceLiteral: target) notEmpty]
 ]

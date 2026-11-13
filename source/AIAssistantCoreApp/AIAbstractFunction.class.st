@@ -45,11 +45,17 @@ AIAbstractFunction >> classNamed: className [
 { #category : 'System Search',
   #vaVisibility : 'private' }
 AIAbstractFunction >> classesInApplicationNamed: applicationName [
-	"Return classes that are defined / extended in a provided applicationName"
+	"Return the classes defined or extended in applicationName and all of its subapplications"
 
 	^(self applicationNamed: applicationName)
 		ifNil: [#()]
-		ifNotNil: [:application | application allLocalClasses]
+		ifNotNil: [:application | | result |
+			result := Set new.
+			application withAllSubApplications do: [:sub |
+				result
+					addAll: sub defined;
+					addAll: sub extended].
+			result asOrderedCollection]
 ]
 
 { #category : 'System Search',

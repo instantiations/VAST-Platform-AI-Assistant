@@ -1,6 +1,6 @@
 Class {
 	#name : 'AIFunctionFindImplementorsTest',
-	#superclass : 'TestCase',
+	#superclass : 'AIFunctionTestCase',
 	#category : 'AIAssistantTestsApp'
 }
 
@@ -153,11 +153,23 @@ AIFunctionFindImplementorsTest >> testMaxResultsWarning [
 		at: 'selectors'
 		put: #('mySampleImplementorOnTheInstanceSide' 'mySampleImplementorOnTheInstanceSide2').
 	args at: 'with_source' put: false.
-	context :=
-		AIFunctionCallContext
-			model: (AIAbstractModel name: 'Test contextSize' label: 'A' provider: AIAbstractModelProvider new contextWindowSize: 0)
-			filePaths: #()
-			codeChanges: #().
+	context := self contextWithModel: (
+		AIAbstractModel
+			name: 'Test contextSize'
+			label: 'A'
+			provider: AIAbstractModelProvider new
+			contextWindowSize: 0).
 	result := AIFunctionFindImplementors new applyFunctionTo: args in: context.
 	self assert: (result at: 'warning' ifAbsent: [nil]) notNil
+]
+
+{ #category : 'Tests' }
+AIFunctionFindImplementorsTest >> testSubApplicationScoped [
+
+	self
+		assertSubApplicationScopedForFunction: AIFunctionFindImplementors
+		withArguments: (Dictionary new
+			at: 'selectors' put: #('printOn:' 'initialize');
+			yourself)
+		matchingClassBlock: [:cls | (cls includesSelector: #printOn:) or: [cls includesSelector: #initialize]]
 ]

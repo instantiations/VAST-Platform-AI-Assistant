@@ -13,7 +13,9 @@ Class {
 		'generationErrorTextSegment',
 		'filePaths',
 		'tokenUsage',
-		'title'
+		'title',
+		'objectRegistry',
+		'workspaceRegistry'
 	],
 	#classVars : [
 		'CustomSystemInstruction',
@@ -22,20 +24,20 @@ Class {
 	#category : 'AIAssistantCoreApp'
 }
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIChat class >> customSystemInstruction [
 
 	^ CustomSystemInstruction ifNil: [ CustomSystemInstruction := self defaultSystemInstruction ]
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIChat class >> customSystemInstruction: systemInstruction [
 
 	CustomSystemInstruction := systemInstruction.
 	self changed: #customSystemInstruction.
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIChat class >> defaultSystemInstruction [
 
 	^ CldtConstants::LineDelimiter join: #(
@@ -54,48 +56,67 @@ AIChat class >> defaultSystemInstruction [
 		'    - Do not attempt to query, reflect on, or run tests against a class or method immediately after using a modification tool to create/change it, as the changes will not exist in the environment until the user manually approves them. Always wait for the user to confirm they have applied the changes before executing test cases.'
 		'    - You CAN and SHOULD propose multiple related changes in a single response (e.g., adding a class and its methods together). The modification tools and their validation logic are designed to handle methods that reference classes or instance variables proposed in the same conversation, so you do not need to wait for the user to approve a class before adding methods to it.'
 		'    - If a modification tool returns a warning about unimplemented selectors, verify if you have already defined them or intend to define them in your current response. If not, treat the warning as an error, as you have likely made a typo or hallucinated a method, and immediately correct the code.'
+		'    - Never use evaluate to bypass the approval workflow (e.g., do not compile methods or mutate classes via evaluate just so you can test them immediately with run_test_cases or evaluate). Always use the modification tools to propose the changes, and stop and wait for the user to apply them before running tests.'
 		'   Only use Markdown code blocks for code examples or workspace scripts meant for the user to execute manually.'
 		'6. Getting source code in VAST may be slow. When using the parameter `with_source` available in many tools, try to minimize cases where a `true` is specified and try favor `false`'
 		)
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Instance Creation' }
 AIChat class >> new [
 
 	^ self systemInstruction: (self useCustomSystemInstruction ifTrue: [ self customSystemInstruction ] ifFalse: [ self defaultSystemInstruction ])
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Instance Creation' }
 AIChat class >> systemInstruction: systemInstruction [
 
 	^ self systemInstruction: systemInstruction model: AIAbstractModel default
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Instance Creation' }
 AIChat class >> systemInstruction: systemInstruction model: model [
 
 	^ self systemInstruction: systemInstruction model: model userMessages: OrderedCollection new
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Instance Creation' }
 AIChat class >> systemInstruction: systemInstruction model: model filePaths: filePaths userMessages: userMessages [
 
-	^ self basicNew initializeWithSystemInstruction: systemInstruction model: model filePaths: filePaths userMessages: userMessages
+	^ self
+		systemInstruction: systemInstruction
+		model: model
+		filePaths: filePaths
+		userMessages: userMessages
+		nextObjectHandle: nil
+		nextWorkspaceHandle: nil
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Instance Creation' }
+AIChat class >> systemInstruction: systemInstruction model: model filePaths: filePaths userMessages: userMessages nextObjectHandle: nextObjectHandle nextWorkspaceHandle: nextWorkspaceHandle [
+
+	^ self basicNew
+		initializeWithSystemInstruction: systemInstruction
+		model: model
+		filePaths: filePaths
+		userMessages: userMessages
+		nextObjectHandle: nextObjectHandle
+		nextWorkspaceHandle: nextWorkspaceHandle
+]
+
+{ #category : 'Instance Creation' }
 AIChat class >> systemInstruction: systemInstruction model: model userMessages: userMessages [
 
 	^ self systemInstruction: systemInstruction model: model filePaths: OrderedCollection new userMessages: userMessages
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIChat class >> useCustomSystemInstruction [
 
 	^ UseCustomSystemInstruction ifNil: [ UseCustomSystemInstruction := false ]
 ]
 
-{ #category : 'Not categorized' }
+{ #category : 'Accessing' }
 AIChat class >> useCustomSystemInstruction: boolean [
 
 	UseCustomSystemInstruction := boolean.
@@ -116,10 +137,22 @@ AIChat >> addFilePath: filePath [
 	filePaths add: filePath
 ]
 
+{ #category : 'Actions' }
+AIChat >> addWorkspace: aWorkspace [
+
+	workspaceRegistry add: aWorkspace
+]
+
 { #category : 'Events' }
 AIChat >> changedTextSegments [
 
 	self changed: #textSegments
+]
+
+{ #category : 'Events' }
+AIChat >> changedWorkspaces [
+
+	self changed: #workspaces
 ]
 
 { #category : 'Not categorized' }
@@ -209,11 +242,14 @@ AIChat >> generationFinished [
 AIChat >> initializeWithSystemInstruction: initialSystemInstruction
 	model: initialModel
 	filePaths: initialFilePaths
-	userMessages: initialUserMessages [
+	userMessages: initialUserMessages
+	nextObjectHandle: initialNextObjectHandle
+	nextWorkspaceHandle: initialNextWorkspaceHandle [
 
 	self initialize.
 	systemInstruction := initialSystemInstruction.
-	systemInstructionTextSegment := AIChatTextSegmentSystemInstruction forSystemInstruction: systemInstruction.
+	systemInstructionTextSegment :=
+		AIChatTextSegmentSystemInstruction forSystemInstruction: systemInstruction.
 	model := initialModel.
 	filePaths := initialFilePaths.
 	userMessages := initialUserMessages.
@@ -226,7 +262,15 @@ AIChat >> initializeWithSystemInstruction: initialSystemInstruction
 				userMessage codeChangesText
 					ifNotNil: [:codeChangesText | stream nextPut: codeChangesText]]].
 	functionCallPermissionTextSegments := OrderedCollection new.
-	tokenUsage := AIChatTokenUsage new
+	tokenUsage := AIChatTokenUsage new.
+	objectRegistry :=
+		initialNextObjectHandle
+			ifNil: [AIObjectRegistry new]
+			ifNotNil: [AIObjectRegistry newWithInitialNextHandle: initialNextObjectHandle].
+	workspaceRegistry :=
+		initialNextWorkspaceHandle
+			ifNil: [AIWorkspaceRegistry forChat: self]
+			ifNotNil: [AIWorkspaceRegistry forChat: self initialNextWorkspaceHandle: initialNextWorkspaceHandle]
 ]
 
 { #category : 'Generation' }
@@ -261,12 +305,29 @@ AIChat >> model: newModel [
 ]
 
 { #category : 'Not categorized' }
+AIChat >> objectRegistry [
+	^objectRegistry
+]
+
+{ #category : 'Actions' }
+AIChat >> reattachWorkspaces [
+
+	workspaceRegistry reattachWorkspaces
+]
+
+{ #category : 'Not categorized' }
 AIChat >> removeFunctionCallPermissionTextSegment: functionCallPermissionTextSegment [
 
 	functionCallPermissionTextSegments remove: functionCallPermissionTextSegment.
 	self changedTextSegments.
 	functionCallPermissionTextSegments ifEmpty: [
 		generator functionCallPermissionsSet ]
+]
+
+{ #category : 'Actions' }
+AIChat >> removeWorkspace: aWorkspace [
+
+	workspaceRegistry remove: aWorkspace
 ]
 
 { #category : 'Not categorized' }
@@ -373,4 +434,16 @@ AIChat >> updateLastModelTextSegment [
 AIChat >> userMessages [
 
 	^ userMessages
+]
+
+{ #category : 'Accessing' }
+AIChat >> workspaceRegistry [
+
+	^ workspaceRegistry
+]
+
+{ #category : 'Accessing' }
+AIChat >> workspaces [
+
+	^ workspaceRegistry workspaces
 ]

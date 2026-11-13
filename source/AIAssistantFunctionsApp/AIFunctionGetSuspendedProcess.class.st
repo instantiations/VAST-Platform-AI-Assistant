@@ -15,7 +15,7 @@ AIFunctionGetSuspendedProcess >> applyFunctionTo: arguments in: context [
 		^EsOrderedDictionary with: 'error' -> 'No process is currently selected in the debugger.'].
 
 	session :=  debugger selectedSessions first.
-	frames := self stackFramesJSONFrom: session process topFrame arguments: arguments.
+	frames := self stackFramesJSONFrom: session process topFrame arguments: arguments inContext: context.
 
 	^EsOrderedDictionary new
 		at: 'process_name' put: session processName;
